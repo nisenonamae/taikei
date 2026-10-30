@@ -1,0 +1,15 @@
+{
+  "name": "大計",
+  "short_name": "大計",
+  "description": "長期計画を作り、育て、崩れかけを早く見つける",
+  "lang": "ja",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F6F3EC",
+  "theme_color": "#26221E",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
