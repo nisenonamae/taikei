@@ -320,6 +320,11 @@ button.closedbar{display:flex;width:100%;text-align:left;border:0;cursor:pointer
 .lchip.ended span:nth-child(2){opacity:.55}
 .tl-ended{opacity:.4}
 .mslist li.lli.ended{opacity:.6}
+.er{position:relative}
+.rowrm{position:absolute;top:-.55rem;right:-.45rem;width:1.6rem;height:1.6rem;border-radius:50%;border:1.5px solid var(--bad);background:var(--white);color:var(--bad);font-size:.95rem;line-height:1;padding:0;z-index:2;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.lanerm{border:1px solid var(--bad);border-radius:3px;background:var(--white);color:var(--bad);font-size:.76rem;padding:.15rem .5rem;white-space:nowrap}
+.lhd{grid-template-columns:1fr 3.5rem 1.8rem 1.8rem auto}
+.pnote{padding-top:.5rem}
 .addrow{display:block;margin:.2rem 0 .1rem;font-size:.76rem}
 details.eds{border:1px solid var(--rule);border-radius:6px;margin:.5rem 0;background:var(--sheet)}
 details.eds>summary{cursor:pointer;padding:.55rem .7rem;font-weight:700;font-size:.92rem;list-style:none;display:flex;justify-content:space-between;align-items:baseline;gap:.5rem}
@@ -1988,7 +1993,7 @@ function roadProbes(p, l){ const xs = probesOf(p).filter(x => pOpen(x) && (!l ||
 /* 探りを作る・直す */
 function openProbe(p, x, kind){
   const v = x || { kind: kind || "調査", notes: [] }, L = lanesOf(p);
-  const noteRow = n => `<div class="er pnote" style="display:block"><textarea data-pn rows="2" placeholder="例:1題に10分以上かかるなら、IIBの演習量を減らし、その分を解き直しに回す">${esc(n || "")}</textarea></div>`;
+  const noteRow = n => `<div class="er pnote" style="display:block"><button type="button" class="rowrm" data-rowrm aria-label="この行を消す(保存しなくてよい)">×</button><textarea data-pn rows="2" placeholder="例:1題に10分以上かかるなら、IIBの演習量を減らし、その分を解き直しに回す">${esc(n || "")}</textarea></div>`;
   sheet(`<h3>${x ? "探りを直す" : "探りを足す"}</h3>
     <div class="seg dcseg" role="group" aria-label="種類" style="margin-bottom:.4rem">${Object.keys(PKINDS).map(k => `<button data-pkind="${k}" aria-pressed="${v.kind === k}">${pbadge(k)} ${k}</button>`).join("")}</div>
     <p class="note" id="pk-word" style="margin:0 0 .3rem">${PKINDS[v.kind].word}</p>
@@ -2186,8 +2191,8 @@ function openEdit(p, focus, mode){
   const fxGoal = isFixed(p, "goal"), fxEnd = isFixed(p, "end");
   const laneOpts = cur => lanesOf(p).map(l => `<option value="${l.id}"${l.id === cur ? " selected" : ""}>${laneCode(p, l)} ${esc(l.name)}(${l.rank})</option>`).join("");
   const perRow = (x, i) => `<div class="er" data-lper="${i}"><input data-k="name" value="${esc(x.name)}" placeholder="期間の名前"><input data-k="purpose" value="${esc(x.purpose)}" placeholder="何のための期間か"><input data-k="start" type="date" value="${x.start}"><input data-k="end" type="date" value="${x.end}"><label class="chk delx"><input type="checkbox" data-k="del"> 消す</label></div>`;
-  const laneBlock = (l, isNew) => `<div class="lane-e" data-lane="${l.id}"${isNew ? ' data-new="1"' : ""}><div class="lhd"><input data-k="lname" value="${esc(l.name)}" placeholder="道筋の名前(例:青チャートで解法を固める)"><select data-k="rank">${RANKS.map(r => `<option${r === l.rank ? " selected" : ""}>${r}</option>`).join("")}</select><button class="lmv" data-laneup aria-label="上へ">▲</button><button class="lmv" data-lanedn aria-label="下へ">▼</button><label class="chk delx"><input type="checkbox" data-k="ldel"> 消す</label></div>
-    ${(l.periods || []).map(perRow).join("")}<div class="er" data-lper="new"><input data-k="name" placeholder="+ 期間を足す(名前)"><input data-k="purpose" placeholder="何のための期間か"><input data-k="start" type="date"><input data-k="end" type="date"></div><button class="linkx addrow" data-lperrow>+ 期間の行を足す</button></div>`;
+  const laneBlock = (l, isNew) => `<div class="lane-e" data-lane="${l.id}"${isNew ? ' data-new="1"' : ""}><div class="lhd"><input data-k="lname" value="${esc(l.name)}" placeholder="道筋の名前(例:青チャートで解法を固める)"><select data-k="rank">${RANKS.map(r => `<option${r === l.rank ? " selected" : ""}>${r}</option>`).join("")}</select><button class="lmv" data-laneup aria-label="上へ">▲</button><button class="lmv" data-lanedn aria-label="下へ">▼</button>${isNew ? '<button type="button" class="lanerm" data-lanerm>× 消す</button>' : '<label class="chk delx"><input type="checkbox" data-k="ldel"> 消す</label>'}</div>
+    ${(l.periods || []).map(perRow).join("")}<div class="er" data-lper="new"><button type="button" class="rowrm" data-rowrm aria-label="この行を消す(保存しなくてよい)">×</button><input data-k="name" placeholder="+ 期間を足す(名前)"><input data-k="purpose" placeholder="何のための期間か"><input data-k="start" type="date"><input data-k="end" type="date"></div><button class="linkx addrow" data-lperrow>+ 期間の行を足す</button></div>`;
   window.__laneBlock = laneBlock;
   const msRow = m => { const fx = isFixed(p, "ms:" + m.id);
     return `<div class="er ms-e${m.parent ? " subm" : ""}" data-msr="${m.id}" id="er-${m.id}"><div class="er2"><input data-k="name" value="${esc(m.name)}" placeholder="節目の名前"><input data-k="date" type="date" value="${m.date}"${fx ? " disabled" : ""}><select data-k="type">${Object.keys(MS_TYPES).map(t => `<option${t === m.type ? " selected" : ""}>${t}</option>`).join("")}</select></div>${m.parent ? `<div class="er2" style="grid-template-columns:1fr auto"><span class="note">細かい節目</span><label class="chk delx"><input type="checkbox" data-k="del"> 消す</label></div>` : `<div class="er2" style="grid-template-columns:1fr"><select data-k="lane" aria-label="道筋">${laneOpts(laneId(p, m))}</select></div>`}
@@ -2195,7 +2200,7 @@ function openEdit(p, focus, mode){
       <div class="er2" style="grid-template-columns:1fr 1fr"><label class="note" style="display:flex;align-items:center;gap:.3rem">1つあたり<input data-k="min" type="number" step="0.5" min="0" value="${m.pace && m.pace.min ? m.pace.min : ""}" placeholder="分" style="width:4.5rem">分</label><label class="chk" style="white-space:nowrap;justify-self:end"><input type="checkbox" data-k="done"${m.done ? " checked" : ""}> 達成した</label></div>
       <div class="er2" style="grid-template-columns:1fr auto"><select data-k="plan"><option value="">計画とつながない</option>${plans.filter(x => x.id !== p.id).map(x => `<option value="${x.id}"${m.plan === x.id ? " selected" : ""}>${esc(x.name)}</option>`).join("")}</select>${fx ? `<span class="fixno">不変</span>` : `<label class="chk delx"><input type="checkbox" data-k="del"> 消す</label>`}</div>`}
       ${fx ? `<div class="fixbox">この節目は不変(${esc(fx.council)}が決めた)なので、ここでは日付を変えたり消したりできない。<button class="linkx" data-fixdelprop="${m.id}">消す案を評議会に出す</button></div>` : ""}</div>`; };
-  const wkRow = (w, i) => `<div class="er wk-e" data-wk="${i}"><div class="er2" style="grid-template-columns:5.2rem 1fr"><select data-k="kind">${["作戦", "仕込み", "予備"].map(k => `<option${k === (w.kind || "作戦") ? " selected" : ""}>${k}</option>`).join("")}</select><input data-k="name" value="${esc(w.name || "")}" placeholder="${i === "new" ? "+ 作戦・仕込み・予備を足す(名前)" : "名前"}"></div>
+  const wkRow = (w, i) => `<div class="er wk-e" data-wk="${i}">${i === "new" ? '<button type="button" class="rowrm" data-rowrm aria-label="この行を消す(保存しなくてよい)">×</button>' : ""}<div class="er2" style="grid-template-columns:5.2rem 1fr"><select data-k="kind">${["作戦", "仕込み", "予備"].map(k => `<option${k === (w.kind || "作戦") ? " selected" : ""}>${k}</option>`).join("")}</select><input data-k="name" value="${esc(w.name || "")}" placeholder="${i === "new" ? "+ 作戦・仕込み・予備を足す(名前)" : "名前"}"></div>
     <div class="er2" style="grid-template-columns:1fr 1fr"><label class="mini">始まり<input data-k="start" type="date" value="${w.start || ""}"></label><label class="mini">終わり<input data-k="end" type="date" value="${w.end || ""}"></label></div>
     <div class="er2" style="grid-template-columns:1fr auto"><select data-k="lane" aria-label="道筋">${laneOpts(w.lane && lanesOf(p).some(l => l.id === w.lane) ? w.lane : lanesOf(p)[0].id)}</select>${i === "new" ? "" : '<label class="chk delx"><input type="checkbox" data-k="del"> 消す</label>'}</div></div>`;
 
@@ -2219,7 +2224,7 @@ function openEdit(p, focus, mode){
     <details class="eds" id="er-ms" ${op("節目")}><summary>節目<small>${mainMs(p).length}つ</small></summary>
     <p class="note" style="margin:0 0 .3rem">目標の量とペースは週ごと。つなぐ計画を選ぶと、その計画の進捗がこの節目の進捗になる。</p>
     ${mainMs(p).map(m => msRow(m) + subsOf(p, m.id).map(msRow).join("")).join("")}
-    <div class="er ms-e" data-msr="new"><div class="er2"><input data-k="name" placeholder="+ 節目を足す(名前)"><input data-k="date" type="date"><select data-k="type">${Object.keys(MS_TYPES).map(t => `<option${t === "予定" ? " selected" : ""}>${t}</option>`).join("")}</select></div><div class="er2" style="grid-template-columns:1fr"><select data-k="lane" aria-label="道筋">${laneOpts(lanesOf(p)[0].id)}</select></div></div>
+    <div class="er ms-e" data-msr="new"><button type="button" class="rowrm" data-rowrm aria-label="この行を消す(保存しなくてよい)">×</button><div class="er2"><input data-k="name" placeholder="+ 節目を足す(名前)"><input data-k="date" type="date"><select data-k="type">${Object.keys(MS_TYPES).map(t => `<option${t === "予定" ? " selected" : ""}>${t}</option>`).join("")}</select></div><div class="er2" style="grid-template-columns:1fr"><select data-k="lane" aria-label="道筋">${laneOpts(lanesOf(p)[0].id)}</select></div></div>
     <div class="fbar" style="margin:.2rem 0 0"><button class="btn ghost sm" data-msrow>+ 節目の行を足す</button><button class="btn ghost sm" data-msbulk>まとめて書く</button></div>
     <div id="ed-bulk" hidden><div class="f"><label>1行に1つずつ「日付 名前」(例:11/30 IAを一周)。行の終わりに「確定」「仮」と書くと種類になる(書かなければ予定)</label><textarea id="ed-bulk-t" rows="5" placeholder="11/15 過去問2022年を解く 仮&#10;11/30 過去問3年分&#10;1/16 本番 確定"></textarea></div>
       <div class="f"><label>入れる道筋</label><select id="ed-bulk-l">${laneOpts(lanesOf(p)[0].id)}</select></div></div>
@@ -2552,6 +2557,14 @@ document.addEventListener("click", e => {
   if (b.hasAttribute("data-msbulk")) { const el = $("ed-bulk"); el.hidden = !el.hidden; if (!el.hidden) $("ed-bulk-t").focus(); return; }
   if (b.hasAttribute("data-lperrow")) { const bk = b.closest(".lane-e"), rows = bk.querySelectorAll('[data-lper="new"]'), last = rows[rows.length - 1], c = last.cloneNode(true);
     c.querySelectorAll("input").forEach(x => x.value = ""); last.after(c); c.querySelector('[data-k="name"]').focus(); return; }
+  if (b.hasAttribute("data-rowrm")) { const row = b.closest('[data-msr="new"], [data-lper="new"], [data-wk="new"], .pnote'); if (!row) return;
+    const sel = row.dataset.msr ? '[data-msr="new"]' : row.dataset.lper ? '[data-lper="new"]' : row.dataset.wk ? '[data-wk="new"]' : ".pnote";
+    const box = row.dataset.lper ? row.closest(".lane-e") : row.parentElement, same = box.querySelectorAll(":scope > " + sel + (row.dataset.lper ? "" : ""));
+    const n = row.dataset.lper ? box.querySelectorAll('[data-lper="new"]').length : same.length;
+    if (n > 1) row.remove(); else { row.querySelectorAll("input, textarea").forEach(x => { if (x.type === "checkbox") x.checked = false; else x.value = ""; }); row.querySelectorAll("select").forEach(x => { x.selectedIndex = [...x.options].findIndex(o => o.defaultSelected) >= 0 ? [...x.options].findIndex(o => o.defaultSelected) : 0; }); }
+    row.classList.remove("bad"); const e = $("ed-err"); if (e && !document.querySelector(".sheet .bad")) e.hidden = true; return; }
+  if (b.hasAttribute("data-lanerm")) { const bk = b.closest(".lane-e"), id = bk.dataset.lane; bk.remove();
+    document.querySelectorAll(`.sheet select option[value="${id}"]`).forEach(o => { const sl = o.parentElement, was = sl.value === id; o.remove(); if (was) sl.selectedIndex = 0; }); return; }
   if (b.hasAttribute("data-laneadd")) { const id = "L" + uid(), box = $("ed-lanes"); box.insertAdjacentHTML("beforeend", window.__laneBlock({ id, name: "", rank: RANKS.includes(d.laneadd) ? d.laneadd : "副", periods: [] }, true));
     document.querySelectorAll('.sheet [data-k="lane"]').forEach(sel => sel.insertAdjacentHTML("beforeend", `<option value="${id}">新しい道筋</option>`));
     const inp = box.lastElementChild.querySelector('[data-k="lname"]'); inp.focus(); inp.addEventListener("input", () => document.querySelectorAll(`.sheet option[value="${id}"]`).forEach(o => o.textContent = (inp.value || "新しい道筋"))); return; }
