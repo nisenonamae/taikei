@@ -331,6 +331,70 @@ button.closedbar{display:flex;width:100%;text-align:left;border:0;cursor:pointer
 .fplan{display:inline-flex;gap:.4rem;align-items:baseline;margin:0 .6rem .25rem 0}
 .mc .fmemo{position:absolute;right:4px;top:4px;font-size:.55rem;color:var(--wave);font-weight:700}.mc.fs-定着 .fmemo{color:var(--paper)}
 .msi.fmto{border-left:3px solid var(--rule)}
+/* 計算できるメモ */
+.memo-t{width:100%;min-height:9rem;padding:.5rem .6rem;border:1px solid var(--rule);border-radius:4px;background:var(--white);font-size:.95rem;line-height:1.7;font-family:var(--sans)}
+.memo-res{margin:.4rem 0 0;border:1px solid var(--rule);border-radius:4px;background:var(--sheet);padding:.2rem .55rem}
+.mres{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.6rem;align-items:baseline;padding:.3rem 0;border-top:1px dotted var(--rule);font-size:.86rem}
+.mres:first-child{border-top:0}
+.mres .ml{color:var(--sub);font-size:.78rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mres .mv{font-weight:700;font-variant-numeric:tabular-nums;text-align:right}
+.mres.err .mv{color:var(--bad);font-weight:400;font-size:.76rem;white-space:normal}
+/* 技術ツリー */
+@keyframes tkglow{0%,100%{box-shadow:0 0 0 3px var(--shu-soft),0 0 6px var(--shu-soft)}50%{box-shadow:0 0 0 5px var(--shu-soft),0 0 18px var(--shu-soft)}}
+@keyframes tkpulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.6);opacity:.4}}
+@keyframes tkpop{0%{transform:scale(.3);opacity:0}70%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+.tk-stats{display:flex;gap:.4rem;flex-wrap:wrap;margin:.4rem 0 0}
+.tk-stats span{display:flex;align-items:baseline;gap:.3rem;border:1px solid var(--rule);background:var(--sheet);border-radius:999px;padding:.1rem .65rem;font-size:.76rem;color:var(--sub)}
+.tk-stats b{font-size:1rem;color:var(--ink)}.tk-stats .r b{color:var(--shu)}.tk-stats .g b{color:var(--mid)}.tk-stats .w b{color:var(--wave)}
+.tk-cap{display:flex;gap:.4rem;margin:.2rem 0 .6rem}.tk-cap input{flex:1;min-width:0;padding:.5rem .7rem;border:1.5px solid var(--wave);border-radius:999px;background:var(--white)}
+.tk-spot{display:flex;gap:.6rem;overflow-x:auto;scroll-snap-type:x mandatory;padding:.3rem .2rem .7rem;margin:0 -.2rem}
+.tk-lab{flex:0 0 84%;max-width:330px;scroll-snap-align:start;border-radius:10px;padding:.65rem .8rem;background:var(--white);border:2px solid var(--shu);text-align:left;animation:tkglow 2.6s ease-in-out infinite}
+.tk-lab .tg{display:inline-flex;align-items:center;gap:.35rem;font-size:.68rem;font-weight:700;color:var(--shu);letter-spacing:.08em}
+.tk-lab .tg i{width:8px;height:8px;border-radius:50%;background:var(--shu);animation:tkpulse 1.6s ease-in-out infinite}
+.tk-lab .nm{font-size:1rem;font-weight:700;margin:.15rem 0 .05rem;line-height:1.35}.tk-lab .ln{font-size:.72rem;color:var(--sub)}
+.tk-lab .last{font-size:.74rem;margin-top:.35rem;border-top:1px dotted var(--rule);padding-top:.3rem;color:var(--sub);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.tk-lab .last b{color:var(--ink);font-weight:400}
+.tk-tools{display:flex;gap:.4rem;align-items:center;flex-wrap:wrap;margin:0 0 .5rem}.tk-tools input{flex:1;min-width:9rem;padding:.4rem .6rem;border:1px solid var(--rule);border-radius:999px;background:var(--white)}
+.tk-lanebox{border:1px solid var(--rule);background:var(--white);border-radius:8px;margin:.4rem 0;border-left:5px solid var(--c)}
+.tk-lanebox.open{box-shadow:0 2px 10px rgba(0,0,0,.06)}
+.tk-lane{display:block;width:100%;text-align:left;border:0;background:none;padding:.5rem .7rem}
+.tk-lane .arw{margin-left:.4rem;color:var(--sub)}
+.tk-open{padding:0 .5rem .6rem;border-top:1px dashed var(--rule);margin-top:.1rem;padding-top:.5rem}
+.tk-lane .top{display:flex;align-items:baseline;gap:.45rem}.tk-lane .top b{font-size:.95rem}.tk-lane .top .cnt{margin-left:auto;font-size:.72rem;color:var(--sub);white-space:nowrap}.tk-lane .top .cnt em{font-style:normal;color:var(--mid);font-weight:700}
+.tk-lane .fr{display:grid;grid-template-columns:auto 1fr;gap:.05rem .5rem;font-size:.76rem;margin:.25rem 0 .3rem}.tk-lane .fr .k{color:var(--sub);font-size:.66rem}.tk-lane .fr .r{color:var(--shu);font-weight:700}
+.tk-lane .pl{font-size:.66rem;color:var(--sub);margin-top:.25rem}
+.tk-dots{display:flex;flex-wrap:wrap;gap:3px}
+.tk-dot{width:11px;height:11px;border-radius:3px;border:1.5px solid var(--rule);display:inline-block}
+.tk-dot.s-定着{background:var(--ink);border-color:var(--ink)}.tk-dot.s-研究中{background:var(--shu);border-color:var(--shu);box-shadow:0 0 0 2px var(--shu-soft)}.tk-dot.s-ひらめき{border-style:dashed;border-color:var(--wave)}.tk-dot.s-やめた{opacity:.35}
+.tk-more{display:block;margin:.3rem auto 0;border:0;background:none;color:var(--wave);font-size:.82rem;text-decoration:underline}
+.tk-ideas{border:1px solid var(--rule);border-radius:8px;background:var(--white)}
+.tk-idea{display:flex;gap:.5rem;align-items:baseline;width:100%;text-align:left;border:0;border-top:1px dotted var(--rule);background:none;padding:.45rem .7rem;font-size:.86rem}
+.tk-idea:first-child{border-top:0}.tk-idea::before{content:"?";color:var(--wave);font-weight:700}.tk-idea span{flex:1}.tk-idea small{color:var(--sub);font-size:.68rem;white-space:nowrap}.tk-idea.pop{animation:tkpop .5s ease-out}
+.tk-back{border:1px solid var(--rule);background:var(--sheet);border-radius:999px;padding:.2rem .8rem;font-size:.82rem;margin-bottom:.4rem}
+.tk-lhead{border-left:6px solid var(--c);padding:.2rem 0 .2rem .7rem;margin:.2rem 0 .6rem}.tk-lhead h3{margin:0;font-size:1.15rem}.tk-lhead small{color:var(--sub);font-size:.76rem}
+.tk-treebox{background:var(--white);border:1px solid var(--rule);border-radius:10px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding:.4rem 0}
+.tk-tree{position:relative;margin:0 auto}.tk-tree svg{position:absolute;left:0;top:0;pointer-events:none}.tk-tree .lv{position:absolute;left:6px;font-size:.6rem;color:var(--sub);letter-spacing:.08em}
+.tk-node{position:absolute;width:132px;min-height:64px;border-radius:9px;padding:.35rem .5rem;font-size:.74rem;line-height:1.3;text-align:left;display:flex;flex-direction:column;justify-content:space-between;border:2px solid var(--rule);background:var(--sheet)}
+.tk-node .t{font-weight:700;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}.tk-node .m{font-size:.6rem;color:var(--sub);display:flex;justify-content:space-between;margin-top:.2rem}
+.tk-node.s-定着{background:var(--ink);color:var(--paper);border-color:var(--ink)}.tk-node.s-定着 .m{color:var(--paper);opacity:.85}.tk-node.s-定着 .m b{color:#E2B456}
+.tk-node.s-研究中{background:var(--white);border-color:var(--shu);animation:tkglow 2.2s ease-in-out infinite}.tk-node.s-研究中 .m{color:var(--shu);font-weight:700}
+.tk-node.s-ひらめき{border-style:dashed;background:transparent;color:var(--sub)}.tk-node.s-ひらめき .t::before{content:"? ";color:var(--wave)}
+.tk-node.s-やめた{opacity:.4;background:transparent}.tk-node.s-やめた .t{text-decoration:line-through}.tk-node.pop{animation:tkpop .5s ease-out}
+.tk-h{font-size:.9rem;margin:.9rem 0 .2rem}.tk-pre{font-size:.84rem;margin:.2rem 0;padding-left:1.1rem}
+.tk-st{display:inline-block;font-size:.68rem;font-weight:700;border-radius:3px;padding:0 .35rem;line-height:1.6;margin-right:.3rem}
+.tk-st.s-定着{background:var(--ink);color:var(--paper)}.tk-st.s-研究中{background:var(--shu);color:#fff}.tk-st.s-ひらめき{border:1.5px dashed var(--wave);color:var(--wave)}.tk-st.s-やめた{background:var(--rule);color:var(--sub)}
+.tk-notes{margin:.6rem 0 0}.tk-note{border-left:3px solid var(--rule);padding:.15rem 0 .15rem .6rem;margin:.35rem 0;font-size:.86rem;white-space:pre-wrap}.tk-note small{display:block;color:var(--sub);font-size:.68rem}
+.tk-addnote{display:flex;gap:.4rem;margin-top:.4rem}.tk-addnote textarea{flex:1;min-height:3rem;padding:.4rem .5rem;border:1px solid var(--rule);border-radius:4px;background:var(--white)}
+.btn.gold{background:var(--mid);border-color:var(--mid);color:#fff}
+.tk-colors{display:flex;gap:.4rem;flex-wrap:wrap}.tk-color{width:1.8rem;height:1.8rem;border-radius:50%;border:2px solid var(--white);box-shadow:0 0 0 1px var(--rule)}.tk-color.on{box-shadow:0 0 0 3px var(--ink)}
+.tk-mandala .tk-mc{border-left:5px solid var(--c);padding-left:.55rem}.tk-mandala .tk-mc .mt{font-size:.8rem}
+.tk-mcs{display:flex;gap:.35rem;font-size:.64rem;align-items:baseline}.tk-mcs em{font-style:normal;color:var(--mid);font-weight:700}.tk-mcs .r{color:var(--shu);font-weight:700}
+.tk-mandala .tk-mc.res{box-shadow:0 0 0 2px var(--shu-soft);border-color:var(--shu);border-left-color:var(--c)}
+.tk-mandala .tk-mc .tk-dots{margin-top:.15rem}.tk-mandala .tk-mc .tk-dot{width:8px;height:8px}
+.tk-unlock{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:60;pointer-events:none}
+.tk-unlock .box{background:var(--ink);color:var(--paper);border-radius:14px;padding:1rem 1.4rem;text-align:center;animation:tkpop .6s ease-out;box-shadow:0 0 0 4px #E2B456,0 10px 40px rgba(0,0,0,.35)}
+.tk-unlock .box b{display:block;font-size:.8rem;letter-spacing:.3em;color:#E2B456}.tk-unlock .box span{display:block;font-size:1.1rem;font-weight:700;margin-top:.2rem}
+.tk-spark{position:fixed;left:50%;top:50%;width:8px;height:8px;border-radius:50%;background:#E2B456;z-index:61;pointer-events:none;animation:tkfly .9s ease-out forwards}
+@keyframes tkfly{to{transform:translate(var(--dx),var(--dy)) scale(.2);opacity:0}}
 .addrow{display:block;margin:.2rem 0 .1rem;font-size:.76rem}
 details.eds{border:1px solid var(--rule);border-radius:6px;margin:.5rem 0;background:var(--sheet)}
 details.eds>summary{cursor:pointer;padding:.55rem .7rem;font-weight:700;font-size:.92rem;list-style:none;display:flex;justify-content:space-between;align-items:baseline;gap:.5rem}
@@ -648,12 +712,13 @@ label.mini{display:flex;flex-direction:column;gap:.1rem;font-size:.62rem;color:v
   <button data-v="plan">計画</button>
   <button data-v="rel">関係</button>
   <button data-v="field">分野</button>
+  <button data-v="tech">技術</button>
   <button data-v="tests">テスト</button>
 </nav>
 <div id="sheet-root"></div>
 <script>
 /* ───────── 大計:データ ───────── */
-const APP_VERSION = "2026-11-01 r9";
+const APP_VERSION = "2026-11-01 r11";
 const SHO_APP = "https://nisenonamae.github.io/sho/";
 const GRADES = ["最重要", "重要", "通常", "軽易"];
 const COUNCIL = { 最重要: "最高評議会", 重要: "常任評議会" };
@@ -675,17 +740,17 @@ let TODAY = localDay();
 
 /* みんなで同期するデータ */
 let plans = [], tests = [], fields = [], lessons = [], reviews = [], proposals = [];
-let capacity = { base: 40, ex: [] }, headGoals = [], weekClosed = {}, dailyChecks = {}, weeklyReviews = {}, since = "";   // since:大計を使い始めた日(それより前の確認・見直しは「抜け」に数えない)   // weeklyReviews:「週の月曜|計画」→ { r, note }   // dailyChecks:「日付|計画」→ 順調/少し遅れ/大きくずれ
+let capacity = { base: 40, ex: [] }, headGoals = [], weekClosed = {}, dailyChecks = {}, weeklyReviews = {}, since = "", techLanes = [], techs = [], ideas = [];   // 技術ツリー:系統・技術・ひらめき   // since:大計を使い始めた日(それより前の確認・見直しは「抜け」に数えない)   // weeklyReviews:「週の月曜|計画」→ { r, note }   // dailyChecks:「日付|計画」→ 順調/少し遅れ/大きくずれ
 /* この端末だけの設定 */
 let recent = [], seCfg = { on: true, vol: 0.6, ui: true, uiVol: 0.45 }, notifyCfg = { topic: "", test: false, ms: false, week: false, risk: false }, sent = {};
 
 const KEY = "taikei-data", LOCAL_KEY = "taikei-local";
 const clone = x => JSON.parse(JSON.stringify(x));
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-function blank(){ return { version: 1, plans: [], tests: [], fields: [], lessons: [], reviews: [], proposals: [], capacity: { base: 40, ex: [] }, headGoals: [], weekClosed: {}, dailyChecks: {}, weeklyReviews: {}, since: "" }; }
-function dataOut(){ return { version: 1, plans, tests, fields, lessons, reviews, proposals, capacity, headGoals, weekClosed, dailyChecks, weeklyReviews, since }; }
+function blank(){ return { version: 1, plans: [], tests: [], fields: [], lessons: [], reviews: [], proposals: [], capacity: { base: 40, ex: [] }, headGoals: [], weekClosed: {}, dailyChecks: {}, weeklyReviews: {}, since: "", techLanes: [], techs: [], ideas: [] }; }
+function dataOut(){ return { version: 1, plans, tests, fields, lessons, reviews, proposals, capacity, headGoals, weekClosed, dailyChecks, weeklyReviews, since, techLanes, techs, ideas }; }
 function dataIn(d){ d = Object.assign(blank(), d || {});
-  plans = d.plans; tests = d.tests; fields = d.fields; lessons = d.lessons; reviews = d.reviews; proposals = d.proposals; capacity = d.capacity; headGoals = d.headGoals; weekClosed = d.weekClosed; dailyChecks = d.dailyChecks || {}; weeklyReviews = d.weeklyReviews || {}; since = d.since || "";
+  plans = d.plans; tests = d.tests; fields = d.fields; lessons = d.lessons; reviews = d.reviews; proposals = d.proposals; capacity = d.capacity; headGoals = d.headGoals; weekClosed = d.weekClosed; dailyChecks = d.dailyChecks || {}; weeklyReviews = d.weeklyReviews || {}; since = d.since || ""; techLanes = d.techLanes || []; techs = d.techs || []; ideas = d.ideas || [];
   repair(); }
 /* 古いデータや欠けたところを直して、どの画面でも落ちないようにする */
 function repair(){
@@ -737,7 +802,7 @@ function ghErr(r){
   if (r.status >= 500) return "GitHubが不調(しばらくしてもう一度)";
   return "GitHubとの通信に失敗した(" + r.status + ")";
 }
-const MKEYS = { plans: x => x.id, tests: x => x.id, fields: x => x.id, lessons: x => x.id, reviews: x => x.w, proposals: x => x.id, headGoals: x => x.p + ":" + x.m };
+const MKEYS = { plans: x => x.id, tests: x => x.id, fields: x => x.id, lessons: x => x.id, reviews: x => x.w, proposals: x => x.id, headGoals: x => x.p + ":" + x.m, techLanes: x => x.id, techs: x => x.id, ideas: x => x.id };
 function mergeArr(b, l, r, key){
   const B = new Map((b || []).map(x => [key(x), x])), L = new Map((l || []).map(x => [key(x), x])), out = new Map((r || []).map(x => [key(x), x]));
   B.forEach((v, k) => { if (!L.has(k)) out.delete(k); });
@@ -1124,7 +1189,7 @@ function viewTimeline(){
 <script>
 /* ───────── 計画(1本を深く扱う作業場) ───────── */
 let roadMode = "side", roadLane = {}, laneColOpen = {}, planId = "", ptab = "図", reqPath = [], reqView = "mandala", openMs = {}, showRisk = false, showComp = false, cmpVer = -1;
-const PTABS = ["図", "分解", "道のり", "探り", "テスト", "もしも", "歩み", "分野"];
+const PTABS = ["図", "メモ", "分解", "道のり", "探り", "技術", "テスト", "もしも", "歩み", "分野"];
 function emptyPlans(){ return `<div class="empty">まだ計画がない。<div class="fbar"><button class="btn sm" data-addplan>+ 計画を足す</button><button class="btn ghost sm" data-v="importv">行軍表から移す・まとめて入れる</button></div></div>`; }
 function viewPlan(){
   if (!live().length && !plans.length) return emptyPlans();
@@ -1134,7 +1199,7 @@ function viewPlan(){
     <div class="k" style="margin-top:.3rem">なぜ</div><div class="why">${esc(p.why)}</div><div class="k" style="margin-top:.25rem">到達点</div><div class="goal">${esc(p.goal)} ${isFixed(p, "goal") ? fixTag(isFixed(p, "goal")) : ""}</div>
     <div class="acts"><button class="btn ghost sm" data-planops>操作 ▾</button></div></div>${p.status ? `<div class="closedbar">この計画は ${md(p.closedAt)} に${esc(p.status)}として終えた。${esc(p.summary || "")}</div>` : ""}`;
   const tabs = `<div class="ptabs" role="group" aria-label="計画の中">${PTABS.map(t => `<button data-ptab="${t}" aria-pressed="${ptab === t}">${t}${t === "もしも" && p.ifs.length ? " " + p.ifs.length : ""}${t === "分野" && (p.fields || []).length ? " " + p.fields.length : ""}${t === "テスト" && testsOf(p).length ? " " + testsOf(p).length : ""}${t === "探り" && probesOf(p).filter(pOpen).length ? " " + probesOf(p).filter(pOpen).length : ""}</button>`).join("")}</div>`;
-  const body = { 図: tabFigure, 分解: tabReq, 道のり: tabRoad, 探り: tabProbe, テスト: tabTests, もしも: tabIf, 歩み: tabWalk, 分野: tabPlanField }[ptab](p);
+  const body = { 図: tabFigure, 分解: tabReq, 道のり: tabRoad, 探り: tabProbe, メモ: tabMemo, 技術: tabPlanTech, テスト: tabTests, もしも: tabIf, 歩み: tabWalk, 分野: tabPlanField }[ptab](p);
   const anc = ancestors(p), crumb = anc.length ? `<div class="pcrumb">${anc.map(a => `<button data-goplan="${a.q.id}" data-ptab="道のり">${esc(a.q.name)}</button> ›`).join(" ")} <b style="color:var(--ink)">${esc(p.name)}</b><span>(${esc(anc[anc.length - 1].q.name)}の節目)</span></div>` : "";
   const tcr = p.status ? null : chkRec(TODAY, p.id), tline = drafting(p) ? `<div class="tline"><span class="phase">作成中</span><button class="tchip" data-gostart>形ができたら、いちばん下で始める ↓</button></div>` : p.status ? "" : `<div class="tline"><span class="note">今日の確認:</span>${tcr ? `<span class="rs r-${tcr.r}">${tcr.r}</span>` : `<button class="tchip" data-due="today">まだ。見たらいちばん下で確認 ↓</button>`}</div>`;
   return crumb + pickBtn(p, "plan") + head + tline + draftBanner(p) + meters(p) + (showComp ? compCard(p) : "") + tabs + body + checkPanel(p);
@@ -2061,6 +2126,236 @@ document.addEventListener("click", e => {
 });
 </script>
 <script>
+/* ───────── 計算できるメモ ─────────
+   「3000÷365」「3000÷365=」のような行に答えを出す。「単語 = 3000」で名前を付けると、あとの行で使える。
+   期間の日数・期間の週数・残りの日数・残りの週数 は最初から使える */
+const MEMO_WORDS = p => ({ 期間の日数: days(p.start, p.end) + 1, 期間の週数: Math.round((days(p.start, p.end) + 1) / 7 * 10) / 10, 残りの日数: Math.max(0, days(TODAY, p.end)), 残りの週数: Math.round(Math.max(0, days(TODAY, p.end)) / 7 * 10) / 10 });
+const zen2han = s => s.replace(/[０-９．，]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0)).replace(/[（]/g, "(").replace(/[）]/g, ")").replace(/[＋]/g, "+").replace(/[ー−－]/g, "-").replace(/[＊]/g, "*").replace(/[／]/g, "/").replace(/[＝]/g, "=").replace(/[％]/g, "%");
+/* 式を読む(eval は使わない):足し算・引き算・掛け算・割り算・かっこ・べき・名前 */
+function calcExpr(src, vars){
+  const s = zen2han(src).replace(/×/g, "*").replace(/÷/g, "/").replace(/,/g, "");
+  const toks = []; let i = 0;
+  while (i < s.length) { const c = s[i];
+    if (/\s/.test(c)) { i++; continue; }
+    if (/[0-9.]/.test(c)) { let j = i; while (j < s.length && /[0-9.]/.test(s[j])) j++; const v = parseFloat(s.slice(i, j)); if (isNaN(v)) throw 0; toks.push(["n", v]); i = j; continue; }
+    if ("+-*/^()%".includes(c)) { toks.push(["o", c]); i++; continue; }
+    let j = i; while (j < s.length && !/[\s0-9.+\-*/^()%=]/.test(s[j])) j++;
+    if (j === i) throw 0; const name = s.slice(i, j); if (!(name in vars)) throw "name:" + name; toks.push(["n", vars[name], name]); i = j; }
+  let k = 0, used = 0;
+  const peek = () => toks[k], take = () => toks[k++];
+  const prim = () => { const t = take(); if (!t) throw 0;
+    if (t[0] === "n") { if (t[2]) used++; let v = t[1]; if (peek() && peek()[1] === "%") { take(); v = v / 100; } return v; }
+    if (t[1] === "(") { const v = add(); const c = take(); if (!c || c[1] !== ")") throw 0; return v; }
+    if (t[1] === "-") return -prim(); if (t[1] === "+") return prim(); throw 0; };
+  const pow = () => { let v = prim(); while (peek() && peek()[1] === "^") { take(); v = Math.pow(v, prim()); } return v; };
+  const mul = () => { let v = pow(); while (peek() && (peek()[1] === "*" || peek()[1] === "/")) { const o = take()[1], r = pow(); v = o === "*" ? v * r : v / r; } return v; };
+  const add = () => { let v = mul(); while (peek() && (peek()[1] === "+" || peek()[1] === "-")) { const o = take()[1], r = mul(); v = o === "+" ? v + r : v - r; } return v; };
+  const v = add(); if (k !== toks.length) throw 0;
+  const ops = toks.filter(t => t[0] === "o" && "+-*/^%".includes(t[1])).length;
+  return { v, ops, used };
+}
+const fmtCalc = v => { if (!isFinite(v)) return "計算できない(0で割っている)"; const r = Math.round(v * 100) / 100; const t = r.toLocaleString("ja-JP", { maximumFractionDigits: 2 }); return Number.isInteger(r) ? t : t + "(切り上げ " + Math.ceil(v).toLocaleString("ja-JP") + "・切り捨て " + Math.floor(v).toLocaleString("ja-JP") + ")"; };
+/* メモの各行を計算する */
+function calcMemo(text, p){
+  const vars = Object.assign({}, MEMO_WORDS(p)), out = [];
+  String(text || "").split("\n").forEach((raw, i) => { const line = raw.trim(); if (!line) return;
+    let body = line.includes("：") || line.includes(":") ? line.split(/[:：]/).pop().trim() : line;
+    const def = /^([^\s0-9０-９=＝+\-*/×÷()（）^%]+)\s*[=＝]\s*(.+)$/.exec(body);
+    try {
+      if (def && !/[=＝]\s*$/.test(body)) { const r = calcExpr(def[2], vars); vars[def[1]] = r.v; out.push({ i, line, name: def[1], v: r.v }); return; }
+      body = body.replace(/[=＝]\s*[?？]?\s*$/, "").trim(); if (!body) return;
+      const r = calcExpr(body, vars); if (r.ops || r.used) out.push({ i, line, v: r.v });
+    } catch (e) { if (typeof e === "string" && e.startsWith("name:") && /[×÷*/+^＋＊／]|\s-\s/.test(body)) out.push({ i, line, err: "「" + e.slice(5) + "」が分からない(先に「" + e.slice(5) + " = 数」と書く)" }); }
+  });
+  return out;
+}
+function memoResults(p, text){
+  const rs = calcMemo(text, p);
+  return rs.length ? rs.map(r => `<div class="mres${r.err ? " err" : ""}"><span class="ml">${esc(r.line.length > 28 ? r.line.slice(0, 28) + "…" : r.line)}</span><span class="mv">${r.err ? esc(r.err) : (r.name ? esc(r.name) + " = " : "= ") + esc(fmtCalc(r.v))}</span></div>`).join("") : '<p class="note" style="margin:.2rem 0">計算できる行があると、ここに答えが出る。</p>';
+}
+function memoBox(p, id){
+  const w = MEMO_WORDS(p);
+  return `<textarea id="${id}" class="memo-t" data-live rows="8" placeholder="例:&#10;単語 = 3000&#10;単語 ÷ 365&#10;単語 ÷ 残りの週数&#10;1日あたり:3000÷365=">${esc(p.memo || "")}</textarea>
+    <div class="memo-res" id="${id}-res">${memoResults(p, p.memo || "")}</div>
+    <p class="note" style="margin:.3rem 0 0">使える言葉:${Object.entries(w).map(([k, v]) => `<b>${k}</b>(${v})`).join("・")}。「名前 = 式」で名前を付けると、あとの行で使える。書いたそばから保存される。</p>`;
+}
+function tabMemo(p){ return `<div class="card"><h4>メモ<small>計算もできる</small></h4>${memoBox(p, "memo-t")}</div>`; }
+/* 書いたそばから保存し、答えも書き直す */
+let memoTimer = null;
+document.addEventListener("input", e => { const t = e.target; if (!t.matches || !t.matches("textarea.memo-t")) return; const p = P(planId); if (!p) return;
+  p.memo = t.value; const box = document.getElementById(t.id + "-res"); if (box) box.innerHTML = memoResults(p, t.value);
+  clearTimeout(memoTimer); memoTimer = setTimeout(persist, 600); });
+</script>
+<script>
+/* ───────── 技術ツリー:計画を進めるやり方を、系統ごとに育てる ─────────
+   techLanes:系統 { id, name, color, plans: [計画id] }
+   techs:技術 { id, lane, parent, pre: [別系統の土台], name, st: ひらめき/研究中/定着/やめた, now, trouble, want, notes: [{ d, t }], started, at, created }
+   ideas:系統の決まっていないひらめき { id, t, d } */
+const TK_COLORS = ["#2F4F8A", "#B5432F", "#B8862B", "#3D7A55", "#7B4F9A", "#1F7A8C", "#A0522D", "#6E665C"];
+const TK_ST = ["ひらめき", "研究中", "定着", "やめた"];
+let techView = { lane: "", q: "", sort: "動き", allLanes: false, allIdeas: false, ideaQ: "" }, techOpen = {}, tkPop = null;   // techOpen:その場で開いている系統
+const TL = id => techLanes.find(l => l.id === id);
+const TK = id => techs.find(t => t.id === id);
+function tkLv(t, seen){ seen = seen || new Set(); if (!t.parent || seen.has(t.id)) return 1; seen.add(t.id); const p = TK(t.parent); return p && p.lane === t.lane ? tkLv(p, seen) + 1 : 1; }
+const laneTk = lid => techs.filter(t => t.lane === lid).map(t => Object.assign(t, { _lv: tkLv(t) })).sort((a, b) => a._lv - b._lv || (a.created || "").localeCompare(b.created || ""));
+const tkCount = (xs, s) => xs.filter(t => t.st === s).length;
+const tkDots = xs => `<span class="tk-dots">${xs.map(t => `<i class="tk-dot s-${t.st}" title="${esc(t.name)}"></i>`).join("")}</span>`;
+/* 系統の先端:いちばん深い研究中か定着(ひらめきを置くときの親) */
+function tkFront(lid){ const xs = laneTk(lid).filter(t => t.st === "研究中" || t.st === "定着"); return xs.sort((a, b) => b._lv - a._lv)[0]; }
+/* 系統の1行:押すと、その行のすぐ下にツリーが開く(画面は切り替えない) */
+function laneRow(l){
+  const xs = laneTk(l.id), stars = xs.filter(t => t.st === "定着").sort((a, b) => b._lv - a._lv), res = xs.filter(t => t.st === "研究中"), nx = xs.filter(t => t.st === "ひらめき"), open = !!techOpen[l.id];
+  return `<div class="tk-lanebox${open ? " open" : ""}" id="tkl-${l.id}" style="--c:${l.color}"><button class="tk-lane" data-tktoggle="${l.id}" aria-expanded="${open}"><div class="top"><b>${esc(l.name)}</b><span class="cnt"><em>★${stars.length}</em>・全${xs.length}<span class="arw">${open ? "▴" : "▾"}</span></span></div>
+    ${open ? "" : `<div class="fr">${stars[0] ? `<span class="k">最新の★</span><span>Lv.${stars[0]._lv} ${esc(stars[0].name)}</span>` : ""}${res.length ? `<span class="k">研究中</span><span class="r">${res.map(t => esc(t.name)).join("、")}</span>` : ""}${nx.length ? `<span class="k">次の候補</span><span>${nx.length}件(${esc(nx[0].name)}${nx.length > 1 ? " ほか" : ""})</span>` : ""}${!xs.length ? '<span class="k">まだ</span><span>技術がない。ひらめきから足す</span>' : ""}</div>`}
+    ${tkDots(xs)}${(l.plans || []).length ? `<div class="pl">${l.plans.map(pid => P(pid) ? esc(P(pid).name) : "").filter(Boolean).join("・")}</div>` : ""}</button>
+    ${open ? `<div class="tk-open">${laneTree(l)}</div>` : ""}</div>`;
+}
+/* 研究中のカード */
+function labCards(xs){ return xs.length ? `<div class="tk-spot">${xs.map(t => { const l = TL(t.lane), last = (t.notes || [])[t.notes.length - 1];
+  return `<button class="tk-lab" data-tk="${t.id}" style="--c:${l ? l.color : "var(--shu)"}"><span class="tg"><i></i>研究中・Lv.${tkLv(t)}</span><div class="nm">${esc(t.name)}</div><div class="ln">${l ? esc(l.name) : ""}${t.started ? "・" + md(t.started) + "から" : ""}</div>
+    <div class="last">${last ? `最後のノート(${md(last.d)}):<b>${esc(last.t)}</b>` : t.want ? `めざす:<b>${esc(t.want)}</b>` : "まだノートなし"}</div></button>`; }).join("")}</div>` : '<p class="note">研究中の技術はない。系統を開いて、技術を「研究を始める」にする。</p>'; }
+/* 系統の中のツリー(上から下へ、枝分かれ) */
+function laneTree(l){
+  const xs = laneTk(l.id), lvs = [...new Set(xs.map(t => t._lv))].sort((a, b) => a - b);
+  const NW = 132, NH = 70, GX = 14, GY = 34, PADL = 38;
+  const rows = lvs.map(lv => xs.filter(t => t._lv === lv)), maxN = Math.max(1, ...rows.map(r => r.length)), W = Math.max(320, PADL + maxN * (NW + GX) + 8), H = Math.max(80, rows.length * (NH + GY) + 8);
+  const pos = {}; rows.forEach((r, i) => { const rw = r.length * NW + (r.length - 1) * GX, x0 = PADL + (W - PADL - rw) / 2; r.forEach((t, j) => pos[t.id] = { x: x0 + j * (NW + GX), y: 6 + i * (NH + GY) }); });
+  const lines = xs.filter(t => t.parent && pos[t.parent]).map(t => { const a = pos[t.parent], b = pos[t.id], x1 = a.x + NW / 2, y1 = a.y + NH, x2 = b.x + NW / 2, y2 = b.y;
+    return `<path d="M${x1},${y1} C${x1},${y1 + GY / 2} ${x2},${y2 - GY / 2} ${x2},${y2}" fill="none" stroke="${t.st === "定着" ? "var(--ink)" : "var(--rule)"}" stroke-width="3"${t.st === "ひらめき" ? ' stroke-dasharray="5 4"' : ""}/>`; }).join("");
+  const pre = xs.flatMap(t => (t.pre || []).map(TK).filter(Boolean).map(p => `<li>「${esc(t.name)}」は、${TL(p.lane) ? esc(TL(p.lane).name) : ""}の「${esc(p.name)}」が土台</li>`)).join("");
+  return `<div class="note" style="margin:0 0 .35rem">★${tkCount(xs, "定着")}・研究中 ${tkCount(xs, "研究中")}・ひらめき ${tkCount(xs, "ひらめき")}・やめた ${tkCount(xs, "やめた")}</div>
+    ${xs.length ? `<div class="tk-treebox"><div class="tk-tree" style="width:${W}px;height:${H}px"><svg width="${W}" height="${H}">${lines}</svg>
+      ${rows.map((r, i) => `<span class="lv" style="top:${6 + i * (NH + GY) + NH / 2 - 8}px">Lv.${lvs[i]}</span>`).join("")}
+      ${xs.map(t => `<button class="tk-node s-${t.st}${tkPop === t.id ? " pop" : ""}" data-tk="${t.id}" style="left:${pos[t.id].x}px;top:${pos[t.id].y}px"><span class="t">${esc(t.name)}</span><span class="m"><span>${(t.notes || []).length ? "ノート " + t.notes.length : ""}</span><b>${t.st === "定着" ? "★" : t.st === "研究中" ? "研究中" : ""}</b></span></button>`).join("")}
+    </div></div><p class="note" style="margin:.3rem 0 0">上から下へ育つ。同じ段に並ぶのは、別のやり方の候補(枝分かれ)。</p>` : '<p class="note">まだ技術がない。</p>'}
+    ${pre ? `<h3 class="tk-h">ほかの系統とのつながり</h3><ul class="tk-pre">${pre}</ul>` : ""}
+    <div class="fbar" style="margin:.6rem 0 0"><button class="btn sm" data-tkadd="${l.id}">+ 技術を足す</button><button class="btn ghost sm" data-tklaneedit="${l.id}">系統を直す</button><button class="linkx" data-tktoggle="${l.id}" style="margin-left:auto">畳む ▴</button></div>`;
+}
+/* 下のタブ「技術」:全体 */
+function viewTech(){
+  const v = techView;
+  const research = techs.filter(t => t.st === "研究中");
+  const lanes = techLanes.filter(l => !v.q || l.name.includes(v.q) || techs.some(t => t.lane === l.id && t.name.includes(v.q)))
+    .map(l => ({ l, xs: laneTk(l.id) })).sort((a, b) => v.sort === "★" ? tkCount(b.xs, "定着") - tkCount(a.xs, "定着") : (tkCount(b.xs, "研究中") > 0) - (tkCount(a.xs, "研究中") > 0));
+  const shown = v.allLanes || v.q ? lanes : lanes.slice(0, 6);
+  const fi = ideas.filter(x => !v.ideaQ || x.t.includes(v.ideaQ)), fiShown = v.ideaQ || v.allIdeas ? fi : fi.slice(0, 6);
+  return `<div class="phead"><div class="k">技術ツリー</div><div class="goal">計画を進めるやり方を育てる</div>
+      <div class="tk-stats"><span class="r"><b>${tkCount(techs, "研究中")}</b>研究中</span><span class="g"><b>${tkCount(techs, "定着")}</b>定着した技術</span><span class="w"><b>${tkCount(techs, "ひらめき") + ideas.length}</b>ひらめき</span><span><b>${techLanes.length}</b>系統</span></div></div>
+    <div class="tk-cap"><input id="tk-cap" placeholder="ひらめきを書く(1行でいい。系統はあとで)"><button class="btn sm" data-tkcap>書く</button></div>
+    <section class="sec"><h3>いま研究中<small>横にめくる。研究中のものだけ</small></h3>${labCards(research)}</section>
+    <section class="sec"><h3>系統<small>1系統1行。押すと、その下にツリーが開く</small></h3>
+      <div class="tk-tools"><input id="tk-q" placeholder="系統や技術を探す" value="${esc(v.q)}"><span class="seg"><button data-tksort="動き" aria-pressed="${v.sort === "動き"}">研究中が上</button><button data-tksort="★" aria-pressed="${v.sort === "★"}">★が多い順</button></span></div>
+      ${shown.map(({ l }) => laneRow(l)).join("") || '<p class="note">まだ系統がない。下の「+ 系統を作る」か、ひらめきを系統に入れるところから。</p>'}
+      ${!v.q && lanes.length > 6 ? `<button class="tk-more" data-tkall="lanes">${v.allLanes ? "6系統だけにする" : "ほかの " + (lanes.length - 6) + " 系統も見る"}</button>` : ""}
+      <div class="fbar" style="margin:.4rem 0 0"><button class="btn ghost sm" data-tklanenew>+ 系統を作る</button></div></section>
+    <section class="sec"><h3>ひらめき帳<small>系統の決まっていないもの。押すと系統に入れられる</small></h3>
+      ${ideas.length > 6 ? `<div class="tk-tools"><input id="tk-iq" placeholder="ひらめきを探す" value="${esc(v.ideaQ)}"></div>` : ""}
+      <div class="tk-ideas">${fiShown.map(x => `<button class="tk-idea${tkPop === x.id ? " pop" : ""}" data-tkidea="${x.id}"><span>${esc(x.t)}</span><small>${md(x.d)}</small></button>`).join("") || '<p class="note" style="padding:.5rem .7rem;margin:0">なし</p>'}</div>
+      ${!v.ideaQ && fi.length > 6 ? `<button class="tk-more" data-tkall="ideas">${v.allIdeas ? "6件だけにする" : "ほかの " + (fi.length - 6) + " 件も見る"}</button>` : ""}</section>`;
+}
+/* 計画の中の「技術」:その計画で使う系統の一覧(数の上限なし) */
+function tabPlanTech(p){
+  const ls = techLanes.filter(l => (l.plans || []).includes(p.id)), research = techs.filter(t => t.st === "研究中" && ls.some(l => l.id === t.lane));
+  return `<p class="note" style="margin-top:0">この計画を進めるやり方の系統。押すと、その下にツリーが開く。系統はほかの計画とも共有できる。</p>
+    ${research.length ? `<section class="sec"><h3>この計画で研究中<small>${research.length}件</small></h3>${labCards(research)}</section>` : ""}
+    <section class="sec"><h3>系統<small>${ls.length}つ</small></h3>${ls.map(laneRow).join("") || '<p class="note">まだ系統がない。</p>'}
+      <div class="fbar" style="margin:.4rem 0 0"><button class="btn ghost sm" data-tkplanadd="${p.id}">+ 系統をつなぐ・作る</button><button class="btn ghost sm" data-v="tech">技術ツリー全体へ</button></div></section>`;
+}
+/* 技術を開く */
+function openTk(t){
+  const l = TL(t.lane), line = []; { let c = t, seen = new Set(); while (c && !seen.has(c.id)) { seen.add(c.id); line.unshift(c); c = c.parent ? TK(c.parent) : null; } }
+  sheet(`<span class="tk-st s-${t.st}">${t.st}</span><span class="note">${l ? esc(l.name) : ""}・Lv.${tkLv(t)}</span><h3 style="margin:.2rem 0">${esc(t.name)}</h3>
+    ${line.length > 1 ? `<div class="note" style="margin:0 0 .4rem">${line.map(x => x === t ? `<b style="color:var(--ink)">${esc(x.name)}</b>` : esc(x.name)).join(" → ")}</div>` : ""}
+    <div class="pkvs">${kv("今のやり方", esc(t.now))}${kv("困っていること", esc(t.trouble))}${kv("作りたいもの", esc(t.want))}${kv("土台の技術", (t.pre || []).map(TK).filter(Boolean).map(x => esc(x.name)).join("、"))}${t.started ? kv("研究", md(t.started) + "から") : ""}${t.at ? kv("定着した日", md(t.at)) : ""}</div>
+    <div class="tk-notes"><b>研究ノート</b><span class="note">(試したこと・分かったことを、何回でも)</span>
+      ${(t.notes || []).map((n, i) => `<div class="tk-note"><small>${md(n.d)} <button class="linkx" data-tknotedel="${t.id}|${i}">消す</button></small>${esc(n.t)}</div>`).join("") || '<p class="note" style="margin:.3rem 0">まだない</p>'}
+      <div class="tk-addnote"><textarea id="tk-note" placeholder="例:例文の候補を3つ出して選ぶ形にしたら速い"></textarea><button class="btn sm" data-tknote="${t.id}">書く</button></div></div>
+    <div class="fbar" style="margin:.7rem 0 0">${t.st === "ひらめき" ? `<button class="btn shu" data-tkset="${t.id}|研究中">研究を始める</button>` : ""}${t.st === "研究中" ? `<button class="btn gold" data-tkset="${t.id}|定着">定着した!</button>` : ""}
+      ${t.st !== "やめた" ? `<button class="btn ghost sm" data-tkchild="${t.id}">ここから伸ばす</button>` : ""}<button class="btn ghost sm" data-tkedit="${t.id}">直す</button></div>`);
+}
+/* 技術を足す・直す */
+function openTkEdit(t, laneId, parentId){
+  const v = t || { lane: laneId, parent: parentId || "", st: "ひらめき", pre: [] }, lid = v.lane, xs = laneTk(lid).filter(x => !t || x.id !== t.id);
+  const others = techs.filter(x => x.lane !== lid);
+  sheet(`<h3>${t ? "技術を直す" : "技術を足す"}</h3>
+    <div class="f"><label>名前</label><input id="tke-n" value="${esc(v.name || "")}" placeholder="例:例文つきカードを一瞬で作る道具"></div>
+    <div class="row2"><div class="f"><label>系統</label><select id="tke-l">${techLanes.map(l => `<option value="${l.id}"${l.id === lid ? " selected" : ""}>${esc(l.name)}</option>`).join("")}</select></div>
+      <div class="f"><label>どの技術から伸びたか</label><select id="tke-p"><option value="">(系統の最初)</option>${xs.map(x => `<option value="${x.id}"${x.id === v.parent ? " selected" : ""}>Lv.${x._lv} ${esc(x.name)}</option>`).join("")}</select></div>
+      <div class="f"><label>状態</label><select id="tke-s">${TK_ST.map(s => `<option${s === v.st ? " selected" : ""}>${s}</option>`).join("")}</select></div></div>
+    <div class="f"><label>今のやり方</label><textarea id="tke-now" rows="2">${esc(v.now || "")}</textarea></div>
+    <div class="f"><label>困っていること</label><textarea id="tke-tr" rows="2">${esc(v.trouble || "")}</textarea></div>
+    <div class="f"><label>作りたいもの・変えたいこと</label><textarea id="tke-w" rows="2">${esc(v.want || "")}</textarea></div>
+    ${others.length ? `<div class="f"><label>土台になっている、ほかの系統の技術(あれば)</label><div class="pmlist" style="max-height:9rem;overflow:auto">${others.map(x => `<label class="chk"><input type="checkbox" data-tkpre="${x.id}"${(v.pre || []).includes(x.id) ? " checked" : ""}> ${TL(x.lane) ? esc(TL(x.lane).name) + " › " : ""}${esc(x.name)}</label>`).join("")}</div></div>` : ""}
+    <div class="fbar" style="margin:.6rem 0 0"><button class="btn" data-tkesave="${t ? t.id : ""}">${t ? "直す" : "足す"}</button>${t ? `<button class="linkx" data-tkdel="${t.id}" style="margin-left:auto;color:var(--bad)">この技術を消す</button>` : ""}</div>`);
+}
+function openLaneEdit(l, planId){
+  const v = l || { name: "", color: TK_COLORS[techLanes.length % TK_COLORS.length], plans: planId ? [planId] : [] };
+  sheet(`<h3>${l ? "系統を直す" : "系統を作る"}</h3>
+    <div class="f"><label>名前</label><input id="tkl-n" value="${esc(v.name)}" placeholder="例:英単語の覚え方"></div>
+    <div class="f"><label>色</label><div class="tk-colors">${TK_COLORS.map(c => `<button type="button" class="tk-color${c === v.color ? " on" : ""}" data-tkcolor="${c}" style="background:${c}" aria-label="色"></button>`).join("")}</div><input type="hidden" id="tkl-c" value="${v.color}"></div>
+    <div class="f"><label>使う計画</label><div class="pmlist" style="max-height:10rem;overflow:auto">${plans.filter(p => !p.status).map(p => `<label class="chk"><input type="checkbox" data-tklp="${p.id}"${(v.plans || []).includes(p.id) ? " checked" : ""}> ${esc(p.name)}</label>`).join("")}</div></div>
+    <div class="fbar" style="margin:.6rem 0 0"><button class="btn" data-tklsave="${l ? l.id : ""}">${l ? "直す" : "作る"}</button>${l ? `<button class="linkx" data-tkldel="${l.id}" style="margin-left:auto;color:var(--bad)">この系統を消す</button>` : ""}</div>`);
+}
+function tkUnlockFx(name){ const u = document.createElement("div"); u.className = "tk-unlock"; u.innerHTML = `<div class="box"><b>技術を解放</b><span>${esc(name)}</span></div>`; document.body.appendChild(u); setTimeout(() => u.remove(), 1600);
+  for (let i = 0; i < 18; i++) { const s = document.createElement("div"); s.className = "tk-spark"; const a = Math.random() * Math.PI * 2, r = 80 + Math.random() * 120; s.style.setProperty("--dx", Math.cos(a) * r + "px"); s.style.setProperty("--dy", Math.sin(a) * r + "px"); document.body.appendChild(s); setTimeout(() => s.remove(), 950); } }
+/* 操作 */
+document.addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return; const d = b.dataset;
+  if (d.tktoggle) { const lid = d.tktoggle, wasOpen = !!techOpen[lid], box = $("tkl-" + lid), fromBottom = !!b.closest(".tk-open");
+    /* 画面が動かないように:見出しで押したら見出しの位置、ツリーの下の「畳む」で押したらその指の位置を保つ */
+    const anchor = box ? (fromBottom ? b.getBoundingClientRect().bottom : box.getBoundingClientRect().top) : null;
+    if (wasOpen) delete techOpen[lid]; else techOpen[lid] = true; render();
+    const nb = $("tkl-" + lid); if (nb && anchor != null) { const r = nb.getBoundingClientRect(), now = fromBottom ? r.bottom : r.top, d2 = now - anchor; if (Math.abs(d2) > 1) window.scrollBy(0, d2); }
+    return; }
+  if (d.tksort) { techView.sort = d.tksort; render(); return; }
+  if (d.tkall) { if (d.tkall === "lanes") techView.allLanes = !techView.allLanes; else techView.allIdeas = !techView.allIdeas; render(); return; }
+  if (b.hasAttribute("data-tkcap")) { const v = $("tk-cap").value.trim(); if (!v) return; takeUndo(); const x = { id: "i" + uid(), t: v, d: TODAY }; ideas.unshift(x); tkPop = x.id; render(); se("rec"); toast("ひらめきを書いた", true); setTimeout(() => { tkPop = null; }, 600); return; }
+  if (d.tkidea) { const x = ideas.find(y => y.id === d.tkidea);
+    sheet(`<span class="tk-st s-ひらめき">ひらめき</span><span class="note">${md(x.d)}</span><h3 style="margin:.2rem 0 .4rem">${esc(x.t)}</h3><p class="note">どの系統に入れるか選ぶと、その系統のいちばん先(研究中か★の技術の下)に置かれる。</p>
+      <div class="fbar">${techLanes.map(l => `<button class="btn ghost sm" data-tkplace="${x.id}|${l.id}" style="border-left:4px solid ${l.color}">${esc(l.name)}</button>`).join("")}<button class="btn ghost sm" data-tkplacenew="${x.id}">+ 新しい系統にする</button></div>
+      <div class="fbar" style="margin:.6rem 0 0"><button class="linkx" data-tkideadel="${x.id}" style="color:var(--bad)">このひらめきを消す</button></div>`); return; }
+  if (d.tkplace) { const [iid, lid] = d.tkplace.split("|"), x = ideas.find(y => y.id === iid), fr = tkFront(lid); takeUndo(); ideas = ideas.filter(y => y !== x);
+    const t = { id: "tk" + uid(), lane: lid, parent: fr ? fr.id : "", pre: [], name: x.t, st: "ひらめき", notes: [], created: TODAY }; techs.push(t); tkPop = t.id; closeSheet(); techOpen[lid] = true; render(); se("rec"); toast("「" + TL(lid).name + "」に入れた", true);
+    setTimeout(() => { const el = document.querySelector('.tk-node[data-tk="' + t.id + '"]'); if (el) el.scrollIntoView({ behavior: "smooth", block: "center" }); tkPop = null; }, 60); return; }
+  if (d.tkplacenew) { const x = ideas.find(y => y.id === d.tkplacenew); window.__tkIdea = x.id; openLaneEdit(null); return; }
+  if (d.tkideadel) { if (!confirm("このひらめきを消す?")) return; takeUndo(); ideas = ideas.filter(y => y.id !== d.tkideadel); closeSheet(); render(); toast("消した", true); return; }
+  if (d.tk) { openTk(TK(d.tk)); return; }
+  if (d.tknote) { const t = TK(d.tknote), v = $("tk-note").value.trim(); if (!v) return; takeUndo(); t.notes = t.notes || []; t.notes.push({ d: TODAY, t: v }); openTk(t); render(); se("rec"); return; }
+  if (d.tknotedel) { const [tid, i] = d.tknotedel.split("|"), t = TK(tid); takeUndo(); t.notes.splice(+i, 1); openTk(t); render(); return; }
+  if (d.tkset) { const [tid, s] = d.tkset.split("|"), t = TK(tid); takeUndo(); t.st = s; if (s === "研究中") { t.started = TODAY; se("week"); } if (s === "定着") { t.at = TODAY; se("best"); tkUnlockFx(t.name); } tkPop = t.id; closeSheet(); render(); setTimeout(() => { tkPop = null; }, 600); return; }
+  if (d.tkchild) { const t = TK(d.tkchild); openTkEdit(null, t.lane, t.id); return; }
+  if (d.tkadd) { if (!techLanes.length) return; const fr = tkFront(d.tkadd); openTkEdit(null, d.tkadd, fr ? fr.id : ""); return; }
+  if (d.tkedit) { openTkEdit(TK(d.tkedit)); return; }
+  if (d.tkesave != null && b.hasAttribute("data-tkesave")) { const n = $("tke-n").value.trim(); if (!n) { toast("名前を入れてください"); return; } takeUndo();
+    const v = { name: n, lane: $("tke-l").value, parent: $("tke-p").value, st: $("tke-s").value, now: $("tke-now").value.trim(), trouble: $("tke-tr").value.trim(), want: $("tke-w").value.trim(), pre: [...document.querySelectorAll("[data-tkpre]:checked")].map(c => c.dataset.tkpre) };
+    let t = d.tkesave ? TK(d.tkesave) : null; const was = t ? t.st : "";
+    if (t) { if (v.lane !== t.lane) v.parent = ""; Object.assign(t, v); } else { t = Object.assign({ id: "tk" + uid(), notes: [], created: TODAY }, v); techs.push(t); }
+    if (v.parent === t.id) t.parent = "";
+    if (t.st === "研究中" && was !== "研究中" && !t.started) t.started = TODAY; if (t.st === "定着" && was !== "定着") { t.at = TODAY; tkUnlockFx(t.name); se("best"); }
+    tkPop = t.id; closeSheet(); render(); toast(d.tkesave ? "直した" : "足した", true); setTimeout(() => { tkPop = null; }, 600); return; }
+  if (d.tkdel) { const t = TK(d.tkdel); if (!confirm("技術「" + t.name + "」を消す?(ここから伸びた技術は、一つ上につながり直す)")) return; takeUndo();
+    techs.forEach(x => { if (x.parent === t.id) x.parent = t.parent || ""; x.pre = (x.pre || []).filter(i => i !== t.id); }); techs = techs.filter(x => x !== t); closeSheet(); render(); toast("消した", true); return; }
+  if (b.hasAttribute("data-tklanenew")) { openLaneEdit(null); return; }
+  if (d.tklaneedit) { openLaneEdit(TL(d.tklaneedit)); return; }
+  if (d.tkplanadd) { const pid = d.tkplanadd, cand = techLanes.filter(l => !(l.plans || []).includes(pid));
+    sheet(`<h3>この計画に系統をつなぐ</h3>${cand.length ? `<p class="note">今ある系統をつなぐ:</p><div class="fbar">${cand.map(l => `<button class="btn ghost sm" data-tklink="${l.id}|${pid}" style="border-left:4px solid ${l.color}">${esc(l.name)}</button>`).join("")}</div>` : ""}
+      <div class="fbar" style="margin:.6rem 0 0"><button class="btn sm" data-tklanefor="${pid}">+ 新しい系統を作る</button></div>`); return; }
+  if (d.tklink) { const [lid, pid] = d.tklink.split("|"), l = TL(lid); takeUndo(); l.plans = l.plans || []; if (!l.plans.includes(pid)) l.plans.push(pid); closeSheet(); render(); toast("つないだ", true); return; }
+  if (d.tklanefor) { openLaneEdit(null, d.tklanefor); return; }
+  if (d.tkcolor) { $("tkl-c").value = d.tkcolor; document.querySelectorAll("[data-tkcolor]").forEach(x => x.classList.toggle("on", x.dataset.tkcolor === d.tkcolor)); return; }
+  if (d.tklsave != null && b.hasAttribute("data-tklsave")) { const n = $("tkl-n").value.trim(); if (!n) { toast("名前を入れてください"); return; } takeUndo();
+    const v = { name: n, color: $("tkl-c").value, plans: [...document.querySelectorAll("[data-tklp]:checked")].map(c => c.dataset.tklp) };
+    let l = d.tklsave ? TL(d.tklsave) : null; if (l) Object.assign(l, v); else { l = Object.assign({ id: "tl" + uid() }, v); techLanes.push(l); }
+    if (window.__tkIdea) { const x = ideas.find(y => y.id === window.__tkIdea); if (x) { ideas = ideas.filter(y => y !== x); const t = { id: "tk" + uid(), lane: l.id, parent: "", pre: [], name: x.t, st: "ひらめき", notes: [], created: TODAY }; techs.push(t); tkPop = t.id; } window.__tkIdea = null; }
+    closeSheet(); if (!d.tklsave) techOpen[l.id] = true; render(); toast(d.tklsave ? "系統を直した" : "系統を作った", true); setTimeout(() => { tkPop = null; }, 600); return; }
+  if (d.tkldel) { const l = TL(d.tkldel), n = techs.filter(t => t.lane === l.id).length; if (!confirm("系統「" + l.name + "」を消す?" + (n ? "(中の技術 " + n + "件も消える)" : ""))) return; takeUndo();
+    const gone = new Set(techs.filter(t => t.lane === l.id).map(t => t.id)); techs = techs.filter(t => !gone.has(t.id)); techs.forEach(t => { t.pre = (t.pre || []).filter(i => !gone.has(i)); });
+    techLanes = techLanes.filter(x => x !== l); delete techOpen[l.id]; closeSheet(); render(); toast("消した", true); return; }
+});
+document.addEventListener("input", e => { const t = e.target; if (t.id === "tk-q" || t.id === "tk-iq") { techView[t.id === "tk-q" ? "q" : "ideaQ"] = t.value.trim(); const pos = t.selectionStart, id = t.id; render(); const el = $(id); if (el) { el.focus(); el.setSelectionRange(pos, pos); } } });
+document.addEventListener("keydown", e => { if (e.key === "Enter" && e.target.id === "tk-cap") { const b = document.querySelector("[data-tkcap]"); if (b) b.click(); } });
+</script>
+<script>
 /* ───────── 関係 ───────── */
 let relMode = "focus", relId = "", relKinds = new Set(["前提", "支え", "一部"]);
 function viewRel(){
@@ -2168,7 +2463,7 @@ let pickFor = null, pickQ = "";
 let sheetSnap = null;
 /* 書いた内容の写し(空の行を足しただけでは変わらないように、入っている値だけを見る) */
 function formSnap(){ const out = []; document.querySelectorAll(".sheet input, .sheet textarea, .sheet select").forEach((el, i) => {
-    if (el.type === "file" || el.id === "pick-q") return; if (el.type === "checkbox") { if (el.checked) out.push(i + ":on"); return; }
+    if (el.type === "file" || el.id === "pick-q" || el.hasAttribute("data-live")) return; if (el.type === "checkbox") { if (el.checked) out.push(i + ":on"); return; }
     if (el.tagName === "SELECT") { if (!el.closest('[data-msr="new"],[data-lper="new"],[data-wk="new"],[data-new]')) out.push(i + ":" + el.value); return; }
     if (el.value.trim()) out.push(i + ":" + el.value); }); return out.join("|"); }
 function sheet(html){ $("sheet-root").innerHTML = `<div class="sheet-bg" data-sclose></div><div class="sheet" role="dialog"><button class="close" data-sclose>閉じる</button>${html}</div>`; sheetSnap = formSnap(); }
@@ -2262,6 +2557,7 @@ function openEdit(p, focus, mode){
     <details class="eds" ${op("予備")}><summary>予備の層<small>日${7 - wdays(p)}・週${wbufPct(p)}%・月${mPer(p)}日</small></summary>
     <div class="row2"><div class="f"><label>週のペースを何日分で組むか(残りが日の予備)</label><input id="ed-wd" type="number" min="1" max="7" value="${wdays(p)}"></div><div class="f"><label>週の予備(%)</label><input id="ed-wb" type="number" min="0" max="50" value="${wbufPct(p)}"></div><div class="f"><label>月の予備(日/月)</label><input id="ed-mb" type="number" min="0" max="10" value="${mPer(p)}"></div></div>
     </details>
+    ${editTarget ? "" : `<details class="eds"><summary>メモ<small>計算もできる。書いたそばから保存</small></summary>${memoBox(p, "ed-memo")}</details>`}
     <div class="edfoot"><div id="ed-err" hidden></div><button class="btn" data-edsave>直す</button></div>`);
   if (focus && focus !== "works") setTimeout(() => { const el = document.getElementById("er-" + focus) || document.getElementById("er-ms"); if (el) el.scrollIntoView({ block: "center" }); }, 60);
   window.__wkRow = wkRow;
@@ -2391,7 +2687,7 @@ function openGoals(){
 }
 
 /* ───────── 描画と操作 ───────── */
-const VIEWS = { overview: viewOverview, timeline: viewTimeline, plan: viewPlan, rel: viewRel, field: viewField, tests: viewTests, week: viewWeek, weekrec: viewWeekRec, sound: viewSound, sync: viewSync, more: viewMore, load: viewLoad, lessons: viewLessons, council: viewCouncil, notify: viewNotify, importv: viewImport };
+const VIEWS = { overview: viewOverview, timeline: viewTimeline, plan: viewPlan, rel: viewRel, field: viewField, tech: viewTech, tests: viewTests, week: viewWeek, weekrec: viewWeekRec, sound: viewSound, sync: viewSync, more: viewMore, load: viewLoad, lessons: viewLessons, council: viewCouncil, notify: viewNotify, importv: viewImport };
 function current(){ const h = location.hash.slice(1); return VIEWS[h] ? h : "overview"; }
 function render(){
   clearRisk();
