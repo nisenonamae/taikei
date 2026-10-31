@@ -263,6 +263,7 @@ details.wx summary{cursor:pointer;color:var(--wave)}
 .phase{display:inline-block;font-size:.66rem;font-weight:700;border:1.5px dashed var(--mid);color:var(--mid);border-radius:3px;padding:0 .35rem;line-height:1.5;margin-right:.3rem}
 .plan.draft{border-left-style:dashed;background:transparent;border:1px dashed var(--rule);border-left:6px dashed var(--mid)}
 .cpanel.start{border-color:var(--mid);border-style:dashed}
+.addrow{display:block;margin:.2rem 0 .1rem;font-size:.76rem}
 .lane-e{border:1px solid var(--ink);border-radius:5px;padding:.4rem;margin:.4rem 0;background:var(--white)}
 .lhd{display:grid;grid-template-columns:1fr 3.5rem 1.8rem 1.8rem auto;gap:.3rem;align-items:center;margin-bottom:.2rem}
 .lhd input,.lhd select{width:100%;min-width:0;padding:.3rem .4rem;border:1px solid var(--rule);border-radius:3px;background:var(--white);font-size:.84rem}
@@ -1965,7 +1966,7 @@ function openEdit(p, focus, mode){
   const laneOpts = cur => lanesOf(p).map(l => `<option value="${l.id}"${l.id === cur ? " selected" : ""}>${laneCode(p, l)} ${esc(l.name)}(${l.rank})</option>`).join("");
   const perRow = (x, i) => `<div class="er" data-lper="${i}"><input data-k="name" value="${esc(x.name)}" placeholder="期間の名前"><input data-k="purpose" value="${esc(x.purpose)}" placeholder="何のための期間か"><input data-k="start" type="date" value="${x.start}"><input data-k="end" type="date" value="${x.end}"><label class="chk"><input type="checkbox" data-k="del"> 消す</label></div>`;
   const laneBlock = (l, isNew) => `<div class="lane-e" data-lane="${l.id}"${isNew ? ' data-new="1"' : ""}><div class="lhd"><input data-k="lname" value="${esc(l.name)}" placeholder="道筋の名前(例:青チャートで解法を固める)"><select data-k="rank">${RANKS.map(r => `<option${r === l.rank ? " selected" : ""}>${r}</option>`).join("")}</select><button class="lmv" data-laneup aria-label="上へ">▲</button><button class="lmv" data-lanedn aria-label="下へ">▼</button><label class="chk"><input type="checkbox" data-k="ldel"> 消す</label></div>
-    ${(l.periods || []).map(perRow).join("")}<div class="er" data-lper="new"><input data-k="name" placeholder="+ 期間を足す(名前)"><input data-k="purpose" placeholder="何のための期間か"><input data-k="start" type="date"><input data-k="end" type="date"></div></div>`;
+    ${(l.periods || []).map(perRow).join("")}<div class="er" data-lper="new"><input data-k="name" placeholder="+ 期間を足す(名前)"><input data-k="purpose" placeholder="何のための期間か"><input data-k="start" type="date"><input data-k="end" type="date"></div><button class="linkx addrow" data-lperrow>+ 期間の行を足す</button></div>`;
   window.__laneBlock = laneBlock;
   const msRow = m => { const fx = isFixed(p, "ms:" + m.id);
     return `<div class="er ms-e${m.parent ? " subm" : ""}" data-msr="${m.id}" id="er-${m.id}"><div class="er2"><input data-k="name" value="${esc(m.name)}" placeholder="節目の名前"><input data-k="date" type="date" value="${m.date}"${fx ? " disabled" : ""}><select data-k="type">${Object.keys(MS_TYPES).map(t => `<option${t === m.type ? " selected" : ""}>${t}</option>`).join("")}</select></div>${m.parent ? "" : `<div class="er2" style="grid-template-columns:1fr"><select data-k="lane" aria-label="道筋">${laneOpts(laneId(p, m))}</select></div>`}
@@ -1989,6 +1990,9 @@ function openEdit(p, focus, mode){
     <h4 class="eh" id="er-ms">節目</h4><p class="note" style="margin:0 0 .3rem">目標の量とペースは週ごと。つなぐ計画を選ぶと、その計画の進捗がこの節目の進捗になる。</p>
     ${mainMs(p).map(m => msRow(m) + subsOf(p, m.id).map(msRow).join("")).join("")}
     <div class="er ms-e" data-msr="new"><div class="er2"><input data-k="name" placeholder="+ 節目を足す(名前)"><input data-k="date" type="date"><select data-k="type">${Object.keys(MS_TYPES).map(t => `<option${t === "予定" ? " selected" : ""}>${t}</option>`).join("")}</select></div><div class="er2" style="grid-template-columns:1fr"><select data-k="lane" aria-label="道筋">${laneOpts(lanesOf(p)[0].id)}</select></div></div>
+    <div class="fbar" style="margin:.2rem 0 0"><button class="btn ghost sm" data-msrow>+ 節目の行を足す</button><button class="btn ghost sm" data-msbulk>まとめて書く</button></div>
+    <div id="ed-bulk" hidden><div class="f"><label>1行に1つずつ「日付 名前」(例:11/30 IAを一周)。行の終わりに「確定」「仮」と書くと種類になる(書かなければ予定)</label><textarea id="ed-bulk-t" rows="5" placeholder="11/15 過去問2022年を解く 仮&#10;11/30 過去問3年分&#10;1/16 本番 確定"></textarea></div>
+      <div class="f"><label>入れる道筋</label><select id="ed-bulk-l">${laneOpts(lanesOf(p)[0].id)}</select></div></div>
     <div style="position:sticky;bottom:0;background:var(--paper);padding:.6rem 0 .2rem;margin-top:.6rem"><button class="btn" data-edsave>直す</button></div>`);
   if (focus) setTimeout(() => { const el = document.getElementById("er-" + focus) || document.getElementById("er-ms"); if (el) el.scrollIntoView({ block: "center" }); }, 60);
 }
@@ -2046,7 +2050,22 @@ function saveEdit(p){
       L("節目「" + m.name + "」までのペース", before, m.pace ? fmtN(m.pace.amount) + m.pace.unit : "", "小");
       const pl = g("plan"); L("節目「" + m.name + "」とつながる計画", m.plan ? P(m.plan).name : "", pl ? P(pl).name : "", "小"); if (pl) m.plan = pl; else delete m.plan;
     } });
+  // まとめて書いた節目
+  { const t = ($("ed-bulk-t") || {}).value || "", ln = (($("ed-bulk-l") || {}).value) || firstLane; let bad = 0;
+    t.split(/\n/).map(x => x.trim()).filter(Boolean).forEach(line => {
+      const m = /^(\d{4}-\d{1,2}-\d{1,2}|\d{1,2}[\/-]\d{1,2})\s+(.+?)(?:\s+(確定|予定|仮))?$/.exec(line); if (!m) { bad++; return; }
+      const date = bulkDate(m[1], p); if (!date) { bad++; return; }
+      const lane = p.lanes.some(l => l.id === ln) ? ln : firstLane;
+      p.milestones.push({ id: "m" + uid(), name: m[2], date, type: m[3] || "予定", lane, tasks: [], records: [], weeks: [] }); L("節目", "(なし)", m[2] + " " + md(date), "小"); });
+    if (bad) setTimeout(() => toast("読めなかった行が " + bad + " 行あった(「11/30 名前」の形で書く)"), 300); }
   return n;
+}
+/* 「11/30」のような日付に年をつける:計画の期間に入る年、なければ今日以降でいちばん近い年 */
+function bulkDate(s, p){
+  if (/^\d{4}-/.test(s)) { const [y, mo, d] = s.split("-").map(Number); return y + "-" + String(mo).padStart(2, "0") + "-" + String(d).padStart(2, "0"); }
+  const [mo, d] = s.split(/[\/-]/).map(Number); if (!(mo >= 1 && mo <= 12 && d >= 1 && d <= 31)) return null;
+  const y0 = +p.start.slice(0, 4), cands = [y0 - 1, y0, y0 + 1, y0 + 2].map(y => y + "-" + String(mo).padStart(2, "0") + "-" + String(d).padStart(2, "0"));
+  return cands.find(c => c >= p.start && c <= p.end) || cands.find(c => c >= TODAY) || cands[1];
 }
 function openAddPlan(){
   sheet(`<h3>計画を足す</h3>
@@ -2241,6 +2260,11 @@ document.addEventListener("click", e => {
   // 音
   if (d.setry) { if (d.setry.startsWith("ui:")) { const o = seCfg.ui; seCfg.ui = true; uiSound(d.setry.slice(3)); seCfg.ui = o; } else { const o = seCfg.on; seCfg.on = true; se(d.setry); seCfg.on = o; } return; }
   if (d.wesave) { const [mid, w] = d.wesave.split("|"), m = p.milestones.find(x => x.id === mid), v = $("we-v").value.trim(); m.weeks = (m.weeks || []).filter(x => x.w !== w); if (v !== "") m.weeks.push({ w, done: +v }); m.weeks.sort((a, b) => a.w < b.w ? -1 : 1); closeSheet(); render(); se("rec"); return; }
+  if (b.hasAttribute("data-msrow")) { const rows = document.querySelectorAll('.sheet [data-msr="new"]'), last = rows[rows.length - 1], c = last.cloneNode(true);
+    c.querySelectorAll("input").forEach(x => x.value = ""); c.querySelector('[data-k="type"]').value = "予定"; last.after(c); c.querySelector('[data-k="name"]').focus(); return; }
+  if (b.hasAttribute("data-msbulk")) { const el = $("ed-bulk"); el.hidden = !el.hidden; if (!el.hidden) $("ed-bulk-t").focus(); return; }
+  if (b.hasAttribute("data-lperrow")) { const bk = b.closest(".lane-e"), rows = bk.querySelectorAll('[data-lper="new"]'), last = rows[rows.length - 1], c = last.cloneNode(true);
+    c.querySelectorAll("input").forEach(x => x.value = ""); last.after(c); c.querySelector('[data-k="name"]').focus(); return; }
   if (b.hasAttribute("data-laneadd")) { const id = "L" + uid(), box = $("ed-lanes"); box.insertAdjacentHTML("beforeend", window.__laneBlock({ id, name: "", rank: RANKS.includes(d.laneadd) ? d.laneadd : "副", periods: [] }, true));
     document.querySelectorAll('.sheet [data-k="lane"]').forEach(sel => sel.insertAdjacentHTML("beforeend", `<option value="${id}">新しい道筋</option>`));
     const inp = box.lastElementChild.querySelector('[data-k="lname"]'); inp.focus(); inp.addEventListener("input", () => document.querySelectorAll(`.sheet option[value="${id}"]`).forEach(o => o.textContent = (inp.value || "新しい道筋"))); return; }
