@@ -264,6 +264,18 @@ details.wx summary{cursor:pointer;color:var(--wave)}
 .plan.draft{border-left-style:dashed;background:transparent;border:1px dashed var(--rule);border-left:6px dashed var(--mid)}
 .cpanel.start{border-color:var(--mid);border-style:dashed}
 .addrow{display:block;margin:.2rem 0 .1rem;font-size:.76rem}
+details.eds{border:1px solid var(--rule);border-radius:6px;margin:.5rem 0;background:var(--sheet)}
+details.eds>summary{cursor:pointer;padding:.55rem .7rem;font-weight:700;font-size:.92rem;list-style:none;display:flex;justify-content:space-between;align-items:baseline;gap:.5rem}
+details.eds>summary::-webkit-details-marker{display:none}
+details.eds>summary::after{content:"▾";color:var(--sub);font-weight:400}details.eds[open]>summary::after{content:"▴"}
+details.eds>summary small{font-weight:400;color:var(--sub);font-size:.72rem;margin-left:auto;text-align:right}
+details.eds[open]{background:var(--paper)}details.eds>*:not(summary){margin-left:.6rem;margin-right:.6rem}details.eds>*:last-child{margin-bottom:.6rem}
+label.mini{display:flex;flex-direction:column;gap:.1rem;font-size:.62rem;color:var(--sub);min-width:0}
+.er2.lab4{grid-template-columns:1fr 1fr 1fr 1fr}
+.er.bad,.lane-e .er.bad{border-color:var(--bad);box-shadow:0 0 0 2px var(--shu-soft);background:var(--shu-soft)}
+.toast .undo{margin-left:.7rem;border:1px solid var(--paper);background:transparent;color:var(--paper);border-radius:3px;padding:.1rem .5rem;font-size:.8rem}
+.relrow{display:flex;gap:.3rem;align-items:stretch}.relrow .relc{flex:1;min-width:0}
+.reldel{flex:none;border:1px solid var(--rule);background:var(--sheet);border-radius:3px;font-size:.72rem;color:var(--sub);padding:0 .5rem;margin:.18rem 0}
 .lane-e{border:1px solid var(--ink);border-radius:5px;padding:.4rem;margin:.4rem 0;background:var(--white)}
 .lhd{display:grid;grid-template-columns:1fr 3.5rem 1.8rem 1.8rem auto;gap:.3rem;align-items:center;margin-bottom:.2rem}
 .lhd input,.lhd select{width:100%;min-width:0;padding:.3rem .4rem;border:1px solid var(--rule);border-radius:3px;background:var(--white);font-size:.84rem}
@@ -794,7 +806,11 @@ function nextLaneMs(p, l){ return laneMs(p, l).filter(m => !isDone(m))[0]; }
 const mainMs = p => p.milestones.filter(m => !m.parent).sort((a, b) => a.date < b.date ? -1 : 1);
 const subsOf = (p, id) => p.milestones.filter(m => m.parent === id).sort((a, b) => a.date < b.date ? -1 : 1);
 function nextMs(p){ return p.milestones.filter(m => !m.parent && !isDone(m)).sort((a, b) => a.date < b.date ? -1 : 1)[0]; }
-function toast(t){ const el = document.createElement("div"); el.className = "toast"; el.textContent = t; document.body.appendChild(el); setTimeout(() => el.remove(), 2600); }
+let undoSnap = null, undoArmed = false;
+function takeUndo(){ undoSnap = clone(dataOut()); undoArmed = true; }
+function toast(t){ const el = document.createElement("div"); el.className = "toast"; el.textContent = t;
+  if (undoArmed) { undoArmed = false; const b = document.createElement("button"); b.className = "undo"; b.dataset.undo = "1"; b.textContent = "元に戻す"; el.appendChild(b); document.body.appendChild(el); setTimeout(() => el.remove(), 7000); return; }
+  document.body.appendChild(el); setTimeout(() => el.remove(), 2600); }
 /* 作成中:作っている途中の計画。確認・危険度・集計の対象外。「始める」で進行中へ(一方通行) */
 const drafting = p => p && p.phase === "作成中";
 function orderedPlans(){ return plans.filter(p => !p.status).sort((a, b) => GRADES.indexOf(a.grade) - GRADES.indexOf(b.grade) || MINS().indexOf(a.ministry) - MINS().indexOf(b.ministry)); }
@@ -1118,6 +1134,7 @@ function tabReq(p){
   const grid = order.map(o => o === null ? `<div class="mc center">${esc(n.text)}<small style="font-weight:400;font-size:.66rem;opacity:.8;margin-top:.2rem">${reqStatus(n)}・中に ${kids.length}</small></div>` : cell(kids[o], o)).join("");
   const q = n.plan && P(n.plan);
   const ctrl = `<div class="card"><h4>真ん中の要素<small>${reqPath.length ? "" : "いちばん上(到達点)"}</small></h4>
+    <div class="row2" style="margin:0 0 .4rem"><input id="rq-name" value="${esc(n.text)}" style="flex:1;padding:.3rem .45rem;border:1px solid var(--rule);border-radius:3px;background:var(--white)" aria-label="名前"><button class="btn ghost sm" data-reqren>名前を直す</button></div>
     ${q ? `<p style="margin:.1rem 0 .4rem;font-size:.84rem">別の計画「<button class="linkx" data-goplan="${q.id}">${esc(q.name)}</button>」の達成とつながっている(進捗 ${prog(q)}%)。</p>` : ""}
     <div class="fbar" style="margin:0"><span class="seg" role="group" aria-label="状態">${["未", "途中", "済"].map(s => `<button data-reqst="${s}" aria-pressed="${(n.st || reqStatus(n)) === s}"${(n.kids || []).length || n.plan ? " disabled" : ""}>${s}</button>`).join("")}</span>
     <select data-reqlink aria-label="計画とつなぐ"><option value="">計画とつながない</option>${plans.filter(x => x.id !== p.id).map(x => `<option value="${x.id}"${n.plan === x.id ? " selected" : ""}>${esc(x.name)}</option>`).join("")}</select>
@@ -1182,7 +1199,7 @@ function tabRoad(p){
   const laneBlocks = (l, k) => { const per = periodsOf(p, l), lm = laneMs(p, l), used = new Set();
     const inPer = x => lm.filter(m => m.date >= x.start && m.date <= x.end && !used.has(m.id) && used.add(m.id));
     const blocks = (() => {
-    return per.map((x, i) => { const ms = inPer(x), now = TODAY >= x.start && TODAY <= x.end, ws = p.works.filter(w => w.start <= x.end && w.end >= x.start);
+    return per.map((x, i) => { const ms = inPer(x), now = TODAY >= x.start && TODAY <= x.end, ws = p.works.filter(w => w.start <= x.end && w.end >= x.start && (w.lane && lanesOf(p).some(z => z.id === w.lane) ? w.lane : lanesOf(p)[0].id) === l.id);
     return `<div class="period${now ? " now-p" : ""}" style="border-left-color:${PCOL[(i + k * 2) % 5]}"><div class="ph"><b>${esc(x.name || "期間")}${now ? '<span class="nowmark">いまここ</span>' : ""}</b><small>${md(x.start)}〜${md(x.end)}・${Math.round((days(x.start, x.end) + 1) / 7)}週</small></div>
       ${x.purpose ? `<div class="pp">${esc(x.purpose)}</div>` : ""}${ws.length ? `<div class="pp">${ws.map(w => `<span class="tag" style="color:var(--sub)">${w.kind}</span> ${esc(w.name)}`).join("　")}</div>` : ""}
       ${ms.map(m => msHtml(m) + subsOf(p, m.id).map(s => msHtml(s, true)).join("")).join("") || '<p class="note">この期間に節目はない</p>'}</div>`; }).join("");
@@ -1215,7 +1232,7 @@ function tabRoad(p){
 function tabIf(p){
   const msName = id => (p.milestones.find(m => m.id === id) || {}).name || "";
   return `<p class="note" style="margin-top:0">成功ばかりではない。節目で理想を下回ったとき・失敗したときに、何を合図に、どう計画を切り替えるかを先に決めておく。</p>` +
-    (p.ifs.length ? p.ifs.map((x, i) => `<div class="branch kind-${x.kind}"><div class="bk"><span class="tag" style="color:${x.kind === "失敗したとき" ? "var(--ink)" : "var(--shu)"}">${esc(x.kind)}</span><b>${esc(msName(x.at))}</b><span class="note">(${md((p.milestones.find(m => m.id === x.at) || {}).date || TODAY)})</span><button class="linkx" style="margin-left:auto" data-ifdel="${i}">消す</button></div>
+    (p.ifs.length ? p.ifs.map((x, i) => `<div class="branch kind-${x.kind}"><div class="bk"><span class="tag" style="color:${x.kind === "失敗したとき" ? "var(--ink)" : "var(--shu)"}">${esc(x.kind)}</span><b>${esc(msName(x.at))}</b><span class="note">(${md((p.milestones.find(m => m.id === x.at) || {}).date || TODAY)})</span><button class="linkx" style="margin-left:auto" data-ifedit="${i}">直す</button><button class="linkx" data-ifdel="${i}">消す</button></div>
       <span class="bl">合図</span><span>${esc(x.trigger)}</span><span class="bl">切り替え</span><span>${esc(x.plan)}</span></div>`).join("") : '<p class="note">まだない。</p>') +
     `<div class="card"><h4>もしもの計画を足す</h4>
       <div class="row2"><div class="f"><label>どの節目で</label><select id="if-at">${mainMs(p).map(m => `<option value="${m.id}">${esc(m.name)}(${md(m.date)})</option>`).join("")}</select></div>
@@ -1247,7 +1264,7 @@ function tabWalk(p){
       <div class="fbar" style="margin:.1rem 0 .5rem"><span class="seg" role="group" aria-label="種類で絞る">${kinds.map(k => `<button data-walk="${k}" aria-pressed="${walkKind === k}">${k}</button>`).join("")}</span></div>
       <div class="walk">${xs.map(e => `<div class="wk k-${e.k}"><div class="wd">${md(e.date)}<span class="kk k-${e.k}">${e.k}</span>${e.size ? "大きさ " + e.size : ""}</div><div class="wt">${esc(e.t)}</div>${e.a ? `<div class="wa"><del>${esc(e.a[0])}</del>→<b>${esc(e.a[1])}</b></div>` : ""}${e.x ? `<div class="wx">${esc(e.x)}</div>` : ""}${e.det && e.det.length ? `<details class="wx"><summary>変えたところ ${e.det.length}か所</summary>${e.det.map(x => `<div>・${esc(x)}</div>`).join("")}</details>` : ""}</div>`).join("") || '<p class="note">まだない。</p>'}</div>
       <div class="fbar" style="margin:.5rem 0 0"><button class="btn sm" data-bufuse>予備を使う</button><button class="btn ghost sm" data-replan>立て直す</button><button class="btn ghost sm" data-shift="">節目をずらす</button><button class="btn ghost sm" data-chgoal>到達点・期日を変える</button></div></div>
-    <section class="sec"><h3>根拠<small>なぜそう決めたか。振り返るときに見る</small></h3>${p.basis.map(b => `<div class="basis"><div class="bt">${esc(tl(b.target))}・${md(b.date)}</div>${esc(b.text)}<div class="note">出どころ:${esc(b.src)}</div></div>`).join("") || '<p class="note">まだない。</p>'}
+    <section class="sec"><h3>根拠<small>なぜそう決めたか。振り返るときに見る</small></h3>${p.basis.map((b, bi) => `<div class="basis"><div class="bt" style="display:flex;justify-content:space-between">${esc(tl(b.target))}・${md(b.date)}<button class="linkx" data-bsedit="${bi}">直す</button></div>${esc(b.text)}<div class="note">出どころ:${esc(b.src)}</div></div>`).join("") || '<p class="note">まだない。</p>'}
     <div class="card"><h4>根拠を足す</h4><div class="row2"><div class="f"><label>何の根拠か</label><select id="bs-t"><option value="goal">到達点</option><option value="end">期日</option>${mainMs(p).map(m => `<option value="ms:${m.id}">節目「${esc(m.name)}」</option>`).join("")}</select></div><div class="f"><label>出どころ</label><input id="bs-s" placeholder="例:大学の公表・先輩の話"></div></div>
       <div class="f"><label>根拠</label><textarea id="bs-x" placeholder="例:合格者の平均が78%だった"></textarea></div><button class="btn sm" data-bsadd>足す</button></div></section>`;
 }
@@ -1829,7 +1846,7 @@ document.addEventListener("click", e => {
   if (b.hasAttribute("data-kzcmp")) { openDraftCompare(p); return; }
   if (b.hasAttribute("data-kzdrop")) { if (!confirm("改造の下書きをやめる?(今の計画はそのまま)")) return; delete p.draft; render(); return; }
   if (b.hasAttribute("data-kzapply")) { sheet(`<h3>改造を反映する</h3><p class="note">${p.draft.log.length}か所の変更を、今の計画に反映する。前の形は版として残り、図で比べられる。</p><div class="f"><label>改造の理由(歩みに残る)</label><textarea id="kz-why" placeholder="例:冬の模試の日程が出たので、節目を組み直した"></textarea></div><button class="btn" data-kzgo>反映する</button>`); return; }
-  if (b.hasAttribute("data-kzgo")) { applyDraft(p, $("kz-why").value.trim()); closeSheet(); ptab = "図"; render(); se("replan"); toast("改造を反映した。図で前の版と比べられる"); return; }
+  if (b.hasAttribute("data-kzgo")) { takeUndo(); applyDraft(p, $("kz-why").value.trim()); closeSheet(); ptab = "図"; render(); se("replan"); toast("改造を反映した。図で前の版と比べられる"); return; }
 });
 </script>
 <script>
@@ -1844,8 +1861,9 @@ function relFocus(){
   if (!P(relId)) relId = orderedPlans()[0].id;
   const p = P(relId), r = risk(p);
   const ins = k => plans.filter(q => q.rels.some(x => x.to === p.id && x.kind === k)), outs = k => p.rels.filter(x => x.kind === k).map(x => P(x.to));
-  const card = q => { const rr = risk(q); return `<button class="relc" data-relgo="${q.id}">${seal(q.grade)}<span><b>${esc(q.name)}</b><small>${esc(q.ministry)}・進捗 ${prog(q)}%・危険度 <b class="lv-${rr.level}" style="background:none">${rr.score}</b></small></span></button>`; };
-  const block = (k, xs, dir) => xs.length ? `<div class="rb"><div class="rbh"><span class="kind k-${k}">${k}</span>${KIND_WORDS[k][dir]}</div>${xs.map(card).join("")}</div>` : "";
+  const relKey = (q, k) => p.rels.some(r => r.to === q.id && r.kind === k) ? p.id + "|" + q.id + "|" + k : q.id + "|" + p.id + "|" + k;
+  const card = (q, k) => { const rr = risk(q); return `<div class="relrow"><button class="relc" data-relgo="${q.id}">${seal(q.grade)}<span><b>${esc(q.name)}</b><small>${esc(q.ministry)}・進捗 ${prog(q)}%・危険度 <b class="lv-${rr.level}" style="background:none">${rr.score}</b></small></span></button><button class="reldel" data-rldel="${relKey(q, k)}" aria-label="この関係を外す">外す</button></div>`; };
+  const block = (k, xs, dir) => xs.length ? `<div class="rb"><div class="rbh"><span class="kind k-${k}">${k}</span>${KIND_WORDS[k][dir]}</div>${xs.map(q => card(q, k)).join("")}</div>` : "";
   const sym = k => [...new Set(ins(k).concat(outs(k)))];
   const up = block("前提", ins("前提"), 0) + block("支え", ins("支え"), 0) + block("一部", ins("一部"), 0);
   const side = block("並走", sym("並走"), 0) + block("取り合い", sym("取り合い"), 0) + block("代わり", sym("代わり"), 0);
@@ -1920,8 +1938,15 @@ function viewField(){
 
 /* ───────── 下から出る画面 ───────── */
 let pickFor = null, pickQ = "";
-function sheet(html){ $("sheet-root").innerHTML = `<div class="sheet-bg" data-sclose></div><div class="sheet" role="dialog"><button class="close" data-sclose>閉じる</button>${html}</div>`; }
-function closeSheet(){ $("sheet-root").innerHTML = ""; pickFor = null; }
+let sheetSnap = null;
+/* 書いた内容の写し(空の行を足しただけでは変わらないように、入っている値だけを見る) */
+function formSnap(){ const out = []; document.querySelectorAll(".sheet input, .sheet textarea, .sheet select").forEach((el, i) => {
+    if (el.type === "file" || el.id === "pick-q") return; if (el.type === "checkbox") { if (el.checked) out.push(i + ":on"); return; }
+    if (el.tagName === "SELECT") { if (!el.closest('[data-msr="new"],[data-lper="new"],[data-wk="new"],[data-new]')) out.push(i + ":" + el.value); return; }
+    if (el.value.trim()) out.push(i + ":" + el.value); }); return out.join("|"); }
+function sheet(html){ $("sheet-root").innerHTML = `<div class="sheet-bg" data-sclose></div><div class="sheet" role="dialog"><button class="close" data-sclose>閉じる</button>${html}</div>`; sheetSnap = formSnap(); }
+function closeSheet(){ $("sheet-root").innerHTML = ""; pickFor = null; sheetSnap = null; }
+function closeAsk(){ if (sheetSnap != null && !pickFor && formSnap() !== sheetSnap && !confirm("書いた内容は、まだ保存されていない。閉じると消える。閉じる?")) return false; editTarget = null; closeSheet(); return true; }
 function pickRow(q){ const r = risk(q); return `<button class="pk" data-pick="${q.id}">${seal(q.grade)}<span>${esc(q.name)}<small>${esc(q.ministry)}・進捗 ${prog(q)}%・危険度 ${r.score}・完成度 ${completeness(q).score}%</small></span></button>`; }
 function pickerList(){ const q = pickQ.trim(), hit = x => !q || (x.name + x.ministry + x.goal + x.grade).includes(q), list = orderedPlans().filter(hit);
   return (q ? "" : '<div class="pkh">最近見た計画</div>' + recent.map(P).filter(Boolean).map(pickRow).join("")) + (MINS().map(m => { const xs = list.filter(x => x.ministry === m); return xs.length ? `<div class="pkh">${esc(m)}</div>` + xs.map(pickRow).join("") : ""; }).join("") || '<p class="note">見つかりません。</p>'); }
@@ -1970,34 +1995,75 @@ function openEdit(p, focus, mode){
   window.__laneBlock = laneBlock;
   const msRow = m => { const fx = isFixed(p, "ms:" + m.id);
     return `<div class="er ms-e${m.parent ? " subm" : ""}" data-msr="${m.id}" id="er-${m.id}"><div class="er2"><input data-k="name" value="${esc(m.name)}" placeholder="節目の名前"><input data-k="date" type="date" value="${m.date}"${fx ? " disabled" : ""}><select data-k="type">${Object.keys(MS_TYPES).map(t => `<option${t === m.type ? " selected" : ""}>${t}</option>`).join("")}</select></div>${m.parent ? "" : `<div class="er2" style="grid-template-columns:1fr"><select data-k="lane" aria-label="道筋">${laneOpts(laneId(p, m))}</select></div>`}
-      ${m.parent ? "" : `<div class="er2"><input data-k="total" type="number" step="0.5" value="${m.total ?? ""}" placeholder="目標の量"><input data-k="unit" value="${esc(m.unit || "")}" placeholder="単位(題・年分)"><input data-k="pace" type="number" step="0.5" value="${m.pace ? m.pace.amount : ""}" placeholder="ペース/週"><input data-k="paceu" value="${esc(m.pace ? m.pace.unit : (m.unit ? m.unit + "/週" : ""))}" placeholder="単位/週"></div>
+      ${m.parent ? "" : `<div class="er2 lab4"><label class="mini">目標の量<input data-k="total" type="number" step="0.5" value="${m.total ?? ""}" placeholder="例:300"></label><label class="mini">単位<input data-k="unit" value="${esc(m.unit || "")}" placeholder="題・年分"></label><label class="mini">週のペース<input data-k="pace" type="number" step="0.5" value="${m.pace ? m.pace.amount : ""}" placeholder="例:50"></label><label class="mini">ペースの単位<input data-k="paceu" value="${esc(m.pace ? m.pace.unit : (m.unit ? m.unit + "/週" : ""))}" placeholder="題/週"></label></div>
       <div class="er2" style="grid-template-columns:1fr 1fr"><label class="note" style="display:flex;align-items:center;gap:.3rem">1つあたり<input data-k="min" type="number" step="0.5" min="0" value="${m.pace && m.pace.min ? m.pace.min : ""}" placeholder="分" style="width:4.5rem">分</label><label class="chk"><input type="checkbox" data-k="done"${m.done ? " checked" : ""}> 達成した</label></div>
       <div class="er2"><select data-k="plan"><option value="">計画とつながない</option>${plans.filter(x => x.id !== p.id).map(x => `<option value="${x.id}"${m.plan === x.id ? " selected" : ""}>${esc(x.name)}</option>`).join("")}</select><label class="chk"><input type="checkbox" data-k="del"${fx ? " disabled" : ""}> 消す</label></div>`}
       ${fx ? `<div class="note">期日は不変(${esc(fx.council)})。変えるときは評議会へ</div>` : ""}</div>`; };
+  const wkRow = (w, i) => `<div class="er wk-e" data-wk="${i}"><div class="er2" style="grid-template-columns:5.2rem 1fr"><select data-k="kind">${["作戦", "仕込み", "予備"].map(k => `<option${k === (w.kind || "作戦") ? " selected" : ""}>${k}</option>`).join("")}</select><input data-k="name" value="${esc(w.name || "")}" placeholder="${i === "new" ? "+ 作戦・仕込み・予備を足す(名前)" : "名前"}"></div>
+    <div class="er2" style="grid-template-columns:1fr 1fr"><label class="mini">始まり<input data-k="start" type="date" value="${w.start || ""}"></label><label class="mini">終わり<input data-k="end" type="date" value="${w.end || ""}"></label></div>
+    <div class="er2" style="grid-template-columns:1fr auto"><select data-k="lane" aria-label="道筋">${laneOpts(w.lane && lanesOf(p).some(l => l.id === w.lane) ? w.lane : lanesOf(p)[0].id)}</select>${i === "new" ? "" : '<label class="chk"><input type="checkbox" data-k="del"> 消す</label>'}</div></div>`;
+
+  const openAll = drafting(p) || !!editTarget, op = k => openAll || k === "節目" || (focus === "works" && k === "作戦") ? "open" : "";
   sheet(`<h3>${editTarget ? "改造の下書きを直す" : drafting(p) ? "計画を組み立てる(作成中)" : "この計画を直す"}</h3><p class="note">${editTarget ? "下書きなので、今の計画は変わらない。反映するまで何度でも直せる。" : drafting(p) ? "作成中なので、何度直しても歩みには残らない。" : "変えたところは、理由と一緒に「歩み」に残る。組み直すなら、操作の「改造」で下書きから始める。"}不変のところは直せない。</p>
-    <div class="f"><label>直す理由(歩みに残る)</label><input id="ed-why" placeholder="例:模試の日程が出たので節目を合わせた"></div>
-    <h4 class="eh">基本</h4>
+    ${drafting(p) && !editTarget ? "" : `<div class="f"><label>直す理由(歩みに残る)</label><input id="ed-why" placeholder="例:模試の日程が出たので節目を合わせた"></div>`}
+    <p class="note" style="margin:.2rem 0 .3rem">見出しを押すと開く・畳む。</p>
+    <details class="eds" ${op("基本")}><summary>基本<small>${esc(p.name)}・${md(p.start)}〜${md(p.end)}</small></summary>
     <div class="f"><label>名前</label><input id="ed-name" value="${esc(p.name)}"></div>
     <div class="row2"><div class="f"><label>省</label><input id="ed-min" value="${esc(p.ministry)}"></div><div class="f"><label>格</label><select id="ed-grade">${GRADES.map(g => `<option${g === p.grade ? " selected" : ""}>${g}</option>`).join("")}</select></div></div>
     <div class="f"><label>なぜ(目的)</label><textarea id="ed-whyp">${esc(p.why)}</textarea></div>
     <div class="f"><label>到達点${fxGoal ? "(不変)" : ""}</label><input id="ed-goal" value="${esc(p.goal)}"${fxGoal ? " disabled" : ""}></div>
     <div class="row2"><div class="f"><label>始まり</label><input id="ed-start" type="date" value="${p.start}"></div><div class="f"><label>期日${fxEnd ? "(不変)" : ""}</label><input id="ed-end" type="date" value="${p.end}"${fxEnd ? " disabled" : ""}></div><div class="f"><label>予備(日)</label><input id="ed-buf" type="number" min="0" value="${p.buffer ? p.buffer.total : 0}"></div></div>
     <div class="row2"><div class="f"><label>ペースのない週に使う時間(時間)</label><input id="ed-hpw" type="number" step="0.5" min="0" value="${p.hpw ?? ""}" placeholder="負荷の見込みに使う"></div><div class="f"><label>進捗を手で決める(%・空なら節目から自動)</label><input id="ed-prog" type="number" min="0" max="100" value="${p.manualProgress ?? ""}"></div></div>
-    <h4 class="eh">予備の層</h4><div class="row2"><div class="f"><label>週のペースを何日分で組むか(残りが日の予備)</label><input id="ed-wd" type="number" min="1" max="7" value="${wdays(p)}"></div><div class="f"><label>週の予備(%)</label><input id="ed-wb" type="number" min="0" max="50" value="${wbufPct(p)}"></div><div class="f"><label>月の予備(日/月)</label><input id="ed-mb" type="number" min="0" max="10" value="${mPer(p)}"></div></div>
     <label class="chk"><input type="checkbox" id="ed-one"${p.oneShot ? " checked" : ""}> 本番が一度きり</label>
-    <h4 class="eh">道筋と期間</h4><p class="note" style="margin:0 0 .3rem">道筋は 主 → 副 → 補 の順に並び、同じ段階の中は上ほど重要。進捗は主3・副2・補1の重さで数える。期間は道筋ごとに持つ。</p>
+    </details>
+    <details class="eds" ${op("道筋")}><summary>道筋と期間<small>${lanesOf(p).length}本</small></summary>
+    <p class="note" style="margin:0 0 .3rem">道筋は 主 → 副 → 補 の順に並び、同じ段階の中は上ほど重要。進捗は主3・副2・補1の重さで数える。期間は道筋ごとに持つ。</p>
     <div id="ed-lanes">${(p.lanes && p.lanes.length ? p.lanes : lanesOf(p)).map(l => laneBlock(l)).join("")}</div><div class="fbar" style="margin:.2rem 0 0"><span class="note">道筋を足す:</span>${RANKS.map(r => `<button class="btn ghost sm" data-laneadd="${r}">+ ${r}の道筋</button>`).join("")}</div>
-    <h4 class="eh" id="er-ms">節目</h4><p class="note" style="margin:0 0 .3rem">目標の量とペースは週ごと。つなぐ計画を選ぶと、その計画の進捗がこの節目の進捗になる。</p>
+    </details>
+    <details class="eds" id="er-ms" ${op("節目")}><summary>節目<small>${mainMs(p).length}つ</small></summary>
+    <p class="note" style="margin:0 0 .3rem">目標の量とペースは週ごと。つなぐ計画を選ぶと、その計画の進捗がこの節目の進捗になる。</p>
     ${mainMs(p).map(m => msRow(m) + subsOf(p, m.id).map(msRow).join("")).join("")}
     <div class="er ms-e" data-msr="new"><div class="er2"><input data-k="name" placeholder="+ 節目を足す(名前)"><input data-k="date" type="date"><select data-k="type">${Object.keys(MS_TYPES).map(t => `<option${t === "予定" ? " selected" : ""}>${t}</option>`).join("")}</select></div><div class="er2" style="grid-template-columns:1fr"><select data-k="lane" aria-label="道筋">${laneOpts(lanesOf(p)[0].id)}</select></div></div>
     <div class="fbar" style="margin:.2rem 0 0"><button class="btn ghost sm" data-msrow>+ 節目の行を足す</button><button class="btn ghost sm" data-msbulk>まとめて書く</button></div>
     <div id="ed-bulk" hidden><div class="f"><label>1行に1つずつ「日付 名前」(例:11/30 IAを一周)。行の終わりに「確定」「仮」と書くと種類になる(書かなければ予定)</label><textarea id="ed-bulk-t" rows="5" placeholder="11/15 過去問2022年を解く 仮&#10;11/30 過去問3年分&#10;1/16 本番 確定"></textarea></div>
       <div class="f"><label>入れる道筋</label><select id="ed-bulk-l">${laneOpts(lanesOf(p)[0].id)}</select></div></div>
+    </details>
+    <details class="eds" ${op("作戦")}><summary>作戦・仕込み・予備<small>${p.works.length}つ・期間の中に出る印</small></summary>
+    <p class="note" style="margin:0 0 .3rem">作戦=節目に届くためのやり方、仕込み=途中で要る準備、予備=空けておく期間。道筋ごとに置く。</p>
+    <div id="ed-works">${p.works.map(wkRow).join("")}${wkRow({}, "new")}</div><button class="linkx addrow" data-wkrow>+ 作戦・仕込み・予備の行を足す</button>
+    </details>
+    <details class="eds" ${op("予備")}><summary>予備の層<small>日${7 - wdays(p)}・週${wbufPct(p)}%・月${mPer(p)}日</small></summary>
+    <div class="row2"><div class="f"><label>週のペースを何日分で組むか(残りが日の予備)</label><input id="ed-wd" type="number" min="1" max="7" value="${wdays(p)}"></div><div class="f"><label>週の予備(%)</label><input id="ed-wb" type="number" min="0" max="50" value="${wbufPct(p)}"></div><div class="f"><label>月の予備(日/月)</label><input id="ed-mb" type="number" min="0" max="10" value="${mPer(p)}"></div></div>
+    </details>
     <div style="position:sticky;bottom:0;background:var(--paper);padding:.6rem 0 .2rem;margin-top:.6rem"><button class="btn" data-edsave>直す</button></div>`);
-  if (focus) setTimeout(() => { const el = document.getElementById("er-" + focus) || document.getElementById("er-ms"); if (el) el.scrollIntoView({ block: "center" }); }, 60);
+  if (focus && focus !== "works") setTimeout(() => { const el = document.getElementById("er-" + focus) || document.getElementById("er-ms"); if (el) el.scrollIntoView({ block: "center" }); }, 60);
+  window.__wkRow = wkRow;
+}
+/* 保存の前に:日付の入っていない行などを探し、あればその行に印をつけて止める */
+function validateEdit(){
+  const bad = [], val = (r, k) => ((r.querySelector(`[data-k="${k}"]`) || {}).value || "").trim(), del = r => !!(r.querySelector('[data-k="del"]') || {}).checked;
+  document.querySelectorAll(".sheet .bad").forEach(r => r.classList.remove("bad"));
+  document.querySelectorAll(".sheet [data-msr]").forEach(r => { if (del(r)) return; const n = val(r, "name"), d = val(r, "date"), dis = (r.querySelector('[data-k="date"]') || {}).disabled;
+    if (r.dataset.msr === "new" ? (!!n !== !!d) : (!n || (!d && !dis))) { r.classList.add("bad"); bad.push(n ? "節目「" + n + "」の日付" : "節目の名前"); } });
+  document.querySelectorAll(".sheet [data-lper]").forEach(r => { if (del(r)) return; const n = val(r, "name"), a = val(r, "start"), e = val(r, "end");
+    if ((n || a || e) && !(n && a && e)) { r.classList.add("bad"); bad.push("期間「" + (n || "名前なし") + "」の" + (!n ? "名前" : !a ? "始まり" : "終わり")); }
+    else if (n && a > e) { r.classList.add("bad"); bad.push("期間「" + n + "」の始まりが終わりより後"); } });
+  document.querySelectorAll(".sheet [data-wk]").forEach(r => { if (del(r)) return; const n = val(r, "name"), a = val(r, "start"), e = val(r, "end");
+    if ((n || a || e) && !(n && a && e)) { r.classList.add("bad"); bad.push((n ? "「" + n + "」" : "作戦・仕込み・予備") + "の" + (!n ? "名前" : "日付")); } });
+  const s0 = ($("ed-start") || {}).value, e0 = ($("ed-end") || {}).value; if (s0 && e0 && s0 > e0) bad.push("始まりが期日より後");
+  if (bad.length) { const r = document.querySelector(".sheet .bad"); if (r) { const det = r.closest("details"); if (det) det.open = true; r.scrollIntoView({ block: "center" }); } }
+  return bad;
+}
+/* 保存したあと:始まり・期日の外に出た節目があれば、合わせるか聞く */
+function fixOutside(t){
+  const ms = mainMs(t), late = ms.filter(m => m.date > t.end), early = ms.filter(m => m.date < t.start);
+  if (late.length && !isFixed(t, "end")) { const mx = late.map(m => m.date).sort().pop();
+    if (confirm("期日(" + md(t.end) + ")より後ろに節目がある:" + late.map(m => m.name).join("、") + "\n期日を " + md(mx) + " まで延ばす?(延ばさないと、図では端に寄って見える)")) { if (!drafting(t)) t.changes.push({ date: TODAY, kind: "変更", what: "期日", before: md(t.end), after: md(mx), reason: "期日より後ろの節目に合わせた", size: "大" }); t.end = mx; } }
+  if (early.length) { const mn = early.map(m => m.date).sort()[0];
+    if (confirm("始まり(" + md(t.start) + ")より前に節目がある:" + early.map(m => m.name).join("、") + "\n始まりを " + md(mn) + " にする?")) { if (!drafting(t)) t.changes.push({ date: TODAY, kind: "変更", what: "始まり", before: md(t.start), after: md(mn), reason: "始まりより前の節目に合わせた", size: "小" }); t.start = mn; } }
 }
 function saveEdit(p){
-  const why = $("ed-why").value.trim(), log = (what, a, b, size) => { if (drafting(p)) return; if (String(a) !== String(b)) p.changes.push({ date: TODAY, kind: "変更", what, before: String(a || "(なし)"), after: String(b || "(なし)"), reason: why || "(理由なし)", size }); };
+  const why = ($("ed-why") || { value: "" }).value.trim(), log = (what, a, b, size) => { if (drafting(p)) return; if (String(a) !== String(b)) p.changes.push({ date: TODAY, kind: "変更", what, before: String(a || "(なし)"), after: String(b || "(なし)"), reason: why || "(理由なし)", size }); };
   const v = id => $(id).value.trim(); let n = 0; const L = (...a) => { const before = p.changes.length; log(...a); n += p.changes.length - before; };
   L("名前", p.name, v("ed-name"), "小"); p.name = v("ed-name") || p.name;
   L("省", p.ministry, v("ed-min"), "小"); p.ministry = v("ed-min") || p.ministry;
@@ -2030,6 +2096,15 @@ function saveEdit(p){
   { const ord = before.map(l => l.id).filter(id => lanesNew.some(l => l.id === id)).join(","), now = lanesNew.map(l => l.id).filter(id => before.some(l => l.id === id)).join(","); if (ord !== now) L("道筋の並び", "前の並び", "並べ替えた", "小"); }
   p.lanes = lanesNew;
   const firstLane = lanesOf(p)[0].id;
+  // 作戦・仕込み・予備
+  { const wBefore = (p.works || []).slice(), out = [];
+    document.querySelectorAll('#ed-works [data-wk]').forEach(r => { const g = k => ((r.querySelector(`[data-k="${k}"]`) || {}).value || "").trim(), del = (r.querySelector('[data-k="del"]') || {}).checked, ix = r.dataset.wk, old = ix === "new" ? null : wBefore[+ix];
+      if (del) { if (old) L(old.kind + "「" + old.name + "」", "あり", "消した", "小"); return; }
+      if (!g("name") || !g("start") || !g("end")) { if (old) out.push(old); return; }
+      const w = { kind: g("kind"), name: g("name"), start: g("start"), end: g("end"), lane: p.lanes.some(l => l.id === g("lane")) ? g("lane") : firstLane };
+      if (!old) L(w.kind, "(なし)", w.name + " " + md(w.start) + "〜" + md(w.end), "小"); else L(old.kind + "「" + old.name + "」", old.name + " " + md(old.start) + "〜" + md(old.end) + (old.lane !== w.lane ? "" : ""), w.name + " " + md(w.start) + "〜" + md(w.end), "小");
+      out.push(w); });
+    p.works = out; }
   // 節目
   document.querySelectorAll('[data-msr]').forEach(r => { const g = k => { const e = r.querySelector(`[data-k="${k}"]`); return e ? e.value.trim() : ""; }, del = (r.querySelector('[data-k="del"]') || {}).checked, id = r.dataset.msr;
     if (id === "new") { if (g("name") && g("date")) { const ln = p.lanes.some(l => l.id === g("lane")) ? g("lane") : firstLane; p.milestones.push({ id: "m" + Date.now().toString(36), name: g("name"), date: g("date"), type: g("type"), lane: ln, tasks: [], records: [], weeks: [] }); L("節目", "(なし)", g("name") + " " + md(g("date")), "小"); } return; }
@@ -2085,6 +2160,7 @@ function openGoals(){
   const on = (pid, mid) => headGoals.some(g => g.p === pid && g.m === mid);
   sheet(`<h3>どこからでも見える目標</h3><p class="note">上にいつも出す節目を、5つまで選ぶ。</p><div id="gs-list">${MINS().map(mi => { const xs = all.filter(x => x.p.ministry === mi); return xs.length ? `<div class="pkh">${esc(mi)}</div>` + xs.map(({ p, m }) =>
     `<label class="pk" style="cursor:pointer"><input type="checkbox" data-goalpick="${p.id}:${m.id}"${on(p.id, m.id) ? " checked" : ""}> <span>${esc(m.name)}<small>${esc(p.name)}・${md(m.date)}・あと${days(TODAY, m.date)}日</small></span></label>`).join("") : ""; }).join("")}</div>`);
+  sheetSnap = null;   // 押すたびにすぐ反映されるので、閉じるときに確かめない
 }
 
 /* ───────── 描画と操作 ───────── */
@@ -2111,9 +2187,11 @@ function logChange(p, what, before, after, reason, size){ p.changes.push({ date:
 
 document.addEventListener("click", e => {
   const b = e.target.closest("button,[data-relgo],[data-sclose]"); if (!b || b.disabled) return; const d = b.dataset, p = P(planId);
+  undoArmed = false;
+  if (b.hasAttribute("data-undo")) { if (undoSnap) { dataIn(undoSnap); undoSnap = null; editTarget = null; closeSheet(); render(); b.closest(".toast") && b.closest(".toast").remove(); toast("元に戻した"); } return; }
   if (d.goplan && b.classList.contains("goal-c")) { showRisk = false; goPlan(d.goplan, "図"); return; }
   if (d.v) { if (d.v === "overview" && fromSho) { fromSho = ""; ovMin = ""; ovGroup = "grade"; } location.hash = d.v; if (d.v === current()) render(); return; }
-  if (b.hasAttribute("data-sclose")) { closeSheet(); return; }
+  if (b.hasAttribute("data-sclose")) { closeAsk(); return; }
   if (d.pick) { remember(d.pick); if (pickFor === "rel") relId = d.pick; else { planId = d.pick; reqPath = []; } closeSheet(); render(); window.scrollTo(0, 0); return; }
   if (d.goplan) { showRisk = !!d.risk; goPlan(d.goplan, d.ptab || (d.risk ? "図" : null)); return; }
   if (d.picker) { openPicker(d.picker); return; }
@@ -2134,11 +2212,13 @@ document.addEventListener("click", e => {
   if (d.reqgo != null && b.hasAttribute("data-reqgo")) { reqPath = d.reqgo ? d.reqgo.split(",").map(Number) : []; reqView = "mandala"; render(); return; }
   if (d.reqv) { reqView = d.reqv; render(); return; }
   if (b.hasAttribute("data-requp")) { reqPath.pop(); render(); return; }
-  if (b.hasAttribute("data-reqadd")) { sheet(`<h3>要素を足す</h3><p class="note">「${esc(reqNode(p).text)}」を達成するには、何が必要か。</p><div class="f"><label>要素</label><input id="rq-t" placeholder="例:60分で解き切る時間配分"></div>
-      <div class="f"><label>別の計画の達成とつなぐ(なくてもいい)</label><select id="rq-p"><option value="">つながない</option>${plans.filter(x => x.id !== p.id).map(x => `<option value="${x.id}">${esc(x.name)}</option>`).join("")}</select></div><button class="btn" data-rqsave>足す</button>`); return; }
-  if (b.hasAttribute("data-rqsave")) { const t = $("rq-t").value.trim(), lp = $("rq-p").value; if (!t && !lp) return; const n = reqNode(p); n.kids = n.kids || []; n.kids.push(Object.assign({ text: t || P(lp).name }, lp ? { plan: lp } : {})); closeSheet(); render(); toast("足した"); return; }
+  if (b.hasAttribute("data-reqadd")) { sheet(`<h3>要素を足す</h3><p class="note">「${esc(reqNode(p).text)}」を達成するには、何が必要か。1行に1つずつ書けば、まとめて足せる。</p><div class="f"><label>要素(1行に1つ)</label><textarea id="rq-t" rows="4" placeholder="例:60分で解き切る時間配分&#10;大問ごとの捨て方を決める"></textarea></div>
+      <div class="f"><label>別の計画の達成とつなぐ(1つだけ足すときに使える)</label><select id="rq-p"><option value="">つながない</option>${plans.filter(x => x.id !== p.id).map(x => `<option value="${x.id}">${esc(x.name)}</option>`).join("")}</select></div><button class="btn" data-rqsave>足す</button>`); return; }
+  if (b.hasAttribute("data-rqsave")) { const lines = $("rq-t").value.split("\n").map(x => x.trim()).filter(Boolean), lp = $("rq-p").value; if (!lines.length && !lp) return; const n = reqNode(p); n.kids = n.kids || [];
+    if (lines.length <= 1) n.kids.push(Object.assign({ text: lines[0] || P(lp).name }, lp ? { plan: lp } : {})); else lines.forEach(t => n.kids.push({ text: t })); closeSheet(); render(); toast("足した"); return; }
+  if (b.hasAttribute("data-reqren")) { const v = $("rq-name").value.trim(); if (!v) return; takeUndo(); reqNode(p).text = v; render(); toast("名前を直した"); return; }
   if (d.reqst) { reqNode(p).st = d.reqst; render(); return; }
-  if (b.hasAttribute("data-reqdel")) { const i = reqPath.pop(), parent = reqNode(p); parent.kids.splice(i, 1); render(); toast("消した"); return; }
+  if (b.hasAttribute("data-reqdel")) { takeUndo(); const i = reqPath.pop(), parent = reqNode(p); parent.kids.splice(i, 1); render(); toast("消した"); return; }
   // 道のり
   if (d.msopen) { openMs[d.msopen] = !openMs[d.msopen]; render(); return; }
   if (d.taskadd) { const el = $("task-in-" + d.taskadd), t = el && el.value.trim(); if (!t) return; p.milestones.find(m => m.id === d.taskadd).tasks.push(t); render(); return; }
@@ -2174,7 +2254,7 @@ document.addEventListener("click", e => {
     else p.milestones.find(m => m.id === d.recsave).records.push({ date: dt, value: v, note: nt });
     closeSheet(); render(); se("rec"); toast("記録した"); return; }
   if (d.shift != null && b.hasAttribute("data-shift")) { openShift(p, d.shift); return; }
-  if (b.hasAttribute("data-shsave")) { const m = p.milestones.find(x => x.id === $("sh-m").value), nd = $("sh-d").value, all = $("sh-all").checked, why = $("sh-r").value.trim();
+  if (b.hasAttribute("data-shsave")) { takeUndo(); const m = p.milestones.find(x => x.id === $("sh-m").value), nd = $("sh-d").value, all = $("sh-all").checked, why = $("sh-r").value.trim();
     if (isFixed(p, "ms:" + m.id)) { propose(p, "節目「" + m.name + "」の期日を " + md(m.date) + " から " + md(nd) + " に変える", isFixed(p, "ms:" + m.id).council, { type: "ms-date", ms: m.id, date: nd }); closeSheet(); toast("不変なので、評議会に変える案を出した"); render(); return; }
     const delta = days(m.date, nd); if (!delta) { closeSheet(); return; }
     const moved = [m].concat(all ? p.milestones.filter(x => x !== m && !x.parent && laneId(p, x) === laneId(p, m) && x.date > m.date && x.type !== "確定" && !isFixed(p, "ms:" + x.id) && !isDone(x)) : []);
@@ -2185,7 +2265,7 @@ document.addEventListener("click", e => {
   if (b.hasAttribute("data-cgsave")) { const g = $("cg-g").value.trim(), en = $("cg-e").value, why = $("cg-r").value.trim();
     if (g && g !== p.goal) { logChange(p, "到達点", p.goal, g, why, "大"); p.goal = g; } if (en && en !== p.end) { logChange(p, "期日", md(p.end), md(en), why, "大"); p.end = en; } closeSheet(); render(); toast("変えた。変更の記録に残した"); return; }
   if (b.hasAttribute("data-ifadd")) { const tr = $("if-trig").value.trim(), pl = $("if-plan").value.trim(); if (!tr || !pl) { toast("合図と切り替えを書いてください"); return; } p.ifs.push({ at: $("if-at").value, kind: $("if-kind").value, trigger: tr, plan: pl }); render(); toast("もしもの計画を足した"); return; }
-  if (d.ifdel) { p.ifs.splice(+d.ifdel, 1); render(); return; }
+  if (d.ifdel) { takeUndo(); p.ifs.splice(+d.ifdel, 1); render(); toast("もしもの計画を消した"); return; }
   if (b.hasAttribute("data-bsadd")) { const x = $("bs-x").value.trim(); if (!x) return; p.basis.push({ target: $("bs-t").value, text: x, src: $("bs-s").value.trim() || "自分", date: TODAY }); render(); toast("根拠を足した"); return; }
   // 関係
   if (b.hasAttribute("data-rladd")) { const q = P(relId), to = $("rl-to").value, k = $("rl-k").value; if (!q.rels.some(r => r.to === to && r.kind === k)) q.rels.push({ to, kind: k }); render(); toast("つないだ"); return; }
@@ -2200,8 +2280,8 @@ document.addEventListener("click", e => {
   if (b.hasAttribute("data-fup")) { fieldPath.pop(); render(); return; }
   if (d.fst) { nodeAt(F().root, fieldPath).st = d.fst; render(); return; }
   if (b.hasAttribute("data-fdel")) { const i = fieldPath.pop(); nodeAt(F().root, fieldPath).kids.splice(i, 1); render(); toast("消した"); return; }
-  if (b.hasAttribute("data-fadd")) { sheet(`<h3>全体像に足す</h3><p class="note">「${esc(nodeAt(F().root, fieldPath).text)}」の中に足す。</p><div class="f"><label>名前</label><input id="fa-n" placeholder="例:確率漸化式"></div><button class="btn" data-fasave>足す</button>`); return; }
-  if (b.hasAttribute("data-fasave")) { const t = $("fa-n").value.trim(); if (!t) return; const n = nodeAt(F().root, fieldPath); n.kids = n.kids || []; if (!n.kids.length) delete n.st; n.kids.push({ text: t, st: "未" }); closeSheet(); render(); return; }
+  if (b.hasAttribute("data-fadd")) { sheet(`<h3>全体像に足す</h3><p class="note">「${esc(nodeAt(F().root, fieldPath).text)}」の中に足す。</p><div class="f"><label>名前(1行に1つずつ書けば、まとめて足せる)</label><textarea id="fa-n" rows="4" placeholder="例:確率漸化式&#10;条件付き確率"></textarea></div><button class="btn" data-fasave>足す</button>`); return; }
+  if (b.hasAttribute("data-fasave")) { const ts = $("fa-n").value.split("\n").map(x => x.trim()).filter(Boolean); if (!ts.length) return; const n = nodeAt(F().root, fieldPath); n.kids = n.kids || []; if (!n.kids.length) delete n.st; ts.forEach(t => n.kids.push({ text: t, st: "未" })); closeSheet(); render(); toast(ts.length + "つ足した"); return; }
   if (b.hasAttribute("data-fieldnew")) { sheet(`<h3>分野を足す</h3><div class="row2"><div class="f"><label>名前</label><input id="fn-n" placeholder="例:化学"></div><div class="f"><label>省</label><input id="fn-m" placeholder="例:理科省"></div></div><button class="btn" data-fnsave>足す</button>`); return; }
   if (b.hasAttribute("data-fnsave")) { const n = $("fn-n").value.trim(); if (!n) return; const id = "f" + Date.now().toString(36); fields.push({ id, ministry: $("fn-m").value.trim() || "未分類", name: n, updated: TODAY, always: [], root: { text: n, kids: [] } }); fieldId = id; fieldPath = []; closeSheet(); render(); return; }
   if (b.hasAttribute("data-alwadd")) { const t = $("alw-in").value.trim(); if (!t) return; F().always.push({ t, done: false }); render(); return; }
@@ -2217,7 +2297,7 @@ document.addEventListener("click", e => {
     closeSheet(); render(); se("buffer"); toast(got.join("・") + "使った"); return; }
   if (b.hasAttribute("data-replan")) { openReplan(p, 0, ""); return; }
   if (b.hasAttribute("data-bufset")) { p.buffer = { total: Math.max(3, Math.round(days(p.start, p.end) / 12)), uses: [] }; render(); toast("予備を " + p.buffer.total + "日置いた"); return; }
-  if (b.hasAttribute("data-rpsave")) { const how = $("rp-m").value, n = Math.max(1, +$("rp-d").value || 1), cause = $("rp-c").value, why = $("rp-r").value.trim() || "予備で吸収しきれない遅れ";
+  if (b.hasAttribute("data-rpsave")) { takeUndo(); const how = $("rp-m").value, n = Math.max(1, +$("rp-d").value || 1), cause = $("rp-c").value, why = $("rp-r").value.trim() || "予備で吸収しきれない遅れ";
     p.versions = p.versions || []; const snap = { date: TODAY, label: md(TODAY) + "に立て直す前", ms: {}, end: p.end };
     p.milestones.forEach(m => snap.ms[m.id] = m.date);
     if (how === "shift") { const ln = ($("rp-l") || {}).value || ""; const moved = p.milestones.filter(m => !isDone(m) && m.type !== "確定" && !isFixed(p, "ms:" + m.id) && (!ln || laneId(p, m.parent ? (p.milestones.find(y => y.id === m.parent) || m) : m) === ln));
@@ -2229,10 +2309,12 @@ document.addEventListener("click", e => {
   if (d.walk) { walkKind = d.walk; render(); return; }
   if (d.sumg) { sumGrade = d.sumg; render(); return; }
   // 直す・週の記録
-  if (b.hasAttribute("data-planops")) { sheet(`<h3>${esc(p.name)}</h3><div class="msl"><button class="msi" data-edit><span class="msn"><span>この計画を直す</span><small>名前・格・到達点・期間・節目・予備</small></span></button>${drafting(p) ? "" : `<button class="msi" data-kz${p.draft ? "edit" : "start"}><span class="msn"><span>${p.draft ? "改造の下書きを直す" : "改造する(下書きで組み直す)"}</span><small>期間・節目・到達点の組み直し。何日かに分けてよく、反映するまで今の計画はそのまま</small></span></button>`}<button class="msi" data-whatif><span class="msn"><span>もしもの試し</span><small>節目をずらしたときの影響を、反映する前に見る</small></span></button>${drafting(p) ? "" : `<button class="msi" data-closeplan><span class="msn"><span>この計画を終える</span><small>完了・中止。総括と学びを残す</small></span></button>`}<button class="msi" data-plandel><span class="msn"><span style="color:var(--bad)">この計画を消す</span><small>間違えて作ったとき。終えた計画を残したいなら「終える」</small></span></button></div>`); return; }
+  if (b.hasAttribute("data-planops")) { sheet(`<h3>${esc(p.name)}</h3><div class="msl"><button class="msi" data-edit><span class="msn"><span>この計画を直す</span><small>名前・格・到達点・期間・節目・予備</small></span></button>${drafting(p) ? "" : `<button class="msi" data-kz${p.draft ? "edit" : "start"}><span class="msn"><span>${p.draft ? "改造の下書きを直す" : "改造する(下書きで組み直す)"}</span><small>期間・節目・到達点の組み直し。何日かに分けてよく、反映するまで今の計画はそのまま</small></span></button>`}<button class="msi" data-whatif><span class="msn"><span>もしもの試し</span><small>節目をずらしたときの影響を、反映する前に見る</small></span></button>${drafting(p) ? "" : `<button class="msi" data-closeplan><span class="msn"><span>この計画を終える</span><small>完了・中止。総括と学びを残す</small></span></button>`}<button class="msi" data-plancopy><span class="msn"><span>この計画を複製する</span><small>形だけを写して、新しい計画を作成中で作る(教科ごとの同じ型など)</small></span></button><button class="msi" data-plandel><span class="msn"><span style="color:var(--bad)">この計画を消す</span><small>間違えて作ったとき。終えた計画を残したいなら「終える」</small></span></button></div>`); return; }
   if (d.edit != null && b.hasAttribute("data-edit")) { openEdit(p, d.edit ? d.edit.replace("ms:", "") : ""); return; }
-  if (b.hasAttribute("data-edsave")) { if (editTarget) { const t = editTarget, n0 = t.changes.length; saveEdit(t); saveDraftObj(p, t); editTarget = null; closeSheet(); render(); toast("下書きを直した(" + (t.changes.length - n0) + "か所)。反映するまで今の計画はそのまま"); return; }
-    const dr = drafting(p), n = saveEdit(p); closeSheet(); render(); if (dr) { toast("直した(作成中なので、歩みには残さない)"); return; } toast(n ? "直した。変えた " + n + "か所を歩みに残した" : "変わったところはなかった"); return; }
+  if (b.hasAttribute("data-edsave")) { const bad = validateEdit(); if (bad.length) { toast("入っていないところがある:" + bad.slice(0, 3).join("、") + (bad.length > 3 ? " ほか" : "")); return; }
+    takeUndo();
+    if (editTarget) { const t = editTarget, n0 = t.changes.length; saveEdit(t); fixOutside(t); saveDraftObj(p, t); editTarget = null; closeSheet(); render(); toast("下書きを直した(" + (t.changes.length - n0) + "か所)。反映するまで今の計画はそのまま"); return; }
+    const dr = drafting(p), n = saveEdit(p); fixOutside(p); closeSheet(); render(); if (dr) { toast("直した(作成中なので、歩みには残さない)"); return; } toast(n ? "直した。変えた " + n + "か所を歩みに残した" : "変わったところはなかった"); return; }
   if (d.wkrec) { const m = p.milestones.find(x => x.id === d.wkrec), v = $("wk-in-" + m.id).value.trim(), w = weekStart(TODAY); if (v === "") return;
     m.weeks = (m.weeks || []).filter(x => x.w !== w); m.weeks.push({ w, done: +v }); render(); se("rec"); const pr = msProg(m); toast(wk(w) + "に " + v + (m.unit || "") + " を記録した(進捗 " + pr.pct + "%)"); return; }
   // 節目の中に計画を入れる
@@ -2260,6 +2342,8 @@ document.addEventListener("click", e => {
   // 音
   if (d.setry) { if (d.setry.startsWith("ui:")) { const o = seCfg.ui; seCfg.ui = true; uiSound(d.setry.slice(3)); seCfg.ui = o; } else { const o = seCfg.on; seCfg.on = true; se(d.setry); seCfg.on = o; } return; }
   if (d.wesave) { const [mid, w] = d.wesave.split("|"), m = p.milestones.find(x => x.id === mid), v = $("we-v").value.trim(); m.weeks = (m.weeks || []).filter(x => x.w !== w); if (v !== "") m.weeks.push({ w, done: +v }); m.weeks.sort((a, b) => a.w < b.w ? -1 : 1); closeSheet(); render(); se("rec"); return; }
+  if (b.hasAttribute("data-wkrow")) { const rows = document.querySelectorAll('.sheet [data-wk="new"]'), last = rows[rows.length - 1], c = last.cloneNode(true);
+    c.querySelectorAll("input").forEach(x => x.value = ""); last.after(c); c.querySelector('[data-k="name"]').focus(); return; }
   if (b.hasAttribute("data-msrow")) { const rows = document.querySelectorAll('.sheet [data-msr="new"]'), last = rows[rows.length - 1], c = last.cloneNode(true);
     c.querySelectorAll("input").forEach(x => x.value = ""); c.querySelector('[data-k="type"]').value = "予定"; last.after(c); c.querySelector('[data-k="name"]').focus(); return; }
   if (b.hasAttribute("data-msbulk")) { const el = $("ed-bulk"); el.hidden = !el.hidden; if (!el.hidden) $("ed-bulk-t").focus(); return; }
@@ -2283,14 +2367,39 @@ document.addEventListener("click", e => {
     q.start = sd; q.phase = "進行中"; q.startedAt = TODAY;
     q.changes.push({ date: TODAY, kind: "作成", what: "計画を始めた", before: "作成中", after: "進行中", reason: "始まり " + md(sd), size: "大" });
     closeSheet(); render(); window.scrollTo(0, 0); se("best"); toast("始めた。明日から今日の確認の対象になる"); return; }
+  if (d.rldel) { const [from, to, k] = d.rldel.split("|"), q = P(from); if (!q) return; takeUndo(); q.rels = q.rels.filter(r => !(r.to === to && r.kind === k)); render(); toast("関係を外した"); return; }
+  if (d.bsedit != null && b.hasAttribute("data-bsedit")) { const x = p.basis[+d.bsedit];
+    sheet(`<h3>根拠を直す</h3><div class="f"><label>根拠</label><textarea id="be-x">${esc(x.text)}</textarea></div><div class="f"><label>出どころ</label><input id="be-s" value="${esc(x.src || "")}"></div><div class="fbar"><button class="btn" data-besave="${d.bsedit}">直す</button><button class="btn shu sm" data-bsdel="${d.bsedit}">この根拠を消す</button></div>`); return; }
+  if (d.besave != null && b.hasAttribute("data-besave")) { const x = p.basis[+d.besave], t = $("be-x").value.trim(); if (!t) { toast("根拠を書いてください"); return; } takeUndo(); x.text = t; x.src = $("be-s").value.trim() || x.src; closeSheet(); render(); toast("根拠を直した"); return; }
+  if (d.bsdel != null && b.hasAttribute("data-bsdel")) { takeUndo(); p.basis.splice(+d.bsdel, 1); closeSheet(); render(); toast("根拠を消した"); return; }
+  if (d.ifedit != null && b.hasAttribute("data-ifedit")) { const x = p.ifs[+d.ifedit];
+    sheet(`<h3>もしもの計画を直す</h3><div class="row2"><div class="f"><label>どの節目で</label><select id="ie-at">${mainMs(p).map(m => `<option value="${m.id}"${m.id === x.at ? " selected" : ""}>${esc(msName(m))}(${md(m.date)})</option>`).join("")}</select></div><div class="f"><label>どんなとき</label><select id="ie-kind">${["下回ったとき", "失敗したとき"].map(k => `<option${k === x.kind ? " selected" : ""}>${k}</option>`).join("")}</select></div></div>
+      <div class="f"><label>合図(何が起きたら)</label><input id="ie-trig" value="${esc(x.trigger)}"></div><div class="f"><label>切り替え(どうするか)</label><textarea id="ie-plan">${esc(x.plan)}</textarea></div><button class="btn" data-iesave="${d.ifedit}">直す</button>`); return; }
+  if (d.iesave != null && b.hasAttribute("data-iesave")) { const x = p.ifs[+d.iesave], tr = $("ie-trig").value.trim(), pl = $("ie-plan").value.trim(); if (!tr || !pl) { toast("合図と切り替えを書いてください"); return; } takeUndo(); Object.assign(x, { at: $("ie-at").value, kind: $("ie-kind").value, trigger: tr, plan: pl }); closeSheet(); render(); toast("もしもの計画を直した"); return; }
+  // 8) 複製
+  if (b.hasAttribute("data-plancopy")) { sheet(`<h3>「${esc(p.name)}」を複製する</h3><p class="note">道筋・期間・節目・作戦などの形だけを写し、記録・予備の使用・歩みは写さない。写したものは作成中から始まる。</p>
+      <div class="f"><label>新しい計画の名前</label><input id="cp-n" value="${esc(p.name)}の写し"></div><div class="row2"><div class="f"><label>省</label><input id="cp-m" value="${esc(p.ministry)}"></div><div class="f"><label>日付をずらす(日)</label><input id="cp-d" type="number" value="0"></div></div>
+      <label class="chk" style="display:flex;margin:.3rem 0"><input type="checkbox" id="cp-req" checked> 分解(マンダラ)も写す</label><label class="chk" style="display:flex;margin:.3rem 0"><input type="checkbox" id="cp-if" checked> もしもの計画も写す</label>
+      <button class="btn" data-cpsave>複製する</button>`); return; }
+  if (b.hasAttribute("data-cpsave")) { const off = +$("cp-d").value || 0, sh = dt => dt ? addD(dt, off) : dt, idm = {}, nid = "n" + uid(), q = clone(p);
+    q.id = nid; q.name = $("cp-n").value.trim() || p.name + "の写し"; q.ministry = $("cp-m").value.trim() || p.ministry; q.phase = "作成中"; delete q.status; delete q.startedAt; delete q.draft; delete q.needsKaizo; delete q.closedAt; delete q.summary;
+    q.start = sh(p.start); q.end = sh(p.end); q.created = TODAY; q.changes = [ { date: TODAY, kind: "作成", what: "「" + p.name + "」から複製した", before: "", after: q.name, reason: "", size: "小" } ]; q.versions = []; q.fixed = []; q.rels = []; q.basis = [];
+    q.lanes = (q.lanes || []).map(l => { const ni = "L" + uid(); idm[l.id] = ni; return Object.assign(l, { id: ni, periods: (l.periods || []).map(x => Object.assign(x, { start: sh(x.start), end: sh(x.end) })) }); });
+    const mid = {}; q.milestones.forEach(m => { mid[m.id] = "m" + uid(); });
+    q.milestones = q.milestones.map(m => Object.assign(m, { id: mid[m.id], parent: m.parent ? mid[m.parent] : undefined, lane: idm[m.lane] || m.lane, date: sh(m.date), weeks: [], records: [], done: false, doneAt: undefined, taskDone: {}, cond: undefined, plan: undefined }));
+    q.works = (q.works || []).map(w => Object.assign(w, { start: sh(w.start), end: sh(w.end), lane: idm[w.lane] || w.lane }));
+    if (q.buffer) q.buffer.uses = []; if (q.mbuf) q.mbuf.uses = [];
+    q.ifs = $("cp-if").checked ? (q.ifs || []).map(x => Object.assign(x, { at: mid[x.at] || x.at })) : [];
+    if (!$("cp-req").checked) q.req = { text: q.goal, kids: [] }; else { const strip = n => { delete n.plan; (n.kids || []).forEach(strip); }; strip(q.req); }
+    takeUndo(); plans.push(q); closeSheet(); goPlan(nid, "図"); toast("複製した(作成中)。名前や日付を整えてから始める"); return; }
   // 消す・直す
-  if (b.hasAttribute("data-plandel")) { if (!confirm("「" + p.name + "」を消す?(元に戻せない。残したいなら「終える」)")) return;
+  if (b.hasAttribute("data-plandel")) { if (!confirm("「" + p.name + "」を消す?(残したいなら「終える」)")) return; takeUndo();
     const id = p.id; plans = plans.filter(x => x.id !== id); plans.forEach(q => { q.rels = q.rels.filter(r => r.to !== id); q.milestones.forEach(m => { if (m.plan === id) delete m.plan; }); });
     tests.forEach(t => { if (t.plan === id) t.plan = null; }); headGoals = headGoals.filter(g => g.p !== id); recent = recent.filter(x => x !== id); planId = ""; closeSheet(); location.hash = "overview"; render(); toast("消した"); return; }
-  if (d.testdel) { const t = T(d.testdel); if (!confirm("テスト「" + t.name + "」を、記録ごと消す?")) return; tests = tests.filter(x => x !== t); plans.forEach(q => q.milestones.forEach(m => { if (m.cond && m.cond.test === t.id) delete m.cond; })); testSel = null; closeSheet(); render(); toast("消した"); return; }
-  if (d.tsdel) { const [tid, , idx] = d.tsdel.split("|"), t = T(tid); if (!confirm("この回の記録を消す?")) return; t.sessions.splice(+idx, 1); render(); return; }
+  if (d.testdel) { const t = T(d.testdel); if (!confirm("テスト「" + t.name + "」を、記録ごと消す?")) return; takeUndo(); tests = tests.filter(x => x !== t); plans.forEach(q => q.milestones.forEach(m => { if (m.cond && m.cond.test === t.id) delete m.cond; })); testSel = null; closeSheet(); render(); toast("消した"); return; }
+  if (d.tsdel) { const [tid, , idx] = d.tsdel.split("|"), t = T(tid); takeUndo(); t.sessions.splice(+idx, 1); render(); toast("この回の記録を消した"); return; }
   if (d.taskdel) { const [mid, i] = d.taskdel.split(":"), m = p.milestones.find(x => x.id === mid); m.tasks.splice(+i, 1); if (m.taskDone) { const nd = {}; Object.keys(m.taskDone).forEach(k => { if (+k < +i) nd[k] = m.taskDone[k]; else if (+k > +i) nd[+k - 1] = m.taskDone[k]; }); m.taskDone = nd; } render(); return; }
-  if (b.hasAttribute("data-fielddel")) { const f = fields.find(x => x.id === fieldId); if (!confirm("分野「" + f.name + "」を消す?")) return; fields = fields.filter(x => x !== f); plans.forEach(q => q.fields = (q.fields || []).filter(l => l.f !== f.id)); fieldId = ""; fieldPath = []; render(); toast("消した"); return; }
+  if (b.hasAttribute("data-fielddel")) { const f = fields.find(x => x.id === fieldId); if (!confirm("分野「" + f.name + "」を消す?")) return; takeUndo(); fields = fields.filter(x => x !== f); plans.forEach(q => q.fields = (q.fields || []).filter(l => l.f !== f.id)); fieldId = ""; fieldPath = []; render(); toast("消した"); return; }
   // 週の締め
   if (b.hasAttribute("data-wkall")) { const w = weekStart(TODAY); let n = 0; document.querySelectorAll("[data-wkv]").forEach(el => { if (el.value.trim() === "") return; const [pid, mid] = el.dataset.wkv.split(":"), m = P(pid).milestones.find(x => x.id === mid);
       m.weeks = (m.weeks || []).filter(x => x.w !== w); m.weeks.push({ w, done: +el.value }); n++; }); render(); if (n) se("rec"); toast(n + "つの計画に今週の実績を記録した"); return; }
@@ -2321,14 +2430,14 @@ document.addEventListener("click", e => {
   if (b.hasAttribute("data-rmread")) { $("rm-st").textContent = " 読んでいる…"; readRoadmapPlan().then(rp => { const ready = roadmapToPlans(rp); importPrev = ready.length ? { ready, plans: ready, tests: [], fields: [] } : { err: "行軍表の計画に、移せるものがなかった" }; render(); }).catch(e => { const el = $("rm-st"); if (el) el.textContent = " " + e.message; }); return; }
   if (b.hasAttribute("data-imcancel")) { importPrev = null; render(); return; }
   // 節目を手で達成にする
-  if (d.msdone) { const m = p.milestones.find(x => x.id === d.msdone); m.done = !m.done; if (m.done) { m.doneAt = TODAY; se("rec"); } p.changes.push({ date: TODAY, kind: "記録", what: "節目「" + msName(m) + "」", before: m.done ? "未達" : "達成", after: m.done ? "達成" : "未達", reason: "手で" + (m.done ? "達成にした" : "取り消した"), size: "小" }); render(); return; }
+  if (d.msdone) { takeUndo(); const m = p.milestones.find(x => x.id === d.msdone); m.done = !m.done; setTimeout(() => {}, 0); if (m.done) { m.doneAt = TODAY; se("rec"); } p.changes.push({ date: TODAY, kind: "記録", what: "節目「" + msName(m) + "」", before: m.done ? "未達" : "達成", after: m.done ? "達成" : "未達", reason: "手で" + (m.done ? "達成にした" : "取り消した"), size: "小" }); render(); toast(m.done ? "達成にした" : "達成を取り消した"); return; }
   // まとめて入れる
   if (b.hasAttribute("data-imread")) { importPrev = parsePack($("im-t").value); render(); return; }
   if (b.hasAttribute("data-imgo")) { const pk = importPrev; if (pk.ready && pk.ready.length) { pk.plans = []; } applyPack(pk); const n = (pk.ready || []).length + pk.plans.length + pk.tests.length + pk.fields.length; importPrev = null; render(); se("rec"); toast(n + "つ入れた"); return; }
   // もしもの試し
   if (b.hasAttribute("data-whatif")) { openWhatIf(p); return; }
   if (b.hasAttribute("data-wirun")) { const out = whatIf(p, $("wi-m").value, +$("wi-w").value || 0); $("wi-out").innerHTML = `<ul class="wiout">${out.map(x => `<li>${esc(x)}</li>`).join("")}</ul><div class="fbar" style="margin:.4rem 0 0"><button class="btn sm" data-wiapply>このとおり反映する</button><button class="btn ghost sm" data-sclose>やめる</button></div>`; return; }
-  if (b.hasAttribute("data-wiapply")) { const m = p.milestones.find(x => x.id === $("wi-m").value), dd = (+$("wi-w").value || 0) * 7; if (!dd) return;
+  if (b.hasAttribute("data-wiapply")) { takeUndo(); const m = p.milestones.find(x => x.id === $("wi-m").value), dd = (+$("wi-w").value || 0) * 7; if (!dd) return;
     const moved = [m].concat(p.milestones.filter(x => x !== m && !x.parent && laneId(p, x) === laneId(p, m) && x.date > m.date && x.type !== "確定" && !isFixed(p, "ms:" + x.id) && !isDone(x)));
     p.versions = p.versions || []; const snap = { date: TODAY, label: md(TODAY) + "のもしもの試しの前", ms: {} }; p.milestones.forEach(x => snap.ms[x.id] = x.date); p.versions.push(snap); cmpVer = p.versions.length - 1;
     p.changes.push({ date: TODAY, kind: "立て直し", what: "節目「" + m.name + "」ほか " + (moved.length - 1) + "つ", before: md(m.date), after: md(addD(m.date, dd)), reason: "もしもの試しで影響を見てから反映", size: Math.abs(dd) > 14 ? "大" : "小" });
@@ -2374,7 +2483,7 @@ document.addEventListener("change", e => { const t = e.target, p = P(planId);
 document.addEventListener("click", e => { const r = e.target.closest("[data-wkedit]"); if (!r) return; const [mid, w] = r.dataset.wkedit.split("|"), p = P(planId), m = p && p.milestones.find(x => x.id === mid); if (!m) return;
   const cur = (m.weeks || []).find(x => x.w === w); sheet(`<h3>${wk(w)}の実績</h3><p class="note">節目「${esc(msName(m))}」・ペース ${m.pace ? fmtN(m.pace.amount) + esc(m.pace.unit) : "—"}。空にすると、この週の記録を消す。</p><div class="f"><label>やった量(${esc(m.unit || "")})</label><input id="we-v" type="number" step="0.5" inputmode="decimal" value="${cur ? cur.done : ""}"></div><button class="btn" data-wesave="${mid}|${w}">直す</button>`); });
 document.addEventListener("input", e => { if (e.target.id === "pick-q") { pickQ = e.target.value; $("pick-list").innerHTML = pickerList(); } });
-document.addEventListener("keydown", e => { if (e.key === "Escape" && $("sheet-root").innerHTML) closeSheet();
+document.addEventListener("keydown", e => { if (e.key === "Escape" && $("sheet-root").innerHTML) closeAsk();
   if ((e.key === "Enter" || e.key === " ") && e.target.matches("g.n")) { e.preventDefault(); e.target.dispatchEvent(new MouseEvent("click", { bubbles: true })); } });
 /* ───────── 起動 ───────── */
 loadAll(); lastSaved = JSON.stringify(dataOut()); if (!since) { since = TODAY; persist(); }
