@@ -469,6 +469,41 @@ button.closedbar{display:flex;width:100%;text-align:left;border:0;cursor:pointer
 .glcard{border:1px solid var(--rule);border-left:4px solid var(--wave);background:var(--sheet);border-radius:0 5px 5px 0;padding:.5rem .7rem;margin:.45rem 0}
 .glh{display:flex;align-items:baseline;gap:.5rem;margin-bottom:.2rem}
 .glk{font-size:.66rem;font-weight:700;border-radius:3px;padding:0 .35rem;line-height:1.6}.glk.k-成果{background:var(--ok-soft);color:var(--ok)}.glk.k-作業{background:var(--mid-soft);color:var(--mid)}
+/* 機構の工房 */
+.kbhead{margin:.2rem 0 .3rem}.kbname{font-size:1.1rem;font-weight:700;line-height:1.35}.kbhead small{font-size:.74rem;color:var(--sub)}
+.kbrail{display:flex;gap:4px;flex-wrap:wrap;margin:.5rem 0 .2rem}
+.kbdot{flex:1 0 20px;height:12px;border-radius:6px;border:0;padding:0;background:var(--rule);cursor:pointer;position:relative}
+.kbdot::after{content:"";position:absolute;inset:-8px -2px}
+.kbdot.done{background:var(--ok)}.kbdot.now{background:var(--shu);box-shadow:0 0 0 2px var(--shu-soft)}.kbdot.end{flex:0 0 14px;background:transparent;border:2px solid var(--rule)}.kbdot.end.now{border-color:var(--shu)}
+.kbrailtxt{font-size:.74rem;color:var(--sub);margin:0 0 .6rem}
+.kbstep{background:var(--white);border:2px solid var(--ink);border-radius:10px;padding:.9rem .95rem .7rem;box-shadow:0 4px 0 var(--ink);animation:kbin .3s ease-out;margin:.3rem 0 .8rem}
+.kbstep.fin{border-color:var(--ok);box-shadow:0 4px 0 var(--ok)}
+@keyframes kbin{from{transform:translateY(10px);opacity:.3}to{transform:none;opacity:1}}
+.kbstep .k{font-size:.7rem;color:var(--shu);font-weight:700;letter-spacing:.1em;display:flex;align-items:center;gap:.35rem;flex-wrap:wrap}
+.kbstep h2{margin:.15rem 0 .2rem;font-size:1.2rem;line-height:1.4}.kbstep .hint{font-size:.8rem;color:var(--sub);margin:0 0 .45rem}
+.kbta{width:100%;min-height:5.2rem;padding:.55rem .65rem;border:1.5px solid var(--rule);border-radius:6px;background:var(--sheet);line-height:1.6}.kbta:focus{outline:none;border-color:var(--wave);background:var(--white)}
+.kbtools{display:flex;gap:.9rem;flex-wrap:wrap;margin-top:.5rem;border-top:1px dotted var(--rule);padding-top:.4rem}.kbtools .linkx{font-size:.76rem}
+.kbk{display:inline-block;font-size:.62rem;font-weight:700;border-radius:3px;padding:0 .35rem;background:var(--wave-soft);color:var(--wave);letter-spacing:0}
+.kbk.k-する{background:var(--ok-soft);color:var(--ok)}.kbk.k-頼む{background:var(--shu-soft);color:var(--shu)}.kbk.k-試す{background:var(--mid-soft);color:var(--mid)}
+.kbdone{font-size:.62rem;font-weight:700;color:var(--paper);background:var(--ok);border-radius:3px;padding:0 .35rem}
+.kbtypes{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin:.4rem 0 .6rem}
+.kbtype{text-align:left;border:1.5px solid var(--rule);background:var(--white);border-radius:8px;padding:.55rem .65rem;display:flex;flex-direction:column;gap:.15rem}.kbtype b{font-size:.92rem}.kbtype small{font-size:.72rem;color:var(--sub);line-height:1.4}
+.kbtype[aria-pressed="true"]{border-color:var(--ink);box-shadow:0 3px 0 var(--ink)}.kbtype.mine{border-style:dashed}
+.kbed{background:var(--sheet);border:1px dashed var(--rule);border-radius:8px;padding:.5rem .6rem;margin:0 0 .7rem}
+.kber{display:flex;align-items:center;gap:.3rem;border-top:1px dotted var(--rule);padding:.3rem 0}.kber:first-child{border-top:0}
+.kbert{flex:1;min-width:0;text-align:left;border:0;background:none;padding:0;font-size:.86rem}.kber.cur .kbert{font-weight:700;color:var(--shu)}.kber.dn .kbert{color:var(--sub)}
+.mvb{border:1px solid var(--rule);background:var(--white);border-radius:3px;width:1.9rem;height:1.8rem;font-size:.72rem;padding:0;flex:none}.mvb.rm{color:var(--shu)}
+.kbadd{display:grid;grid-template-columns:1fr 4.8rem auto;gap:.35rem;margin-top:.45rem}.kbadd input,.kbadd select{padding:.35rem .45rem;border:1px solid var(--rule);border-radius:3px;background:var(--white);min-width:0}
+.kbspec{background:var(--sheet);border:1px solid var(--rule);border-radius:8px;padding:.5rem .7rem}.pkv .v.kbempty{color:var(--rule)}
+.kbreq{background:var(--white);border:1.5px solid var(--wave);border-radius:8px;padding:.6rem .7rem;font-size:.8rem;white-space:pre-wrap;line-height:1.6;max-height:15rem;overflow:auto}
+.kblog{border-left:3px solid var(--rule);padding:.15rem 0 .15rem .65rem;margin:.3rem 0;font-size:.84rem;white-space:pre-wrap}.kblog small{display:block;color:var(--sub);font-size:.68rem}
+.kblog.k-頼んだ{border-left-color:var(--wave)}.kblog.k-試した{border-left-color:var(--mid)}.kblog.k-使い始めた,.kblog.k-やった{border-left-color:var(--ok)}
+.kbmini{border:1px solid var(--rule);border-left:4px solid var(--ink);background:var(--sheet);border-radius:0 4px 4px 0;padding:.4rem .6rem;margin:.5rem 0 0}.kbmini b{font-size:.8rem;margin-right:.4rem}
+.kbtcard{border:1px solid var(--rule);background:var(--sheet);border-radius:5px;padding:.5rem .65rem;margin:.4rem 0}.kbtcard.base{border-style:dashed}
+.kbtl{margin:.2rem 0 0;padding-left:1.2rem;font-size:.84rem}.kbtl li{margin:.1rem 0}.kbtl .kbk{margin-left:.35rem}
+.kbtrow{border:1px solid var(--rule);border-radius:5px;padding:.4rem;margin:.35rem 0;background:var(--white);display:flex;flex-direction:column;gap:.25rem}
+.kbtrh{display:flex;align-items:center;gap:.3rem}.kbtrh b{width:1.4rem}.kbtrh select{flex:1;padding:.25rem;border:1px solid var(--rule);border-radius:3px}
+.kbtrow input{padding:.35rem .45rem;border:1px solid var(--rule);border-radius:3px;background:var(--sheet);font-size:.86rem}
 .addrow{display:block;margin:.2rem 0 .1rem;font-size:.76rem}
 details.eds{border:1px solid var(--rule);border-radius:6px;margin:.5rem 0;background:var(--sheet)}
 details.eds>summary{cursor:pointer;padding:.55rem .7rem;font-weight:700;font-size:.92rem;list-style:none;display:flex;justify-content:space-between;align-items:baseline;gap:.5rem}
@@ -792,7 +827,7 @@ label.mini{display:flex;flex-direction:column;gap:.1rem;font-size:.62rem;color:v
 <div id="sheet-root"></div>
 <script>
 /* ───────── 大計:データ ───────── */
-const APP_VERSION = "2026-11-01 r15";
+const APP_VERSION = "2026-11-01 r16";
 const SHO_APP = "https://nisenonamae.github.io/sho/";
 const GRADES = ["最重要", "重要", "通常", "軽易"];
 const COUNCIL = { 最重要: "最高評議会", 重要: "常任評議会" };
@@ -814,17 +849,17 @@ let TODAY = localDay();
 
 /* みんなで同期するデータ */
 let plans = [], tests = [], fields = [], lessons = [], reviews = [], proposals = [];
-let capacity = { base: 40, ex: [] }, headGoals = [], weekClosed = {}, dailyChecks = {}, weeklyReviews = {}, since = "", techLanes = [], techs = [], ideas = [], glossary = [];   // glossary:定義集   // 技術ツリー:系統・技術・ひらめき   // since:大計を使い始めた日(それより前の確認・見直しは「抜け」に数えない)   // weeklyReviews:「週の月曜|計画」→ { r, note }   // dailyChecks:「日付|計画」→ 順調/少し遅れ/大きくずれ
+let capacity = { base: 40, ex: [] }, headGoals = [], weekClosed = {}, dailyChecks = {}, weeklyReviews = {}, since = "", techLanes = [], techs = [], ideas = [], glossary = [], koubouTypes = [];   // koubouTypes:機構の自分の型   // glossary:定義集   // 技術ツリー:系統・技術・ひらめき   // since:大計を使い始めた日(それより前の確認・見直しは「抜け」に数えない)   // weeklyReviews:「週の月曜|計画」→ { r, note }   // dailyChecks:「日付|計画」→ 順調/少し遅れ/大きくずれ
 /* この端末だけの設定 */
 let recent = [], seCfg = { on: true, vol: 0.6, ui: true, uiVol: 0.45 }, notifyCfg = { topic: "", test: false, ms: false, week: false, risk: false }, sent = {};
 
 const KEY = "taikei-data", LOCAL_KEY = "taikei-local";
 const clone = x => JSON.parse(JSON.stringify(x));
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-function blank(){ return { version: 1, plans: [], tests: [], fields: [], lessons: [], reviews: [], proposals: [], capacity: { base: 40, ex: [] }, headGoals: [], weekClosed: {}, dailyChecks: {}, weeklyReviews: {}, since: "", techLanes: [], techs: [], ideas: [], glossary: [] }; }
-function dataOut(){ return { version: 1, plans, tests, fields, lessons, reviews, proposals, capacity, headGoals, weekClosed, dailyChecks, weeklyReviews, since, techLanes, techs, ideas, glossary }; }
+function blank(){ return { version: 1, plans: [], tests: [], fields: [], lessons: [], reviews: [], proposals: [], capacity: { base: 40, ex: [] }, headGoals: [], weekClosed: {}, dailyChecks: {}, weeklyReviews: {}, since: "", techLanes: [], techs: [], ideas: [], glossary: [], koubouTypes: [] }; }
+function dataOut(){ return { version: 1, plans, tests, fields, lessons, reviews, proposals, capacity, headGoals, weekClosed, dailyChecks, weeklyReviews, since, techLanes, techs, ideas, glossary, koubouTypes }; }
 function dataIn(d){ d = Object.assign(blank(), d || {});
-  plans = d.plans; tests = d.tests; fields = d.fields; lessons = d.lessons; reviews = d.reviews; proposals = d.proposals; capacity = d.capacity; headGoals = d.headGoals; weekClosed = d.weekClosed; dailyChecks = d.dailyChecks || {}; weeklyReviews = d.weeklyReviews || {}; since = d.since || ""; techLanes = d.techLanes || []; techs = d.techs || []; ideas = d.ideas || []; glossary = d.glossary || [];
+  plans = d.plans; tests = d.tests; fields = d.fields; lessons = d.lessons; reviews = d.reviews; proposals = d.proposals; capacity = d.capacity; headGoals = d.headGoals; weekClosed = d.weekClosed; dailyChecks = d.dailyChecks || {}; weeklyReviews = d.weeklyReviews || {}; since = d.since || ""; techLanes = d.techLanes || []; techs = d.techs || []; ideas = d.ideas || []; glossary = d.glossary || []; koubouTypes = d.koubouTypes || [];
   repair(); }
 /* 古いデータや欠けたところを直して、どの画面でも落ちないようにする */
 function repair(){
@@ -878,7 +913,7 @@ function ghErr(r){
   if (r.status >= 500) return "GitHubが不調(しばらくしてもう一度)";
   return "GitHubとの通信に失敗した(" + r.status + ")";
 }
-const MKEYS = { plans: x => x.id, tests: x => x.id, fields: x => x.id, lessons: x => x.id, reviews: x => x.w, proposals: x => x.id, headGoals: x => x.p + ":" + x.m, techLanes: x => x.id, techs: x => x.id, ideas: x => x.id, glossary: x => x.id };
+const MKEYS = { plans: x => x.id, tests: x => x.id, fields: x => x.id, lessons: x => x.id, reviews: x => x.w, proposals: x => x.id, headGoals: x => x.p + ":" + x.m, techLanes: x => x.id, techs: x => x.id, ideas: x => x.id, glossary: x => x.id, koubouTypes: x => x.id };
 function mergeArr(b, l, r, key){
   const B = new Map((b || []).map(x => [key(x), x])), L = new Map((l || []).map(x => [key(x), x])), R = new Map((r || []).map(x => [key(x), x])), out = new Map(R);
   B.forEach((v, k) => { if (!L.has(k)) out.delete(k); });
@@ -1697,7 +1732,7 @@ function propose(p, what, council, act){ proposals.push({ id: "pr" + Date.now().
 
 /* ───────── その他 ───────── */
 function viewMore(){
-  const items = [ ["sync", "保存と同期", conf ? "GitHubとつながっている" : "まだこの端末の中だけ。GitHubにつなぐ・控えを書き出す"], ["week", "週の見直し", "計画ごとに、この1週間を振り返って決める(毎週必ず)"], ["weekrec", "週の記録", "やった量とテストを入れる"], ["glossary", "定義集", "「覚えた」「一周」など、言葉の判定の基準"], ["load", "負荷", "1週に使う時間と、使える時間を比べる"], ["lessons", "学び", "終わった計画の総括と、見積もりのずれ"],
+  const items = [ ["sync", "保存と同期", conf ? "GitHubとつながっている" : "まだこの端末の中だけ。GitHubにつなぐ・控えを書き出す"], ["week", "週の見直し", "計画ごとに、この1週間を振り返って決める(毎週必ず)"], ["weekrec", "週の記録", "やった量とテストを入れる"], ["glossary", "定義集", "「覚えた」「一周」など、言葉の判定の基準"], ["kbtypes", "機構の型", "機構を作るときのレール(一手の並び)を作る・直す"], ["load", "負荷", "1週に使う時間と、使える時間を比べる"], ["lessons", "学び", "終わった計画の総括と、見積もりのずれ"],
     ["council", "評議会の案", proposals.filter(x => x.status === "審議待ち").length + "件が審議待ち"], ["notify", "通知", notifyCfg.topic ? "ntfy に送っている" : "テスト・節目・週の締めを知らせる"], ["sound", "音", "効果音のオン・オフと音量"], ["importv", "まとめて入れる・行軍表から移す", "計画・分野・テストをファイルから入れる。行軍表の計画を移す"] ];
   return `<div class="phead"><div class="goal">その他</div></div>${items.map(([k, t, s]) => `<button class="tcard" data-v="${k}" style="border-left-color:var(--ink)"><div class="th"><b>${t}</b><span class="note">›</span></div><div class="note">${esc(s)}</div></button>`).join("")}
     <p class="note" style="margin-top:1.2rem">大計 ${APP_VERSION}</p>`;
@@ -2350,7 +2385,7 @@ function viewTech(){
       <div class="tk-tools"><input id="tk-q" placeholder="系統や技術を探す" value="${esc(v.q)}"><span class="seg"><button data-tksort="動き" aria-pressed="${v.sort === "動き"}">研究中が上</button><button data-tksort="★" aria-pressed="${v.sort === "★"}">★が多い順</button></span></div>
       ${shown.map(({ l }) => laneRow(l)).join("") || '<p class="note">まだ系統がない。下の「+ 系統を作る」か、ひらめきを系統に入れるところから。</p>'}
       ${!v.q && lanes.length > 6 ? `<button class="tk-more" data-tkall="lanes">${v.allLanes ? "6系統だけにする" : "ほかの " + (lanes.length - 6) + " 系統も見る"}</button>` : ""}
-      <div class="fbar" style="margin:.4rem 0 0"><button class="btn ghost sm" data-tklanenew>+ 系統を作る</button></div></section>
+      <div class="fbar" style="margin:.4rem 0 0"><button class="btn ghost sm" data-tklanenew>+ 系統を作る</button><button class="btn sm" data-kbnewmech>+ 機構を作る(工房)</button><button class="linkx" data-v="kbtypes">機構の型</button></div></section>
     <section class="sec"><h3>ひらめき帳<small>系統の決まっていないもの。押すと系統に入れられる</small></h3>
       ${ideas.length > 6 ? `<div class="tk-tools"><input id="tk-iq" placeholder="ひらめきを探す" value="${esc(v.ideaQ)}"></div>` : ""}
       <div class="tk-ideas">${fiShown.map(x => `<button class="tk-idea${tkPop === x.id ? " pop" : ""}" data-tkidea="${x.id}"><span>${esc(x.t)}</span><small>${md(x.d)}</small></button>`).join("") || '<p class="note" style="padding:.5rem .7rem;margin:0">なし</p>'}</div>
@@ -2374,7 +2409,8 @@ function openTk(t){
     <div class="tk-notes"><b>研究ノート</b><span class="note">(試したこと・分かったことを、何回でも)</span>
       ${(t.notes || []).map((n, i) => `<div class="tk-note"><small>${md(n.d)} <button class="linkx" data-tknotedel="${t.id}|${i}">消す</button></small>${esc(n.t)}</div>`).join("") || '<p class="note" style="margin:.3rem 0">まだない</p>'}
       <div class="tk-addnote"><textarea id="tk-note" placeholder="例:例文の候補を3つ出して選ぶ形にしたら速い"></textarea><button class="btn sm" data-tknote="${t.id}">書く</button></div></div>
-    <div class="fbar" style="margin:.7rem 0 0">${t.st === "ひらめき" ? `<button class="btn shu" data-tkset="${t.id}|研究中">研究を始める</button>` : ""}${t.st === "研究中" ? `<button class="btn gold" data-tkset="${t.id}|定着">定着した!</button>` : ""}
+    ${t.mech && t.mech.started ? `<div class="kbmini"><b>機構の設計書</b><span class="note">${esc(kbLabel(t.mech.type))}・版${t.mech.ver}・${t.mech.steps.filter(x => x.done).length}/${t.mech.steps.length}手 済</span>${t.mech.steps.filter(x => x.kind === "書く" && x.answer.trim()).slice(0, 3).map(x => `<div class="pkv"><span class="k">${esc(x.title.replace(/[?？]$/, ""))}</span><span class="v">${esc(unbr(x.answer))}</span></div>`).join("")}</div>` : ""}
+    <div class="fbar" style="margin:.7rem 0 0"><button class="btn ${t.mech && t.mech.started ? "" : "ghost "}sm" data-kbopen="${t.id}">${t.mech && t.mech.started ? "工房で続ける" : "工房で作る"}</button>${t.st === "ひらめき" ? `<button class="btn shu" data-tkset="${t.id}|研究中">研究を始める</button>` : ""}${t.st === "研究中" ? `<button class="btn gold" data-tkset="${t.id}|定着">定着した!</button>` : ""}
       ${t.st !== "やめた" ? `<button class="btn ghost sm" data-tkchild="${t.id}">ここから伸ばす</button>` : ""}<button class="btn ghost sm" data-tkedit="${t.id}">直す</button></div>`);
 }
 /* 技術を足す・直す */
@@ -2634,6 +2670,150 @@ document.addEventListener("click", e => {
     takeUndo(); glossary = glossary.filter(x => x !== g); plans.forEach(p => p.milestones.forEach(m => { if (m.def === g.id) delete m.def; })); closeSheet(); render(); toast("消した", true); return; }
 }, true);
 document.addEventListener("input", e => { if (e.target.id === "gl-q") { glQ = e.target.value.trim(); const pos = e.target.selectionStart; render(); const el = $("gl-q"); if (el) { el.focus(); el.setSelectionRange(pos, pos); } } });
+</script>
+<script>
+/* ───────── 機構の工房:決められたレールの上で、機構を楽しく作る ─────────
+   技術の t.mech = { type, steps: [{ id, kind: 書く/する/頼む/試す, title, hint, ex, answer, done }], i, ver, log: [{ d, v, k, t }], lastFix, started }
+   koubouTypes(同期する):自分の型 { id, name, steps: [{ kind, title, hint, ex }] } */
+const KB_KINDS = ["書く", "する", "頼む", "試す"];
+const KW = (title, hint, ex) => ({ kind: "書く", title, hint, ex: ex || "" }), KD = (title, hint) => ({ kind: "する", title, hint, ex: "" });
+const KASK = { kind: "頼む", title: "Claudeに頼む", hint: "下の依頼文をコピーしてClaudeに貼る。返ってきたら「頼んだ」。", ex: "" }, KTRY = { kind: "試す", title: "試す", hint: "使ってみて、気づいたことを書く。", ex: "" };
+const KB_TYPES = {
+  変換: { label: "変換する機構", note: "何かを入れると、別の形で出てくる(カードを作る、表に直すなど)", steps: [KW("何を楽にしたい?", "今、手でやっていて面倒なこと。", "単語を1つずつ辞書で引いて、Ankiに手で打ち込んでいる。1枚2分"), KW("何を入れると?", "機構に渡すもの。", "覚えたい英単語のリスト(1行に1語)"), KW("何が出てくる?", "形まで書けるとよい。", "Ankiに取り込める表"), KW("必ず守る決まりは?", "1行に1つ。", "例文は受験レベルの自然な文"), KW("例を1つ", "入れるもの → 出てくるもの を1つ。", "abandon → 捨てる、断念する"), KW("できたと言える条件は?", "", "100語を入れて5分以内に取り込める表が出る"), KASK, KTRY] },
+  道具: { label: "道具・アプリ", note: "画面やアプリなど、使って何かをする道具", steps: [KW("何のための道具?", "", "過去問の点数を記録して、伸びを見る"), KW("いつ・どこで使う?", "", "過去問を解いた直後、スマホで"), KW("画面に何が出てほしい?", "", "教科ごとの点数の推移"), KW("何ができればいい?(操作)", "1行に1つ。", "点数を入れる"), KW("できたと言える条件は?", "", "解いてから1分以内に記録できる"), KASK, KTRY] },
+  仕組み: { label: "仕組み・きまり", note: "環境・ルール・きっかけを変える(置き方、通知、始め方など)", steps: [KW("今、困っていることは?", "", "机に向かっても、始めるまで20分かかる"), KW("どう変えたい?", "", "座ったら1分で始められる"), KW("何を変える?(やること)", "1行に1つ。", "前の晩に教材を開いて置いておく"), KD("やってみる", "書いたことを実際にやる。やったら「済」。"), KW("続いているかの確かめ方は?", "", "座ってから始めるまでの時間を3日測る"), KTRY] },
+  自由: { label: "自由", note: "型にはまらない機構。一手を自分で足していく", steps: [KW("何がしたい?", "思っていることを、そのまま書いていい。", "")] },
+};
+let kbId = "", kbFrom = "tech", kbEdit = false, kbPick = null, kbIns = null;   // kbIns:続けて足すとき、前に足した一手の後ろに並べる
+const kbT = () => TK(kbId), kbM = () => (kbT() || {}).mech;
+const kbLabel = type => KB_TYPES[type] ? KB_TYPES[type].label : ((koubouTypes.find(x => x.id === type) || {}).name || type || "");
+const kbNow = () => md(TODAY);
+const kbStep = s => Object.assign({ id: "k" + uid(), kind: "書く", title: "", hint: "", ex: "", answer: "", done: false }, s);
+function kbStart(t, type){ const src = KB_TYPES[type] ? KB_TYPES[type].steps : ((koubouTypes.find(x => x.id === type) || {}).steps || []);
+  t.mech = { type, steps: src.map(x => kbStep({ kind: x.kind, title: x.title, hint: x.hint || "", ex: x.ex || "" })), i: 0, ver: 1, log: [{ d: TODAY, v: 1, k: "始めた", t: kbLabel(type) + "として始めた" }], lastFix: "", started: true };
+  if (t.st === "ひらめき") { t.st = "研究中"; t.started = TODAY; } }
+function openKoubou(tid, from){ kbId = tid; kbFrom = from || (current() === "plan" ? planId : "tech"); kbEdit = false; kbPick = null; closeSheet(); location.hash = "koubou"; window.scrollTo(0, 0); }
+function kbReq(t, m){ const l = TL(t.lane), L = ["次の機構を作ってほしい。", "", "【名前】" + t.name, "【種類】" + kbLabel(m.type)];
+  if (l && (l.plans || []).length) L.push("【使う計画】" + l.plans.map(id => P(id) ? P(id).name : "").filter(Boolean).join("、"));
+  m.steps.filter(x => x.kind === "書く" && x.answer.trim()).forEach(x => L.push("", "【" + x.title.replace(/[?？]$/, "") + "】", unbr(x.answer)));
+  if (m.ver > 1 && m.lastFix) L.push("", "【前の版から直してほしいこと(版" + m.ver + ")】", m.lastFix);
+  L.push("", "わからないところは、作る前に質問してほしい。"); return L.join("\n"); }
+const kbRailReq = (t, m) => "次の機構を作りたい。作るための手順を、小さな一手に分けて、1行に1つずつ並べてほしい。問いに答える一手は「?」で終わる文にしてほしい。説明はいらない。\n\n【名前】" + t.name + "\n【今わかっていること】\n" + (m.steps.filter(x => x.kind === "書く" && x.answer.trim()).map(x => x.title + ":" + x.answer).join("\n") || "(まだない)");
+function kbCopy(text){ try { navigator.clipboard.writeText(text); toast("コピーした"); } catch (e) { toast("コピーできなかった"); } }
+/* 工房の画面 */
+function viewKoubou(){
+  const t = kbT(); if (!t) return '<p class="note">開いている機構がない。技術のタブから開く。</p><button class="btn ghost sm" data-v="tech">技術へ</button>';
+  const m = t.mech, l = TL(t.lane);
+  const back = `<button class="tk-back" data-kbback>‹ ${kbFrom === "tech" ? "技術へ" : P(kbFrom) ? esc(P(kbFrom).name) + "へ" : "戻る"}</button>`;
+  const head = `<div class="kbhead"><div class="kbname">${esc(t.name)}<button class="linkx" data-tkedit="${t.id}" style="margin-left:.4rem;font-size:.74rem">名前・系統</button></div><small>${l ? esc(l.name) : ""}${m && m.started ? "・" + esc(kbLabel(m.type)) + "・版" + m.ver : ""}・<span class="tk-st s-${t.st}">${t.st}</span></small></div>`;
+  if (!m || !m.started) return back + head + `<div class="kbstep"><div class="k">はじめに</div><h2>どんな機構?</h2><p class="hint">種類ごとに、最初のレール(一手の並び)が決まっている。あとから一手を足したり消したり、問いを直したりできる。</p>
+    <div class="kbtypes">${Object.entries(KB_TYPES).map(([k, v]) => `<button class="kbtype" data-kbtype="${k}" aria-pressed="${kbPick === k}"><b>${v.label}</b><small>${v.note}</small></button>`).join("")}${koubouTypes.map(x => `<button class="kbtype mine" data-kbtype="${x.id}" aria-pressed="${kbPick === x.id}"><b>${esc(x.name)}</b><small>自分の型・${x.steps.length}手</small></button>`).join("")}</div>
+    <div class="fbar"><button class="btn" data-kbstart${kbPick ? "" : " disabled"}>この種類で始める</button><button class="linkx" data-v="kbtypes">機構の型を作る・直す</button></div></div>`;
+  const s = m.steps[m.i], dn = m.steps.filter(x => x.done).length;
+  const rail = `<div class="kbrail">${m.steps.map((x, k) => `<button class="kbdot${x.done ? " done" : ""}${k === m.i ? " now" : ""}" data-kbgo="${k}" title="${esc(x.title)}" aria-label="${k + 1}手目 ${esc(x.title)}"></button>`).join("")}<button class="kbdot end${m.i >= m.steps.length ? " now" : ""}" data-kbgo="${m.steps.length}" title="最後" aria-label="最後"></button></div>
+    <div class="kbrailtxt">${dn}/${m.steps.length}手 済・印を押すとその一手へ <button class="linkx" data-kbedit>${kbEdit ? "閉じる" : "レールを変える"}</button></div>`;
+  const ed = kbEdit ? `<div class="kbed">${m.steps.map((x, k) => `<div class="kber${k === m.i ? " cur" : ""}${x.done ? " dn" : ""}"><button class="kbert" data-kbgo="${k}">${k + 1}. ${esc(x.title || "(問いなし)")}<span class="kbk k-${x.kind}">${x.kind}</span></button>
+      <button class="mvb" data-kbstedit="${k}" aria-label="直す">✎</button><button class="mvb" data-kbup="${k}" aria-label="上へ">▲</button><button class="mvb" data-kbdn="${k}" aria-label="下へ">▼</button><button class="mvb rm" data-kbrm="${k}" aria-label="消す">×</button></div>`).join("")}
+      <div class="kbadd"><input id="kb-ad-t" placeholder="+ 一手を足す(今の一手の後ろに)"><select id="kb-ad-k">${KB_KINDS.map(k => `<option>${k}</option>`).join("")}</select><button class="btn sm" data-kbadd>足す</button></div>
+      <div class="f" style="margin-top:.5rem"><label>まとめて足す(1行に1つ。「?」で終わる行は書く、「試す」は試す、「頼む」は頼む、ほかは「する」)</label><textarea id="kb-ad-many" rows="3" placeholder="材料をそろえる&#10;どこに置く?"></textarea></div>
+      <div class="fbar"><button class="btn ghost sm" data-kbaddmany>まとめて足す</button><button class="btn ghost sm" data-kbrailreq>Claudeにレールを作ってもらう依頼文をコピー</button><button class="btn ghost sm" data-kbsavetype>自分の型として残す</button></div></div>` : "";
+  let card;
+  if (!s) card = `<div class="kbstep fin"><div class="k" style="color:var(--ok)">レールの最後</div><h2>${t.st === "定着" ? "使っている" : "使い始める?"}</h2><p class="hint">${t.st === "定着" ? "直したくなったら、レールの一手に戻るか、一手を足す。" : "できたと言える条件を満たしていれば、使い始める。足りなければ一手を足す。"}</p>
+      <div class="fbar">${t.st === "定着" ? "" : '<button class="btn shu" data-kblive>使い始める</button>'}<button class="btn ghost sm" data-kbedit>一手を足す</button>${m.steps.length ? '<button class="btn ghost sm" data-kbgo="' + (m.steps.length - 1) + '">ひとつ前へ</button>' : ""}</div></div>`;
+  else { const top = `<div class="k">${m.i + 1}/${m.steps.length}手目・次の一手<span class="kbk k-${s.kind}">${s.kind}</span>${s.done ? '<span class="kbdone">済</span>' : ""}</div><h2>${esc(s.title || "(問いなし)")}${s.kind === "頼む" && m.ver > 1 ? "(版" + m.ver + ")" : ""}</h2>${s.hint ? `<p class="hint">${esc(s.hint)}</p>` : ""}`;
+    const tools = `<div class="kbtools"><button class="linkx" data-kbstedit="${m.i}">✎ この一手を直す</button><button class="linkx" data-kbrm="${m.i}">× この一手を消す</button>${s.done ? `<button class="linkx" data-kbundo1>済を取り消す</button>` : ""}${dn ? `<button class="linkx" data-kbredo>ここからやり直す</button>` : ""}</div>`;
+    const nav = `${m.i > 0 ? '<button class="btn ghost sm" data-kbprev>戻る</button>' : ""}<button class="linkx" data-kbskip>${s.done ? "次の一手へ" : "あとで(とばす)"}</button>`;
+    if (s.kind === "書く") card = `<div class="kbstep">${top}<textarea id="kb-ans" class="kbta" data-kbans="${m.i}" placeholder="${esc(s.ex)}">${esc(s.answer)}</textarea>
+      <div class="fbar"><button class="btn" data-kbnext>${s.done ? "次へ" : "次へ"}</button>${nav}${s.ex ? '<button class="linkx" data-kbfill style="margin-left:auto">例をそのまま使う</button>' : ""}</div>${tools}</div>`;
+    else if (s.kind === "する") card = `<div class="kbstep">${top}<div class="fbar"><button class="btn" data-kbnext>${s.done ? "次へ" : "済"}</button>${nav}</div>${tools}</div>`;
+    else if (s.kind === "頼む") card = `<div class="kbstep">${top}<div class="fbar"><button class="btn shu" data-kbcopy>依頼文をコピー</button><button class="btn" data-kbnext>頼んだ</button>${nav}</div>${tools}</div>`;
+    else card = `<div class="kbstep">${top}<textarea id="kb-ans" class="kbta" data-kbans="${m.i}" placeholder="例:例文が長すぎる">${esc(s.answer)}</textarea><div class="fbar"><button class="btn" data-kbfix>直してほしいことがある</button><button class="btn ghost" data-kbnext>これで使える</button>${nav}</div>${tools}</div>`; }
+  const spec = m.steps.filter(x => x.kind === "書く" || (x.kind === "する" && x.done));
+  const specHtml = `<section class="sec"><h3>設計書<small>答えるそばから、ここに書き残される</small></h3><div class="kbspec">${spec.map(x => `<div class="pkv"><span class="k">${esc(x.title.replace(/[?？]$/, ""))}</span><span class="v${x.kind === "する" || x.answer.trim() ? "" : " kbempty"}">${x.kind === "する" ? "済(やった)" : x.answer.trim() ? tx(x.answer) : "まだ"}</span></div>`).join("") || '<p class="note" style="margin:0">書く一手を足すと、ここに残る。</p>'}</div></section>`;
+  const req = m.steps.some(x => x.kind === "頼む") ? `<section class="sec"><h3>Claudeへの依頼文<small>書いた一手から自動でできる</small></h3><div class="kbreq">${esc(kbReq(t, m))}</div><div class="fbar"><button class="btn ghost sm" data-kbcopy>依頼文をコピー</button></div></section>` : "";
+  const log = m.log.length ? `<section class="sec"><h3>版の記録<small>自動で残る</small></h3>${m.log.slice().reverse().map(x => `<div class="kblog k-${x.k}"><small>${md(x.d)}・版${x.v}・${x.k}</small>${esc(x.t)}</div>`).join("")}</section>` : "";
+  return back + head + rail + ed + card + specHtml + req + log;
+}
+/* 一手を直す画面 */
+function openKbStepEdit(k){ const m = kbM(), s = m.steps[k];
+  sheet(`<h3>${k + 1}手目を直す</h3><div class="seg dcseg" role="group" aria-label="種類" style="margin:.2rem 0 .3rem">${KB_KINDS.map(x => `<button data-kbsk="${x}" aria-pressed="${s.kind === x}">${x}</button>`).join("")}</div><input type="hidden" id="kbs-k" value="${s.kind}">
+    <div class="f"><label>問い・一手の名前</label><input id="kbs-t" value="${esc(s.title)}" placeholder="例:何を入れると?"></div>
+    <div class="f"><label>説明(小さく出る)</label><input id="kbs-h" value="${esc(s.hint)}"></div>
+    <div class="f"><label>例(答えの欄に薄く出る。「例をそのまま使う」でも入る)</label><textarea id="kbs-e" rows="2">${esc(s.ex)}</textarea></div>
+    <div class="fbar" style="margin-top:.5rem"><button class="btn" data-kbssave="${k}">直す</button><button class="linkx" data-kbrm="${k}" style="margin-left:auto;color:var(--bad)">この一手を消す</button></div>`); }
+/* その他 › 機構の型 */
+function viewKbTypes(){
+  return `<div class="phead"><div class="k">機構の型</div><div class="goal">自分のレールを作っておく</div><div class="note">機構を作るときに最初に選ぶレール(一手の並び)。決まった型を写して自分用に直すか、白紙から作る。</div>
+      <div class="fbar" style="margin:.4rem 0 0"><button class="btn sm" data-kbtnew>+ 白紙から型を作る</button></div></div>
+    <section class="sec"><h3>自分の型<small>${koubouTypes.length}つ</small></h3>${koubouTypes.map(x => `<div class="kbtcard"><div class="glh"><b>${esc(x.name)}</b><span class="note">${x.steps.length}手</span><button class="linkx" data-kbtedit="${x.id}" style="margin-left:auto">直す</button></div><ol class="kbtl">${x.steps.map(s => `<li>${esc(s.title)}<span class="kbk k-${s.kind}">${s.kind}</span></li>`).join("")}</ol></div>`).join("") || '<p class="note">まだない。</p>'}</section>
+    <section class="sec"><h3>決まった型<small>写して、自分用に直せる</small></h3>${Object.entries(KB_TYPES).map(([k, v]) => `<div class="kbtcard base"><div class="glh"><b>${v.label}</b><span class="note">${v.steps.length}手</span><button class="linkx" data-kbtcopy="${k}" style="margin-left:auto">写して自分の型にする</button></div><p class="note" style="margin:0">${v.note}</p></div>`).join("")}</section>`;
+}
+let kbtDraft = null;
+function openKbTypeEdit(x){ kbtDraft = x ? clone(x) : { id: "", name: "", steps: [{ kind: "書く", title: "", hint: "", ex: "" }] }; drawKbTypeEdit(); }
+function drawKbTypeEdit(){ const x = kbtDraft;
+  sheet(`<h3>${x.id ? "型を直す" : "型を作る"}</h3><div class="f"><label>型の名前</label><input id="kbt-n" value="${esc(x.name)}" placeholder="例:Ankiのノートタイプを作る"></div>
+    <div id="kbt-steps">${x.steps.map((s, k) => `<div class="kbtrow" data-kbtrow="${k}"><div class="kbtrh"><b>${k + 1}</b><select data-f="kind">${KB_KINDS.map(o => `<option${o === s.kind ? " selected" : ""}>${o}</option>`).join("")}</select><button class="mvb" data-kbtup="${k}">▲</button><button class="mvb" data-kbtdn="${k}">▼</button><button class="mvb rm" data-kbtrm="${k}">×</button></div>
+      <input data-f="title" value="${esc(s.title)}" placeholder="問い・一手の名前"><input data-f="hint" value="${esc(s.hint || "")}" placeholder="説明(なくてよい)"><input data-f="ex" value="${esc(s.ex || "")}" placeholder="例(なくてよい)"></div>`).join("")}</div>
+    <button class="linkx addrow" data-kbtadd>+ 一手を足す</button>
+    <div class="fbar" style="margin-top:.6rem"><button class="btn" data-kbtsave>${x.id ? "直す" : "作る"}</button>${x.id ? `<button class="linkx" data-kbtdel="${x.id}" style="margin-left:auto;color:var(--bad)">この型を消す</button>` : ""}</div>`); }
+function kbtRead(){ const x = kbtDraft; x.name = ($("kbt-n") || {}).value || x.name;
+  document.querySelectorAll("[data-kbtrow]").forEach(r => { const k = +r.dataset.kbtrow, s = x.steps[k]; if (!s) return; r.querySelectorAll("[data-f]").forEach(el => { s[el.dataset.f] = el.value; }); }); }
+let kbAnsTimer = null;
+document.addEventListener("input", e => { const ta = e.target; if (!ta.matches || !ta.matches("textarea.kbta")) return; const m = kbM(); if (!m) return; const s = m.steps[+ta.dataset.kbans]; if (!s) return; s.answer = ta.value; clearTimeout(kbAnsTimer); kbAnsTimer = setTimeout(persist, 600); });
+document.addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return; const d = b.dataset;
+  /* 型の画面 */
+  if (b.hasAttribute("data-kbtnew")) { openKbTypeEdit(null); return; }
+  if (d.kbtedit) { openKbTypeEdit(koubouTypes.find(x => x.id === d.kbtedit)); return; }
+  if (d.kbtcopy) { const v = KB_TYPES[d.kbtcopy]; openKbTypeEdit(null); kbtDraft.name = v.label + "(自分用)"; kbtDraft.steps = v.steps.map(s => ({ kind: s.kind, title: s.title, hint: s.hint || "", ex: s.ex || "" })); drawKbTypeEdit(); return; }
+  if (b.hasAttribute("data-kbtadd")) { kbtRead(); kbtDraft.steps.push({ kind: "書く", title: "", hint: "", ex: "" }); drawKbTypeEdit(); const rows = document.querySelectorAll("[data-kbtrow] [data-f=title]"); if (rows.length) rows[rows.length - 1].focus(); return; }
+  if (d.kbtup != null && b.hasAttribute("data-kbtup")) { kbtRead(); const k = +d.kbtup, a = kbtDraft.steps; if (k > 0) [a[k - 1], a[k]] = [a[k], a[k - 1]]; drawKbTypeEdit(); return; }
+  if (d.kbtdn != null && b.hasAttribute("data-kbtdn")) { kbtRead(); const k = +d.kbtdn, a = kbtDraft.steps; if (k < a.length - 1) [a[k + 1], a[k]] = [a[k], a[k + 1]]; drawKbTypeEdit(); return; }
+  if (d.kbtrm != null && b.hasAttribute("data-kbtrm")) { kbtRead(); kbtDraft.steps.splice(+d.kbtrm, 1); drawKbTypeEdit(); return; }
+  if (b.hasAttribute("data-kbtsave")) { kbtRead(); const x = kbtDraft; x.steps = x.steps.filter(s => String(s.title || "").trim()); if (!x.name.trim()) { toast("型の名前を入れてください"); return; } if (!x.steps.length) { toast("一手を1つは入れてください"); return; }
+    takeUndo(); if (x.id) { const i = koubouTypes.findIndex(y => y.id === x.id); koubouTypes[i] = x; } else { x.id = "kt" + uid(); koubouTypes.push(x); } closeSheet(); render(); toast("型を残した", true); return; }
+  if (d.kbtdel) { if (!confirm("この型を消す?(この型で作った機構は、そのまま残る)")) return; takeUndo(); koubouTypes = koubouTypes.filter(x => x.id !== d.kbtdel); closeSheet(); render(); toast("消した", true); return; }
+  /* 工房へ */
+  if (d.kbopen) { openKoubou(d.kbopen); return; }
+  if (b.hasAttribute("data-kbnewmech")) { if (!techLanes.length) { toast("先に系統を作る(技術のタブの「+ 系統を作る」)"); return; }
+    sheet(`<h3>機構を作る</h3><div class="f"><label>機構の名前</label><input id="kbn-n" placeholder="例:英単語のAnkiカードを一気に作る機構"></div><div class="f"><label>系統</label><select id="kbn-l">${techLanes.map(l => `<option value="${l.id}">${esc(l.name)}</option>`).join("")}</select></div><button class="btn" data-kbnewgo>工房で作り始める</button>`); return; }
+  if (b.hasAttribute("data-kbnewgo")) { const n = $("kbn-n").value.trim(); if (!n) { toast("名前を入れてください"); return; } takeUndo(); const lid = $("kbn-l").value, fr = tkFront(lid);
+    const t = { id: "tk" + uid(), lane: lid, parent: fr ? fr.id : "", pre: [], name: n, st: "ひらめき", notes: [], created: TODAY }; techs.push(t); openKoubou(t.id, "tech"); return; }
+  const t = kbT(), m = t && t.mech;
+  if (b.hasAttribute("data-kbback")) { const f = kbFrom; kbId = ""; if (f !== "tech" && P(f)) goPlan(f, "技術"); else location.hash = "tech"; return; }
+  if (!t) return;
+  if (d.kbtype) { kbPick = d.kbtype; render(); return; }
+  if (b.hasAttribute("data-kbstart")) { if (!kbPick) return; takeUndo(); kbStart(t, kbPick); render(); se("week"); return; }
+  if (!m) return;
+  const go = k => { kbIns = null; m.i = Math.max(0, Math.min(m.steps.length, k)); render(); const c = document.querySelector(".kbstep"); if (c) c.scrollIntoView({ behavior: "smooth", block: "center" }); const ta = $("kb-ans"); if (ta) setTimeout(() => ta.focus({ preventScroll: true }), 80); };
+  if (d.kbgo != null && b.hasAttribute("data-kbgo")) { go(+d.kbgo); return; }
+  if (b.hasAttribute("data-kbedit")) { kbEdit = !kbEdit; kbIns = null; render(); return; }
+  if (b.hasAttribute("data-kbprev")) { go(m.i - 1); return; }
+  if (b.hasAttribute("data-kbskip")) { go(m.i + 1); se("rec"); return; }
+  if (b.hasAttribute("data-kbfill")) { const s = m.steps[m.i], ta = $("kb-ans"); if (ta) { ta.value = s.ex; s.answer = s.ex; persist(); } return; }
+  if (b.hasAttribute("data-kbnext")) { const s = m.steps[m.i]; if (!s) return; const was = s.done; takeUndo(); s.done = true;
+    if (!was) { if (s.kind === "頼む") m.log.push({ d: TODAY, v: m.ver, k: "頼んだ", t: m.ver > 1 ? "直しを頼んだ:" + m.lastFix : "Claudeに作ってもらった" }); if (s.kind === "試す") m.log.push({ d: TODAY, v: m.ver, k: "試した", t: s.answer.trim() || "試して、問題なし" }); if (s.kind === "する") m.log.push({ d: TODAY, v: m.ver, k: "やった", t: s.title }); }
+    let k = m.i + 1; while (m.steps[k] && m.steps[k].done) k++; m.i = k; render(); se(m.steps[k] ? "rec" : "week"); const ta = $("kb-ans"); if (ta) setTimeout(() => ta.focus({ preventScroll: true }), 80); return; }
+  if (b.hasAttribute("data-kbcopy")) { kbCopy(kbReq(t, m)); return; }
+  if (b.hasAttribute("data-kbfix")) { const s = m.steps[m.i], v = (s.answer || "").trim(); if (!v) { const ta = $("kb-ans"); if (ta) ta.focus(); toast("直してほしいことを書いてください"); return; }
+    takeUndo(); m.log.push({ d: TODAY, v: m.ver, k: "試した", t: v }); m.lastFix = v; m.ver++; const ai = m.steps.findIndex(x => x.kind === "頼む");
+    m.steps.forEach((x, k) => { if (ai >= 0 && k >= ai) { x.done = false; if (x.kind === "試す") x.answer = ""; } }); m.i = ai >= 0 ? ai : m.i; render(); se("replan"); toast("版" + m.ver + "の依頼文ができた", true); return; }
+  if (b.hasAttribute("data-kblive")) { takeUndo(); m.log.push({ d: TODAY, v: m.ver, k: "使い始めた", t: "版" + m.ver + "を使い始めた" }); t.st = "定着"; t.at = TODAY; render(); se("best"); tkUnlockFx(t.name); return; }
+  if (b.hasAttribute("data-kbundo1")) { takeUndo(); m.steps[m.i].done = false; render(); toast("済を取り消した", true); return; }
+  if (b.hasAttribute("data-kbredo")) { if (!confirm(m.i + 1 + "手目から後ろを、全部「まだ」に戻す?(書いた答えは残る)")) return; takeUndo(); m.steps.forEach((x, k) => { if (k >= m.i) x.done = false; }); render(); toast("ここからやり直す", true); return; }
+  if (d.kbrm != null && b.hasAttribute("data-kbrm")) { const k = +d.kbrm, s = m.steps[k]; takeUndo(); m.steps.splice(k, 1); if (m.i > k || m.i >= m.steps.length) m.i = Math.max(0, Math.min(m.i - (m.i > k ? 1 : 0), m.steps.length)); closeSheet(); render(); toast("「" + (s.title || "一手") + "」を消した", true); return; }
+  if (d.kbstedit != null && b.hasAttribute("data-kbstedit")) { openKbStepEdit(+d.kbstedit); return; }
+  if (d.kbsk) { $("kbs-k").value = d.kbsk; document.querySelectorAll("[data-kbsk]").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.kbsk === d.kbsk))); return; }
+  if (d.kbssave != null && b.hasAttribute("data-kbssave")) { const s = m.steps[+d.kbssave]; if (!s) return; const ti = $("kbs-t").value.trim(); if (!ti) { toast("問い・一手の名前を入れてください"); return; } takeUndo(); s.kind = $("kbs-k").value; s.title = ti; s.hint = $("kbs-h").value.trim(); s.ex = $("kbs-e").value; closeSheet(); render(); toast("一手を直した", true); return; }
+  if (d.kbup != null && b.hasAttribute("data-kbup")) { const k = +d.kbup; if (k <= 0) return; takeUndo(); [m.steps[k - 1], m.steps[k]] = [m.steps[k], m.steps[k - 1]]; if (m.i === k) m.i--; else if (m.i === k - 1) m.i++; render(); return; }
+  if (d.kbdn != null && b.hasAttribute("data-kbdn")) { const k = +d.kbdn; if (k >= m.steps.length - 1) return; takeUndo(); [m.steps[k + 1], m.steps[k]] = [m.steps[k], m.steps[k + 1]]; if (m.i === k) m.i++; else if (m.i === k + 1) m.i--; render(); return; }
+  if (b.hasAttribute("data-kbadd")) { const ti = $("kb-ad-t").value.trim(); if (!ti) { $("kb-ad-t").focus(); return; } takeUndo(); const at = Math.min(kbIns != null ? kbIns + 1 : m.i + 1, m.steps.length); m.steps.splice(at, 0, kbStep({ kind: $("kb-ad-k").value, title: ti })); kbIns = at; render(); se("rec"); toast("一手を足した", true); const inp = $("kb-ad-t"); if (inp) inp.focus(); return; }
+  if (b.hasAttribute("data-kbaddmany")) { const ls = $("kb-ad-many").value.split("\n").map(x => x.replace(/^[\s・\-*\d.、)）]+/, "").trim()).filter(Boolean); if (!ls.length) return; takeUndo();
+    const at = Math.min(kbIns != null ? kbIns + 1 : m.i + 1, m.steps.length); kbIns = at + ls.length - 1; m.steps.splice(at, 0, ...ls.map(ti => kbStep({ kind: /頼む|依頼/.test(ti) ? "頼む" : /試す|確かめ/.test(ti) ? "試す" : /[?？]$/.test(ti) ? "書く" : "する", title: ti }))); render(); se("week"); toast(ls.length + "手を足した", true); return; }
+  if (b.hasAttribute("data-kbrailreq")) { kbCopy(kbRailReq(t, m)); return; }
+  if (b.hasAttribute("data-kbsavetype")) { const nm = prompt("自分の型の名前", kbLabel(m.type) + "(" + t.name.slice(0, 10) + ")"); if (!nm) return; takeUndo();
+    koubouTypes.push({ id: "kt" + uid(), name: nm.trim(), steps: m.steps.map(x => ({ kind: x.kind, title: x.title, hint: x.hint, ex: x.ex })) }); render(); toast("型を残した(次の機構で選べる)", true); return; }
+});
 </script>
 <script>
 /* ───────── 関係 ───────── */
@@ -2972,7 +3152,7 @@ function openGoals(){
 }
 
 /* ───────── 描画と操作 ───────── */
-const VIEWS = { overview: viewOverview, timeline: viewTimeline, plan: viewPlan, rel: viewRel, field: viewField, tech: viewTech, glossary: viewGlossary, tests: viewTests, week: viewWeek, weekrec: viewWeekRec, sound: viewSound, sync: viewSync, more: viewMore, load: viewLoad, lessons: viewLessons, council: viewCouncil, notify: viewNotify, importv: viewImport };
+const VIEWS = { overview: viewOverview, timeline: viewTimeline, plan: viewPlan, rel: viewRel, field: viewField, tech: viewTech, glossary: viewGlossary, koubou: viewKoubou, kbtypes: viewKbTypes, tests: viewTests, week: viewWeek, weekrec: viewWeekRec, sound: viewSound, sync: viewSync, more: viewMore, load: viewLoad, lessons: viewLessons, council: viewCouncil, notify: viewNotify, importv: viewImport };
 function current(){ const h = location.hash.slice(1); return VIEWS[h] ? h : "overview"; }
 function render(){
   clearRisk();
@@ -2983,7 +3163,7 @@ function render(){
     return `<button class="goal-c${d <= 30 ? " near" : ""}" data-goplan="${p.id}" data-ptab="図"><span class="gn">${esc(unbr(m.name))}</span><b>${d}<small>日</small></b><small>${esc(p.name)}</small></button>`; }).join("") + `<button class="goal-set" data-goalset>${headGoals.length ? "目標を選ぶ" : "+ どこからでも見える目標"}</button>`;
   $("goals").scrollLeft = 0;
   $("duebar").innerHTML = dueBar();
-  document.querySelectorAll("nav.tabs button").forEach(b => { if (["week", "weekrec", "more", "load", "lessons", "council", "notify", "importv", "sound", "sync", "glossary"].includes(v)) b.setAttribute("aria-current", "false"); });
+  document.querySelectorAll("nav.tabs button").forEach(b => { if (["week", "weekrec", "more", "load", "lessons", "council", "notify", "importv", "sound", "sync", "glossary", "koubou", "kbtypes"].includes(v)) b.setAttribute("aria-current", "false"); });
   const tl = document.querySelector(".tl"), td = document.querySelector(".tl-today"); if (tl && td) tl.scrollLeft = Math.max(0, td.offsetLeft - tl.clientWidth * 0.35);
 }
 function goPlan(id, tab){ planId = id; remember(id); reqPath = []; if (tab) ptab = tab; if (location.hash !== "#plan") location.hash = "plan"; else render(); window.scrollTo(0, 0); }
