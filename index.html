@@ -718,7 +718,7 @@ label.mini{display:flex;flex-direction:column;gap:.1rem;font-size:.62rem;color:v
 <div id="sheet-root"></div>
 <script>
 /* ───────── 大計:データ ───────── */
-const APP_VERSION = "2026-11-01 r11";
+const APP_VERSION = "2026-11-01 r12";
 const SHO_APP = "https://nisenonamae.github.io/sho/";
 const GRADES = ["最重要", "重要", "通常", "軽易"];
 const COUNCIL = { 最重要: "最高評議会", 重要: "常任評議会" };
@@ -804,11 +804,31 @@ function ghErr(r){
 }
 const MKEYS = { plans: x => x.id, tests: x => x.id, fields: x => x.id, lessons: x => x.id, reviews: x => x.w, proposals: x => x.id, headGoals: x => x.p + ":" + x.m, techLanes: x => x.id, techs: x => x.id, ideas: x => x.id };
 function mergeArr(b, l, r, key){
-  const B = new Map((b || []).map(x => [key(x), x])), L = new Map((l || []).map(x => [key(x), x])), out = new Map((r || []).map(x => [key(x), x]));
+  const B = new Map((b || []).map(x => [key(x), x])), L = new Map((l || []).map(x => [key(x), x])), R = new Map((r || []).map(x => [key(x), x])), out = new Map(R);
   B.forEach((v, k) => { if (!L.has(k)) out.delete(k); });
-  L.forEach((v, k) => { const bv = B.get(k); if (!bv || JSON.stringify(bv) !== JSON.stringify(v)) out.set(k, v); });
+  L.forEach((v, k) => { const bv = B.get(k), rv = R.get(k), J = JSON.stringify;
+    if (bv && J(bv) === J(v)) return;                                   // こちらは変えていない → 向こうのまま
+    if (bv && rv && J(rv) !== J(bv) && isObj(v) && isObj(rv)) out.set(k, mergeRec(bv, v, rv));   // 両方で同じものを変えた → 中身を一つずつ見比べる
+    else out.set(k, v); });
   return [...out.values()];
 }
+/* 同じもの(計画など)を2台で変えたとき:変えたところだけを、それぞれ活かす */
+const isObj = x => x && typeof x === "object" && !Array.isArray(x);
+function mergeRec(b, l, r){
+  const J = JSON.stringify, out = Object.assign({}, r);
+  Object.keys(b).forEach(k => { if (!(k in l)) delete out[k]; });
+  Object.keys(l).forEach(k => { const bk = b[k], lk = l[k], rk = r[k];
+    if (J(bk) === J(lk)) return;                                          // こちらは変えていない
+    if (J(bk) === J(rk) || rk === undefined) { out[k] = lk; return; }      // 向こうは変えていない
+    if (Array.isArray(lk) && Array.isArray(rk)) { const all = lk.concat(rk), idd = all.length && all.every(x => isObj(x) && x.id);
+      out[k] = idd ? mergeArr(bk || [], lk, rk, x => x.id) : mergeList(bk || [], lk, rk); return; }
+    if (isObj(lk) && isObj(rk)) { out[k] = mergeRec(isObj(bk) ? bk : {}, lk, rk); return; }
+    out[k] = lk; });
+  return out;
+}
+/* 名札のない並び(歩みの記録など):両方で足したものを残し、こちらで消したものは消す */
+function mergeList(b, l, r){ const J = JSON.stringify, inB = new Set(b.map(x => J(x))), inL = new Set(l.map(x => J(x))), inR = new Set(r.map(x => J(x)));
+  return r.filter(x => !(inB.has(J(x)) && !inL.has(J(x)))).concat(l.filter(x => !inR.has(J(x)))); }
 function mergeObj(b, l, r){ b = b || {}; l = l || {}; const out = Object.assign({}, r || {});
   Object.keys(b).forEach(k => { if (!(k in l)) delete out[k]; }); Object.keys(l).forEach(k => { if (JSON.stringify(b[k]) !== JSON.stringify(l[k])) out[k] = l[k]; }); return out; }
 function merge3(b, l, r){
@@ -826,6 +846,7 @@ function scheduleSync(){ if (!conf) return; clearTimeout(syncTimer); syncTimer =
 async function runSync(){
   if (!conf) return; if (syncing) { again = true; return; }
   syncing = true; sync.state = "送信中"; sync.err = ""; paintSync();
+  const before = JSON.stringify(dataOut());
   try {
     for (let i = 0; i < 4; i++) {
       const r = await gh("GET"); let remote = null, sha = null;
@@ -835,7 +856,7 @@ async function runSync(){
       else { const j = await r.json(); sha = j.sha; remote = JSON.parse(b64d(j.content)); }
       const D = dataOut();
       if (remote) {
-        if (!base || base.sha !== sha) { dataIn(merge3(base && base.data, clone(D), remote)); lastSaved = ""; try { localStorage.setItem(KEY, JSON.stringify(dataOut())); lastSaved = JSON.stringify(dataOut()); } catch (e) {} }
+        if (!base || base.sha !== sha) { dataIn(merge3(base && base.data, clone(D), remote)); if (typeof flushLive === "function") flushLive(); lastSaved = ""; try { localStorage.setItem(KEY, JSON.stringify(dataOut())); lastSaved = JSON.stringify(dataOut()); } catch (e) {} }
         if (JSON.stringify(dataOut()) === JSON.stringify(Object.assign(blank(), remote))) { setBase(sha, remote); break; }
       }
       const put = await gh("PUT", { message: "大計 " + new Date().toLocaleString("ja-JP"), content: b64e(JSON.stringify(dataOut())), branch: conf.branch || "main", ...(sha ? { sha } : {}) });
@@ -845,7 +866,9 @@ async function runSync(){
     }
     sync.state = "同期済み"; sync.at = Date.now();
   } catch (e) { sync.state = "失敗"; sync.err = e.message; }
-  syncing = false; render();
+  syncing = false;
+  /* 中身が変わったときだけ画面を作り直す(変わらなければ同期の印だけ)。文字を入力している最中は、入力欄から離れるまで待つ */
+  if (JSON.stringify(dataOut()) !== before) { if (typeof safeRender === "function") safeRender(); else render(); } else paintSync();
   if (again) { again = false; scheduleSync(); }
 }
 function paintSync(){ const el = document.getElementById("sync-line"); if (el) el.innerHTML = syncLine(); const d = document.getElementById("sync-dot"); if (d) d.className = "sdot s-" + sync.state; }
@@ -3087,7 +3110,14 @@ render();
 /* 操作のたびに保存(変わっていなければ何もしない) */
 document.addEventListener("click", () => setTimeout(persist, 0));
 document.addEventListener("change", () => setTimeout(persist, 0));
-document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") { const d = localDay(); if (d !== TODAY) { TODAY = d; render(); } scheduleSync(); scheduleNotify(); } });
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") { const d = localDay(); if (d !== TODAY) { TODAY = d; safeRender(); } scheduleSync(); scheduleNotify(); } });
+/* 画面の作り直しを、文字を入力している最中は待つ(作り直すと入力欄が消えて、入力の状態が外れるため) */
+let renderPending = false;
+function editingNow(){ const a = document.activeElement; return !!(a && a.closest && a.closest("#main") && (a.tagName === "TEXTAREA" || (a.tagName === "INPUT" && !["checkbox", "radio", "button", "submit"].includes(a.type)) || a.isContentEditable)); }
+function safeRender(){ if (editingNow()) { renderPending = true; return; } renderPending = false; render(); }
+document.addEventListener("focusout", () => { if (!renderPending) return; setTimeout(() => { if (renderPending && !editingNow()) { renderPending = false; render(); } }, 60); }, true);
+/* 書いたそばから保存する欄(メモ)は、データが入れ替わったあとに今の中身を書き戻す */
+function flushLive(){ document.querySelectorAll("textarea.memo-t").forEach(t => { const p = P(planId); if (p && p.memo !== t.value) p.memo = t.value; }); }
 setInterval(() => { if (document.visibilityState === "visible" && conf && !syncing) runSync(); }, 120000);
 if (conf) runSync(); scheduleNotify();
 if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("./sw.js").catch(() => {});
