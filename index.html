@@ -260,6 +260,9 @@ details.wx summary{cursor:pointer;color:var(--wave)}
 .lchip{flex:none;display:flex;align-items:center;gap:.35rem;border:1px solid var(--rule);background:var(--sheet);border-radius:999px;padding:.2rem .65rem .2rem .3rem;font-size:.8rem;max-width:15rem}
 .lchip span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .lchip.on{border-color:var(--ink);background:var(--white);font-weight:700}
+.phase{display:inline-block;font-size:.66rem;font-weight:700;border:1.5px dashed var(--mid);color:var(--mid);border-radius:3px;padding:0 .35rem;line-height:1.5;margin-right:.3rem}
+.plan.draft{border-left-style:dashed;background:transparent;border:1px dashed var(--rule);border-left:6px dashed var(--mid)}
+.cpanel.start{border-color:var(--mid);border-style:dashed}
 .lane-e{border:1px solid var(--ink);border-radius:5px;padding:.4rem;margin:.4rem 0;background:var(--white)}
 .lhd{display:grid;grid-template-columns:1fr 3.5rem 1.8rem 1.8rem auto;gap:.3rem;align-items:center;margin-bottom:.2rem}
 .lhd input,.lhd select{width:100%;min-width:0;padding:.3rem .4rem;border:1px solid var(--rule);border-radius:3px;background:var(--white);font-size:.84rem}
@@ -569,7 +572,7 @@ details.wx summary{cursor:pointer;color:var(--wave)}
 <div id="sheet-root"></div>
 <script>
 /* ───────── 大計:データ ───────── */
-const APP_VERSION = "2026-11-01 r5";
+const APP_VERSION = "2026-11-01 r6";
 const SHO_APP = "https://nisenonamae.github.io/sho/";
 const GRADES = ["最重要", "重要", "通常", "軽易"];
 const COUNCIL = { 最重要: "最高評議会", 重要: "常任評議会" };
@@ -720,7 +723,7 @@ function roadmapToPlans(rp){
   return lanes.map(lane => { const xs = items.filter(i => (i.lane || "全体") === lane);
     const ds = xs.flatMap(i => [i.start, i.end, i.date]).filter(Boolean).sort(); if (!ds.length) return null;
     const id = "n" + uid();
-    return { id, ministry: lane, grade: "通常", name: lane + "の計画(行軍表から)", why: "", goal: (xs.find(i => i.type === "period" && i.goal) || {}).goal || "", start: ds[0], end: ds[ds.length - 1],
+    return { phase: "作成中", id, ministry: lane, grade: "通常", name: lane + "の計画(行軍表から)", why: "", goal: (xs.find(i => i.type === "period" && i.goal) || {}).goal || "", start: ds[0], end: ds[ds.length - 1],
       buffer: { total: xs.filter(i => i.type === "buffer").reduce((a, i) => a + Math.max(1, days(i.start, i.end) + 1), 0), uses: [] },
       periods: xs.filter(i => i.type === "period").map(i => ({ name: i.name || "期間", purpose: i.goal || "", start: i.start, end: i.end })).sort((a, b) => a.start < b.start ? -1 : 1),
       milestones: xs.filter(i => i.type === "milestone").map((i, k) => ({ id: id + "m" + k, name: i.name || "節目", date: i.date, type: "予定", tasks: i.target ? ["判定:" + i.target + " の" + (i.metric || "") + " " + (i.op === "<=" ? "≦" : "≧") + " " + (i.value || "")] : [], records: [], weeks: [] })),
@@ -791,6 +794,8 @@ const mainMs = p => p.milestones.filter(m => !m.parent).sort((a, b) => a.date < 
 const subsOf = (p, id) => p.milestones.filter(m => m.parent === id).sort((a, b) => a.date < b.date ? -1 : 1);
 function nextMs(p){ return p.milestones.filter(m => !m.parent && !isDone(m)).sort((a, b) => a.date < b.date ? -1 : 1)[0]; }
 function toast(t){ const el = document.createElement("div"); el.className = "toast"; el.textContent = t; document.body.appendChild(el); setTimeout(() => el.remove(), 2600); }
+/* 作成中:作っている途中の計画。確認・危険度・集計の対象外。「始める」で進行中へ(一方通行) */
+const drafting = p => p && p.phase === "作成中";
 function orderedPlans(){ return plans.filter(p => !p.status).sort((a, b) => GRADES.indexOf(a.grade) - GRADES.indexOf(b.grade) || MINS().indexOf(a.ministry) - MINS().indexOf(b.ministry)); }
 function remember(id){ recent = [id].concat(recent.filter(x => x !== id)).slice(0, 5); }
 const CAUSES = ["YouTube・動画", "体調", "予定外の用事", "見積もりが甘かった", "気分が乗らない", "その他"];
@@ -872,6 +877,7 @@ const compCls = n => n >= 80 ? "ok" : n >= 55 ? "mid" : "bad";
 /* ───────── 共通の部品 ───────── */
 function meters(p, opts){
   const r = risk(p), c = completeness(p), [hc, ht] = health(p);
+  if (drafting(p)) return `<div class="meters"><div class="meter"><div class="ml">状態</div><div class="mv" style="font-size:1rem">作成中</div><div class="note" style="font-size:.66rem">始めると確認・危険度の対象になる</div></div><button class="meter" data-comp="${p.id}"><div class="ml">完成度</div><div class="mv">${c.score}%</div><div class="mbar"><i style="width:${c.score}%;background:var(--${compCls(c.score)})"></i></div></button><div class="meter"><div class="ml">期間</div><div class="mv" style="font-size:.9rem">${md(p.start)}〜${md(p.end)}</div></div></div>`;
   return `<div class="meters">
     <button class="meter" data-ptab="図" data-goplan="${p.id}"><div class="ml">進捗</div><div class="mv">${prog(p)}%<small class="st ${hc}">${ht}</small></div><div class="mbar"><i style="width:${prog(p)}%;background:var(--wave)"></i><s style="left:${expct(p)}%"></s></div></button>
     <button class="meter" data-ptab="図" data-goplan="${p.id}" data-risk="1"><div class="ml">計画危険度</div><div class="mv">${r.score}<small class="lv-${r.level}">${r.level}</small></div><div class="mbar"><i class="bg-${r.level}" style="width:${r.score}%"></i></div></button>
@@ -956,11 +962,16 @@ function viewOverview(){
   const notice = (gaps.length || ld > cp) ? `<section class="sec"><h3>気づき</h3>${gaps.map(g => `<div class="gap"><span class="kk k-${g.kind === "量だけ進む" ? "立て直し" : "記録"}">${g.kind}</span> <b>${esc(g.p.name)}</b>:${esc(g.text)}</div>`).join("")}${ld > cp ? `<div class="gap"><span class="kk k-予備">負荷</span> 来週は使う時間の見込み ${fmtN(ld)}時間が、使える時間 ${cp}時間を超える。<button class="linkx" data-v="load">負荷を見る</button></div>` : ""}</section>` : "";
   const closed = plans.filter(p => p.status), closedHtml = closed.length ? `<section class="sec"><h3>終えた計画<small>${closed.length}本</small></h3>${closed.map(p => `<div class="closedbar"><b>${esc(p.name)}</b>・${esc(p.status)}(${md(p.closedAt)})</div>`).join("")}</section>` : "";
   const shoBar = fromSho ? `<div class="shobar"><span><b>${esc(fromSho)}</b>から来た。${esc(fromSho)}の計画だけを出している</span><span class="fbar" style="margin:.3rem 0 0"><button class="btn sm" data-shogo="${esc(fromSho)}">‹ ${esc(fromSho)}に戻る</button><button class="btn ghost sm" data-allplans>すべての計画を見る</button></span></div>` : "";
-  if (fromSho) return shoBar + `<section class="sec"><h3>${esc(fromSho)}の計画<small>${ps.length}本</small></h3>${ps.map(planCard).join("") || '<p class="note">この省の計画はまだない。</p>'}<button class="btn ghost sm" data-addplan style="margin-top:.4rem">+ ${esc(fromSho)}の計画を足す</button></section>` + upHtml;
+  if (fromSho) { const dz = plans.filter(p => drafting(p) && !p.status && p.ministry === fromSho);
+    return shoBar + `<section class="sec"><h3>${esc(fromSho)}の計画<small>${ps.length}本${dz.length ? "・作成中 " + dz.length + "本" : ""}</small></h3>${ps.map(planCard).join("")}${dz.map(p => `<button class="plan t-${p.grade} draft" data-goplan="${p.id}"><div><div class="nm">${esc(p.name)} <span class="phase">作成中</span></div><div class="mi">${esc(p.ministry)}</div></div><div class="side">完成度<br><b>${completeness(p).score}%</b></div></button>`).join("")}${ps.length + dz.length ? "" : '<p class="note">この省の計画はまだない。</p>'}<button class="btn ghost sm" data-addplan style="margin-top:.4rem">+ ${esc(fromSho)}の計画を足す</button></section>` + upHtml; }
   const gt = todayGate();
-  if (gt.gate && !peekOverview) return gt.html + `<p class="note" style="text-align:center">今日の確認が全部済むと、全体図の残りが出る。<button class="linkx" data-peek>いったん全体を見る</button></p><div class="fbar" style="justify-content:center"><button class="btn ghost sm" data-addplan>+ 計画を足す</button></div>`;
+  const draftsG = plans.filter(p => drafting(p) && !p.status), draftCards = draftsG.map(p => { const c = completeness(p);
+    return `<button class="plan t-${p.grade} draft" data-goplan="${p.id}"><div><div class="nm">${esc(p.name)} <span class="phase">作成中</span></div><div class="mi">${esc(p.ministry)}・${md(p.start)}〜${md(p.end)}</div></div><div class="side">完成度<br><b>${c.score}%</b></div><div class="minibar">${band(p)}</div></button>`; }).join("");
+  if (gt.gate && !peekOverview) return gt.html + `<p class="note" style="text-align:center">今日の確認が全部済むと、全体図の残りが出る。<button class="linkx" data-peek>いったん全体を見る</button></p><div class="fbar" style="justify-content:center"><button class="btn ghost sm" data-addplan>+ 計画を足す</button></div>` + (draftsG.length ? `<section class="sec"><h3>作成中の計画<small>確認の対象外。仕上げてから始める</small></h3>${draftCards}</section>` : "");
+  if (false) return gt.html + `<p class="note" style="text-align:center">今日の確認が全部済むと、全体図の残りが出る。<button class="linkx" data-peek>いったん全体を見る</button></p><div class="fbar" style="justify-content:center"><button class="btn ghost sm" data-addplan>+ 計画を足す</button></div>`;
   const pw = pendingWeek(), wl = weekLeftDays(), wkCards = `<section class="sec"><div class="wk2"><button class="wkcard${pw.length ? "" : " done"}" data-v="week"><span><b>${pw.length ? "今週の見直し" : "今週の見直しは済んだ"}</b><small>${pw.length ? "のこり " + pw.length + "本・" + (wl === 0 ? "今日まで" : "日曜まであと" + wl + "日") : wk(thisWeek())}</small></span></button><button class="wkcard done" data-v="weekrec"><span><b>週の記録</b><small>やった量とテストを入れる</small></span></button></div></section>`;
-  return gt.html + wkCards + notice + head + upHtml + `<section class="sec"><h3>計画</h3></section>` + summaryHtml().replace('<section class="sec">', '<section class="sec" style="margin-top:.3rem">') + testsHtml + bar.replace('<div class="fbar" style="margin-top:1.4rem">', '<div class="fbar" style="margin-top:1.4rem"><button class="btn sm" data-addplan>+ 計画を足す</button>') + (ps.length ? groups.join("") : '<p class="note">条件に合う計画はありません。</p>') + fxHtml + closedHtml;
+  const draftHtml = draftsG.length ? `<section class="sec"><h3>作成中の計画<small>${draftsG.length}本・始めるまで確認や集計の対象外</small></h3>${draftCards}</section>` : "";
+  return gt.html + wkCards + draftHtml + notice + head + upHtml + `<section class="sec"><h3>計画</h3></section>` + summaryHtml().replace('<section class="sec">', '<section class="sec" style="margin-top:.3rem">') + testsHtml + bar.replace('<div class="fbar" style="margin-top:1.4rem">', '<div class="fbar" style="margin-top:1.4rem"><button class="btn sm" data-addplan>+ 計画を足す</button>') + (ps.length ? groups.join("") : '<p class="note">条件に合う計画はありません。</p>') + fxHtml + closedHtml;
 }
 
 /* ───────── 時間軸 ───────── */
@@ -1015,7 +1026,7 @@ function viewPlan(){
   const tabs = `<div class="ptabs" role="group" aria-label="計画の中">${PTABS.map(t => `<button data-ptab="${t}" aria-pressed="${ptab === t}">${t}${t === "もしも" && p.ifs.length ? " " + p.ifs.length : ""}${t === "分野" && (p.fields || []).length ? " " + p.fields.length : ""}${t === "テスト" && testsOf(p).length ? " " + testsOf(p).length : ""}</button>`).join("")}</div>`;
   const body = { 図: tabFigure, 分解: tabReq, 道のり: tabRoad, テスト: tabTests, もしも: tabIf, 歩み: tabWalk, 分野: tabPlanField }[ptab](p);
   const anc = ancestors(p), crumb = anc.length ? `<div class="pcrumb">${anc.map(a => `<button data-goplan="${a.q.id}" data-ptab="道のり">${esc(a.q.name)}</button> ›`).join(" ")} <b style="color:var(--ink)">${esc(p.name)}</b><span>(${esc(anc[anc.length - 1].q.name)}の節目)</span></div>` : "";
-  const tcr = p.status ? null : chkRec(TODAY, p.id), tline = p.status ? "" : `<div class="tline"><span class="note">今日の確認:</span>${tcr ? `<span class="rs r-${tcr.r}">${tcr.r}</span>` : `<button class="tchip" data-due="today">まだ。見たらいちばん下で確認 ↓</button>`}</div>`;
+  const tcr = p.status ? null : chkRec(TODAY, p.id), tline = drafting(p) ? `<div class="tline"><span class="phase">作成中</span><button class="tchip" data-gostart>形ができたら、いちばん下で始める ↓</button></div>` : p.status ? "" : `<div class="tline"><span class="note">今日の確認:</span>${tcr ? `<span class="rs r-${tcr.r}">${tcr.r}</span>` : `<button class="tchip" data-due="today">まだ。見たらいちばん下で確認 ↓</button>`}</div>`;
   return crumb + pickBtn(p, "plan") + head + tline + draftBanner(p) + meters(p) + (showComp ? compCard(p) : "") + tabs + body + checkPanel(p);
 }
 function compCard(p){ const c = completeness(p);
@@ -1056,7 +1067,7 @@ function tabFigure(p){
   const riskCard = `<div class="card"><h4><span>計画危険度 ${r.score}<span class="lv-${r.level}" style="margin-left:.4rem">${r.level}</span></span><small>何が効いているか</small></h4><div class="why-r">${r.parts.map(x => `<div><span>${esc(x.k)}<br><small class="note">${esc(x.d)}</small></span><span class="wb"><i style="width:${Math.min(100, x.v / 35 * 100)}%"></i></span></div>`).join("")}</div>
     <p class="note" style="margin:.4rem 0 0">危険度が50を超えたら、「もしも」の計画を見直すか、計画を変える合図。</p></div>`;
   const gp = gapAlerts().filter(g => g.p === p).map(g => `<div class="gap"><span class="kk k-${g.kind === "量だけ進む" ? "立て直し" : "記録"}">${g.kind}</span> ${esc(g.text)}</div>`).join("");
-  return gp + fig + bufferCard(p) + chart + riskCard;
+  return gp + fig + bufferCard(p) + chart + (drafting(p) ? "" : riskCard);
 }
 function bufferCard(p){
   const used = p.buffer ? bufUsed(p) : 0, left = p.buffer ? bufLeft(p) : 0, cells = [];
@@ -1068,7 +1079,7 @@ function bufferCard(p){
     ${p.buffer ? `<div class="bufbar">${cells.slice(0, p.buffer.total).join("")}</div>` : ""}
     ${p.buffer && left <= 0 && mLeft(p) <= 0 ? '<p class="note" style="color:var(--bad);margin:.2rem 0">月の予備も計画の予備もない。これ以上遅れたら、立て直すか改造する。</p>' : ""}
     <div class="cause">${Object.entries(byCause).sort((a, b) => b[1] - a[1]).map(([c, d]) => `<span>${esc(c)} <b>${d}日</b></span>`).join("") || "まだ使っていない"}</div>
-    <div class="fbar" style="margin:.5rem 0 0"><button class="btn sm" data-bufuse>予備を使う</button><button class="btn ghost sm" data-replan>計画を立て直す</button>${p.buffer ? "" : '<button class="btn ghost sm" data-bufset>計画の予備を置く</button>'}</div></div>`;
+    ${drafting(p) ? '<p class="note" style="margin:.4rem 0 0">予備の層は「この計画を直す」で決める。使うのは始めてから。</p>' : `<div class="fbar" style="margin:.5rem 0 0"><button class="btn sm" data-bufuse>予備を使う</button><button class="btn ghost sm" data-replan>計画を立て直す</button>${p.buffer ? "" : '<button class="btn ghost sm" data-bufset>計画の予備を置く</button>'}</div>`}</div>`;
 }
 
 function metricChart(p){
@@ -1373,7 +1384,7 @@ function openTestEdit(t, planId){
 </script>
 <script>
 /* ───────── 計算:今の計画だけ・週の時間・ずれ・見積もりのずれ ───────── */
-const live = () => plans.filter(p => !p.status);
+const live = () => plans.filter(p => !p.status && !drafting(p));   // 進行中の計画だけ(作成中は数えない)
 function weekHours(p, w){
   const we = addD(w, 6); if (p.status || p.end < w || p.start > we) return 0;
   const ms = mainMs(p); let h = 0, hit = false;
@@ -1517,7 +1528,7 @@ function applyPack(pk){
   const ids = {};
   (pk.ready || []).forEach(p => plans.push(p));
   pk.plans.forEach(x => { const id = "n" + Math.random().toString(36).slice(2, 8); ids[x.name] = id;
-    plans.push({ id, ministry: x.ministry || "未分類", grade: GRADES.includes(x.grade) ? x.grade : "通常", name: x.name, why: x.why || "", goal: x.goal || x.name, start: x.start, end: x.end, progress: 0, expected: 0,
+    plans.push({ phase: "作成中", id, ministry: x.ministry || "未分類", grade: GRADES.includes(x.grade) ? x.grade : "通常", name: x.name, why: x.why || "", goal: x.goal || x.name, start: x.start, end: x.end, progress: 0, expected: 0,
       buffer: { total: Math.max(2, Math.round(days(x.start, x.end) / 12)), uses: [] }, periods: x.periods || [], works: [], ifs: [], basis: [], versions: [], fixed: [], rels: [], fields: [], created: TODAY, req: { text: x.goal || x.name, kids: [] },
       milestones: (x.milestones || []).map((m, i) => Object.assign({ id: id + "m" + i, tasks: [], records: [], weeks: [], type: "予定" }, m, m.pace ? { pace: Object.assign({ hist: [] }, m.pace) } : {})),
       changes: [ { date: TODAY, kind: "作成", what: "ファイルから入れた", before: "", after: x.name, reason: "まとめて入れる", size: "小" } ] }); });
@@ -1662,13 +1673,14 @@ const chk = (d, pid) => { const r = chkRec(d, pid); return r ? r.r : null; };
 function wrevRec(w, pid){ return weeklyReviews[w + "|" + pid] || null; }
 function lastCheck(p){ let best = null; Object.keys(dailyChecks).forEach(k => { const [d, pid] = k.split("|"); if (pid === p.id && (!best || d > best)) best = d; });
   const kz = p.changes.filter(c => c.kind === "改造").map(c => c.date).sort().pop(); if (kz && (!best || kz > best)) best = kz; return best; }
-const pendingToday = () => orderedPlans().filter(p => !chkRec(TODAY, p.id));
+const activeOrdered = () => orderedPlans().filter(p => !drafting(p));
+const pendingToday = () => activeOrdered().filter(p => !chkRec(TODAY, p.id));
 const thisWeek = () => weekStart(TODAY);
-const pendingWeek = () => orderedPlans().filter(p => !wrevRec(thisWeek(), p.id) && p.start <= addD(thisWeek(), 6));
-const fromDay = p => [p.start, p.created, since].filter(Boolean).sort().pop();   // この日より前は「抜け」に数えない
+const pendingWeek = () => activeOrdered().filter(p => !wrevRec(thisWeek(), p.id) && p.start <= addD(thisWeek(), 6));
+const fromDay = p => [p.start, p.created, p.startedAt, since].filter(Boolean).sort().pop();   // この日より前は「抜け」に数えない
 const weekLeftDays = () => days(TODAY, addD(thisWeek(), 6));   // 日曜まであと何日
 /* 前の週の見直しを、やらずに過ぎた計画 */
-const missedLastWeek = () => orderedPlans().filter(p => fromDay(p) <= addD(thisWeek(), -7) && !wrevRec(addD(thisWeek(), -7), p.id));
+const missedLastWeek = () => activeOrdered().filter(p => fromDay(p) <= addD(thisWeek(), -7) && !wrevRec(addD(thisWeek(), -7), p.id));
 let peekOverview = false;
 
 /* どの画面でも、見出しの下に出る「やること」の帯 */
@@ -1683,7 +1695,7 @@ function dueBar(){
 }
 /* 全体図のいちばん上:確認が済むまで、ここだけが出る */
 function todayGate(){
-  const ps = orderedPlans(); if (!ps.length) return { html: "", gate: false };
+  const ps = activeOrdered(); if (!ps.length) return { html: "", gate: false };
   const pt = pendingToday(), all = !pt.length;
   const dots = Array.from({ length: 28 }, (_, i) => addD(TODAY, i - 27)).map(d => { const n = ps.filter(p => chkRec(d, p.id)).length;
     return `<i class="dcd${n ? (n >= ps.length ? " full" : " some") : ""}${d === TODAY ? " now" : ""}" title="${md(d)} ${n}本"></i>`; }).join("");
@@ -1696,8 +1708,14 @@ function todayGate(){
 }
 /* 計画のページのいちばん下:今日の確認(と、今週の見直しの状況) */
 let dcDraft = {};
+function startPanel(p){
+  const c = completeness(p), miss = c.items.filter(x => !x.ok);
+  return `<div class="cpanel start"><h4>作成中の計画</h4><p class="note" style="margin:0 0 .4rem">いまは自由に組み立てる段階。直しても歩みには残らず、確認や危険度の対象にもならない。形ができたら始める。始めたあとの直しは、すべて普通の修正として残る(作成中には戻れない)。</p>
+    <div class="note" style="margin:0 0 .4rem">完成度 <b style="color:var(--ink)">${c.score}%</b>${miss.length ? "・まだ:" + miss.map(x => esc(x.k)).join("、") : "・点検はすべて済み"}</div>
+    <button class="btn" data-planstart="${p.id}">この計画を始める</button></div>`;
+}
 function checkPanel(p){
-  if (p.status) return "";
+  if (p.status) return ""; if (drafting(p)) return startPanel(p);
   const c = chkRec(TODAY, p.id), d = dcDraft[p.id], todays = p.changes.filter(x => x.date === TODAY && !["確認", "作成"].includes(x.kind));
   const chosen = d ? d.r : null, wr = wrevRec(thisWeek(), p.id);
   const form = chosen && chosen !== "問題なし" ? `<div class="f"><label>${chosen === "直した" ? "何を直したか(必ず書く)" : "何が不安か(必ず書く)"}</label><textarea id="dc-note" placeholder="${chosen === "直した" ? "例:過去問のペースを1.5年分/週にした。冬の模試と重なるので" : "例:学校の課題が増えそうで、来週のペースが心配"}">${esc(d.note || "")}</textarea></div>
@@ -1734,7 +1752,7 @@ function weekSummary(p, w){
   return { lines: out, notes, missed };
 }
 function viewWeek(){
-  const w = thisWeek(), we = addD(w, 6), ps = orderedPlans(), pw = pendingWeek(), wl = weekLeftDays();
+  const w = thisWeek(), we = addD(w, 6), ps = activeOrdered(), pw = pendingWeek(), wl = weekLeftDays();
   const card = p => { const rv = wrevRec(w, p.id), s = weekSummary(p, w), open = wrOpen[p.id] != null ? wrOpen[p.id] : !rv, d = wrDraft[p.id];
     const chosen = d ? d.r : null;
     return `<div class="wrv${rv ? " done" : ""}"><button class="wrh" data-wropen="${p.id}"><span><b>${esc(p.name)}</b><small>${rv ? `<span class="rs r-${rv.r}">${rv.r}</span>${rv.note ? " " + esc(rv.note) : ""}` : "まだ"}</small></span><span class="note">${open ? "▴" : "▾"}</span></button>
@@ -1821,8 +1839,8 @@ function viewRel(){
   return toggle + (relMode === "all" ? relMap() : relFocus());
 }
 function relFocus(){
-  if (!live().length) return emptyPlans();
-  if (!P(relId)) relId = live()[0].id;
+  if (!orderedPlans().length) return emptyPlans();
+  if (!P(relId)) relId = orderedPlans()[0].id;
   const p = P(relId), r = risk(p);
   const ins = k => plans.filter(q => q.rels.some(x => x.to === p.id && x.kind === k)), outs = k => p.rels.filter(x => x.kind === k).map(x => P(x.to));
   const card = q => { const rr = risk(q); return `<button class="relc" data-relgo="${q.id}">${seal(q.grade)}<span><b>${esc(q.name)}</b><small>${esc(q.ministry)}・進捗 ${prog(q)}%・危険度 <b class="lv-${rr.level}" style="background:none">${rr.score}</b></small></span></button>`; };
@@ -1955,7 +1973,7 @@ function openEdit(p, focus, mode){
       <div class="er2" style="grid-template-columns:1fr 1fr"><label class="note" style="display:flex;align-items:center;gap:.3rem">1つあたり<input data-k="min" type="number" step="0.5" min="0" value="${m.pace && m.pace.min ? m.pace.min : ""}" placeholder="分" style="width:4.5rem">分</label><label class="chk"><input type="checkbox" data-k="done"${m.done ? " checked" : ""}> 達成した</label></div>
       <div class="er2"><select data-k="plan"><option value="">計画とつながない</option>${plans.filter(x => x.id !== p.id).map(x => `<option value="${x.id}"${m.plan === x.id ? " selected" : ""}>${esc(x.name)}</option>`).join("")}</select><label class="chk"><input type="checkbox" data-k="del"${fx ? " disabled" : ""}> 消す</label></div>`}
       ${fx ? `<div class="note">期日は不変(${esc(fx.council)})。変えるときは評議会へ</div>` : ""}</div>`; };
-  sheet(`<h3>${editTarget ? "改造の下書きを直す" : "この計画を直す"}</h3><p class="note">${editTarget ? "下書きなので、今の計画は変わらない。反映するまで何度でも直せる。" : "変えたところは、理由と一緒に「歩み」に残る。組み直すなら、操作の「改造」で下書きから始める。"}不変のところは直せない。</p>
+  sheet(`<h3>${editTarget ? "改造の下書きを直す" : drafting(p) ? "計画を組み立てる(作成中)" : "この計画を直す"}</h3><p class="note">${editTarget ? "下書きなので、今の計画は変わらない。反映するまで何度でも直せる。" : drafting(p) ? "作成中なので、何度直しても歩みには残らない。" : "変えたところは、理由と一緒に「歩み」に残る。組み直すなら、操作の「改造」で下書きから始める。"}不変のところは直せない。</p>
     <div class="f"><label>直す理由(歩みに残る)</label><input id="ed-why" placeholder="例:模試の日程が出たので節目を合わせた"></div>
     <h4 class="eh">基本</h4>
     <div class="f"><label>名前</label><input id="ed-name" value="${esc(p.name)}"></div>
@@ -1975,7 +1993,7 @@ function openEdit(p, focus, mode){
   if (focus) setTimeout(() => { const el = document.getElementById("er-" + focus) || document.getElementById("er-ms"); if (el) el.scrollIntoView({ block: "center" }); }, 60);
 }
 function saveEdit(p){
-  const why = $("ed-why").value.trim(), log = (what, a, b, size) => { if (String(a) !== String(b)) p.changes.push({ date: TODAY, kind: "変更", what, before: String(a || "(なし)"), after: String(b || "(なし)"), reason: why || "(理由なし)", size }); };
+  const why = $("ed-why").value.trim(), log = (what, a, b, size) => { if (drafting(p)) return; if (String(a) !== String(b)) p.changes.push({ date: TODAY, kind: "変更", what, before: String(a || "(なし)"), after: String(b || "(なし)"), reason: why || "(理由なし)", size }); };
   const v = id => $(id).value.trim(); let n = 0; const L = (...a) => { const before = p.changes.length; log(...a); n += p.changes.length - before; };
   L("名前", p.name, v("ed-name"), "小"); p.name = v("ed-name") || p.name;
   L("省", p.ministry, v("ed-min"), "小"); p.ministry = v("ed-min") || p.ministry;
@@ -2192,14 +2210,14 @@ document.addEventListener("click", e => {
   if (d.walk) { walkKind = d.walk; render(); return; }
   if (d.sumg) { sumGrade = d.sumg; render(); return; }
   // 直す・週の記録
-  if (b.hasAttribute("data-planops")) { sheet(`<h3>${esc(p.name)}</h3><div class="msl"><button class="msi" data-edit><span class="msn"><span>この計画を直す</span><small>名前・格・到達点・期間・節目・予備</small></span></button><button class="msi" data-kz${p.draft ? "edit" : "start"}><span class="msn"><span>${p.draft ? "改造の下書きを直す" : "改造する(下書きで組み直す)"}</span><small>期間・節目・到達点の組み直し。何日かに分けてよく、反映するまで今の計画はそのまま</small></span></button><button class="msi" data-whatif><span class="msn"><span>もしもの試し</span><small>節目をずらしたときの影響を、反映する前に見る</small></span></button><button class="msi" data-closeplan><span class="msn"><span>この計画を終える</span><small>完了・中止。総括と学びを残す</small></span></button><button class="msi" data-plandel><span class="msn"><span style="color:var(--bad)">この計画を消す</span><small>間違えて作ったとき。終えた計画を残したいなら「終える」</small></span></button></div>`); return; }
+  if (b.hasAttribute("data-planops")) { sheet(`<h3>${esc(p.name)}</h3><div class="msl"><button class="msi" data-edit><span class="msn"><span>この計画を直す</span><small>名前・格・到達点・期間・節目・予備</small></span></button>${drafting(p) ? "" : `<button class="msi" data-kz${p.draft ? "edit" : "start"}><span class="msn"><span>${p.draft ? "改造の下書きを直す" : "改造する(下書きで組み直す)"}</span><small>期間・節目・到達点の組み直し。何日かに分けてよく、反映するまで今の計画はそのまま</small></span></button>`}<button class="msi" data-whatif><span class="msn"><span>もしもの試し</span><small>節目をずらしたときの影響を、反映する前に見る</small></span></button>${drafting(p) ? "" : `<button class="msi" data-closeplan><span class="msn"><span>この計画を終える</span><small>完了・中止。総括と学びを残す</small></span></button>`}<button class="msi" data-plandel><span class="msn"><span style="color:var(--bad)">この計画を消す</span><small>間違えて作ったとき。終えた計画を残したいなら「終える」</small></span></button></div>`); return; }
   if (d.edit != null && b.hasAttribute("data-edit")) { openEdit(p, d.edit ? d.edit.replace("ms:", "") : ""); return; }
   if (b.hasAttribute("data-edsave")) { if (editTarget) { const t = editTarget, n0 = t.changes.length; saveEdit(t); saveDraftObj(p, t); editTarget = null; closeSheet(); render(); toast("下書きを直した(" + (t.changes.length - n0) + "か所)。反映するまで今の計画はそのまま"); return; }
-    const n = saveEdit(p); closeSheet(); render(); toast(n ? "直した。変えた " + n + "か所を歩みに残した" : "変わったところはなかった"); return; }
+    const dr = drafting(p), n = saveEdit(p); closeSheet(); render(); if (dr) { toast("直した(作成中なので、歩みには残さない)"); return; } toast(n ? "直した。変えた " + n + "か所を歩みに残した" : "変わったところはなかった"); return; }
   if (d.wkrec) { const m = p.milestones.find(x => x.id === d.wkrec), v = $("wk-in-" + m.id).value.trim(), w = weekStart(TODAY); if (v === "") return;
     m.weeks = (m.weeks || []).filter(x => x.w !== w); m.weeks.push({ w, done: +v }); render(); se("rec"); const pr = msProg(m); toast(wk(w) + "に " + v + (m.unit || "") + " を記録した(進捗 " + pr.pct + "%)"); return; }
   // 節目の中に計画を入れる
-  if (d.msplan) { const m = p.milestones.find(x => x.id === d.msplan), cand = live().filter(x => x.id !== p.id && !ancestors(p).some(a => a.q.id === x.id) && !parentOf(x));
+  if (d.msplan) { const m = p.milestones.find(x => x.id === d.msplan), cand = plans.filter(x => !x.status && x.id !== p.id && !ancestors(p).some(a => a.q.id === x.id) && !parentOf(x));
     const gi = Math.min(3, GRADES.indexOf(p.grade) + 1);
     sheet(`<h3>節目「${esc(m.name)}」を計画にする</h3><p class="note">この節目を、1つの計画として置く。道のりでは、計画がほかの節目と同じように並び、押すと中身が開く。</p>
       <h4 class="eh">今ある計画を置く</h4><div class="row2"><div class="f"><select id="mp-s">${cand.map(x => `<option value="${x.id}">${esc(x.name)}(${esc(x.ministry)})</option>`).join("")}</select></div><button class="btn ghost sm" data-mpsave="${m.id}" style="align-self:center"${cand.length ? "" : " disabled"}>置く</button></div>
@@ -2210,7 +2228,7 @@ document.addEventListener("click", e => {
       <button class="btn" data-mpnew="${m.id}">作って置く</button>`); return; }
   if (d.mpsave) { const m = p.milestones.find(x => x.id === d.mpsave), q = P($("mp-s").value); m.plan = q.id; p.changes.push({ date: TODAY, kind: "変更", what: "節目「" + m.name + "」の中身", before: "(なし)", after: "計画「" + q.name + "」", reason: "大きな節目を計画にした", size: "小" }); closeSheet(); render(); toast("節目を計画にした"); return; }
   if (d.mpnew) { const m = p.milestones.find(x => x.id === d.mpnew), n = $("mp-n").value.trim() || m.name, s0 = $("mp-s0").value || TODAY, e0 = $("mp-e").value || m.date, id = "n" + Date.now().toString(36);
-    plans.push({ id, ministry: $("mp-m").value.trim() || p.ministry, grade: $("mp-g").value, name: n, why: "「" + p.name + "」の節目「" + m.name + "」を果たすため", goal: $("mp-gl").value.trim() || m.name, start: s0, end: e0, progress: 0, expected: 0,
+    plans.push({ phase: "作成中", id, ministry: $("mp-m").value.trim() || p.ministry, grade: $("mp-g").value, name: n, why: "「" + p.name + "」の節目「" + m.name + "」を果たすため", goal: $("mp-gl").value.trim() || m.name, start: s0, end: e0, progress: 0, expected: 0,
       buffer: { total: Math.max(2, Math.round(days(s0, e0) / 12)), uses: [] }, periods: [], milestones: [], works: [], ifs: [], basis: [], versions: [], fixed: [], rels: [ { to: p.id, kind: "一部" } ], fields: [], created: TODAY, req: { text: $("mp-gl").value.trim() || m.name, kids: [] },
       changes: [ { date: TODAY, kind: "作成", what: "「" + p.name + "」の節目として作った", before: "", after: n, reason: "", size: "小" } ] });
     m.plan = id; p.changes.push({ date: TODAY, kind: "変更", what: "節目「" + m.name + "」の中身", before: "(なし)", after: "新しい計画「" + n + "」", reason: "大きな節目を計画にした", size: "小" });
@@ -2231,6 +2249,16 @@ document.addEventListener("click", e => {
   if (d.roadmode) { roadMode = d.roadmode; render(); return; }
   if (d.roadlane) { roadLane[p.id] = d.roadlane; render(); return; }
   if (d.lcgo) { const [lid, mid] = d.lcgo.split("|"); roadMode = "one"; roadLane[p.id] = lid; openMs[mid] = true; render(); setTimeout(() => { const el = $("ms-" + mid); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); }, 30); return; }
+  if (b.hasAttribute("data-gostart")) { const el = $("cpanel"); if (el) el.scrollIntoView({ behavior: "smooth", block: "center" }); return; }
+  if (d.planstart) { const q = P(d.planstart), past = q.start < TODAY;
+    sheet(`<h3>「${esc(q.name)}」を始める</h3><p class="note">始めると、今日の確認・週の見直し・危険度の対象になり、ここから先の直しはすべて歩みに残る。作成中には戻れない。今の形は「始めたときの形」として残し、あとで図で比べられる。</p>
+      <div class="f"><label>始まりの日${past ? "(作っているあいだに過ぎている。今日にしてもよい)" : ""}</label><input id="ps-d" type="date" value="${past ? TODAY : q.start}"></div>
+      <button class="btn" data-psgo="${q.id}">始める</button>`); return; }
+  if (d.psgo) { const q = P(d.psgo), sd = $("ps-d").value || TODAY;
+    q.versions = q.versions || []; const snap = { date: TODAY, label: "始めたときの形", ms: {}, end: q.end }; q.milestones.forEach(m => snap.ms[m.id] = m.date); q.versions.push(snap);
+    q.start = sd; q.phase = "進行中"; q.startedAt = TODAY;
+    q.changes.push({ date: TODAY, kind: "作成", what: "計画を始めた", before: "作成中", after: "進行中", reason: "始まり " + md(sd), size: "大" });
+    closeSheet(); render(); window.scrollTo(0, 0); se("best"); toast("始めた。明日から今日の確認の対象になる"); return; }
   // 消す・直す
   if (b.hasAttribute("data-plandel")) { if (!confirm("「" + p.name + "」を消す?(元に戻せない。残したいなら「終える」)")) return;
     const id = p.id; plans = plans.filter(x => x.id !== id); plans.forEach(q => { q.rels = q.rels.filter(r => r.to !== id); q.milestones.forEach(m => { if (m.plan === id) delete m.plan; }); });
@@ -2291,9 +2319,9 @@ document.addEventListener("click", e => {
   // 計画を足す・目標
   if (b.hasAttribute("data-addplan")) { openAddPlan(); return; }
   if (b.hasAttribute("data-apsave")) { const n = $("ap-n").value.trim(); if (!n) { toast("名前を入れてください"); return; } const s0 = $("ap-s").value, e0 = $("ap-e").value, id = "n" + Date.now().toString(36);
-    plans.push({ id, ministry: $("ap-m").value.trim() || "未分類", grade: $("ap-g").value, name: n, why: $("ap-w").value.trim(), goal: $("ap-gl").value.trim() || n, start: s0, end: e0, progress: 0, expected: 0, oneShot: $("ap-o").checked,
+    plans.push({ phase: "作成中", id, ministry: $("ap-m").value.trim() || "未分類", grade: $("ap-g").value, name: n, why: $("ap-w").value.trim(), goal: $("ap-gl").value.trim() || n, start: s0, end: e0, progress: 0, expected: 0, oneShot: $("ap-o").checked,
       buffer: { total: Math.max(2, Math.round(days(s0, e0) / 12)), uses: [] }, periods: [], milestones: [], works: [], ifs: [], basis: [], changes: [], versions: [], fixed: [], rels: [], fields: [], created: TODAY, req: { text: $("ap-gl").value.trim() || n, kids: [] } });
-    closeSheet(); goPlan(id, "図"); showComp = true; render(); toast("計画を足した。完成度の点検から埋めていける"); return; }
+    closeSheet(); goPlan(id, "図"); showComp = true; render(); toast("作成中として足した。形ができたら、いちばん下で始める"); return; }
   if (b.hasAttribute("data-goalset")) { openGoals(); return; }
 });
 document.addEventListener("change", e => { const t = e.target, p = P(planId);
