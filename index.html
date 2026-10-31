@@ -310,6 +310,16 @@ button.closedbar{display:flex;width:100%;text-align:left;border:0;cursor:pointer
 .fixno{font-size:.72rem;font-weight:700;color:var(--shu);border:1.5px solid var(--shu);border-radius:3px;padding:.1rem .45rem;justify-self:end;white-space:nowrap}
 .fixbox{font-size:.78rem;color:var(--sub);background:var(--shu-soft);border-radius:3px;padding:.3rem .45rem;margin:.25rem 0 0}
 .kzwarn{background:var(--wave-soft);border:2px solid var(--wave);border-radius:5px;padding:.45rem .6rem;margin:0 0 .5rem;font-size:.86rem}
+/* 終えた道筋 */
+.lend{display:inline-block;font-size:.62rem;font-weight:700;color:var(--ok);border:1.5px solid var(--ok);border-radius:3px;padding:0 .3rem;line-height:1.5;margin-left:.3rem;white-space:nowrap}
+.lhead.ended b,.lhead.ended .lc,.lhead.ended .rk{opacity:.5}
+.big.endl{opacity:.4}
+.lendbar{display:flex;align-items:center;justify-content:space-between;gap:.5rem;flex-wrap:wrap;border:1px solid var(--ok);background:var(--ok-soft);border-radius:4px;padding:.35rem .6rem;margin:.1rem 0 .5rem;font-size:.82rem}
+.lendbar.plain{border:0;background:none;padding:0 0 .3rem;justify-content:flex-start}
+.lcol.ended{opacity:.6}.lcol.folded{flex:0 0 7rem;max-width:7rem}
+.lchip.ended span:nth-child(2){opacity:.55}
+.tl-ended{opacity:.4}
+.mslist li.lli.ended{opacity:.6}
 .addrow{display:block;margin:.2rem 0 .1rem;font-size:.76rem}
 details.eds{border:1px solid var(--rule);border-radius:6px;margin:.5rem 0;background:var(--sheet)}
 details.eds>summary{cursor:pointer;padding:.55rem .7rem;font-weight:700;font-size:.92rem;list-style:none;display:flex;justify-content:space-between;align-items:baseline;gap:.5rem}
@@ -632,7 +642,7 @@ label.mini{display:flex;flex-direction:column;gap:.1rem;font-size:.62rem;color:v
 <div id="sheet-root"></div>
 <script>
 /* ───────── 大計:データ ───────── */
-const APP_VERSION = "2026-11-01 r7";
+const APP_VERSION = "2026-11-01 r8";
 const SHO_APP = "https://nisenonamae.github.io/sho/";
 const GRADES = ["最重要", "重要", "通常", "軽易"];
 const COUNCIL = { 最重要: "最高評議会", 重要: "常任評議会" };
@@ -825,13 +835,20 @@ const laneOf = (p, m) => lanesOf(p).find(l => l.id === laneId(p, m));
 const laneCode = (p, l) => String.fromCharCode(65 + lanesOf(p).findIndex(x => x.id === l.id));
 const laneMs = (p, l) => mainMs(p).filter(m => laneId(p, m) === l.id);
 const multiLane = p => lanesOf(p).length > 1;
+/* 道筋の終わり:l.closed = { kind: 完了/中止, at, count: "100"(100%として数える) | "外す"(計算から外す), why } か、節目が全部達成 */
+const laneAuto = (p, l) => { const xs = laneMs(p, l); return xs.length > 0 && xs.every(m => isDone(m)); };
+const laneEnded = (p, l) => !!l.closed || laneAuto(p, l);
+const laneOfAny = (p, m) => laneOf(p, m.parent ? (p.milestones.find(y => y.id === m.parent) || m) : m);
+const msLive = (p, m) => { const l = laneOfAny(p, m); return !(l && l.closed); };   // 手で終えた道筋の節目は、遅れや「次の節目」に数えない
+const laneTag = (p, l) => l.closed ? `<span class="lend">${l.closed.kind}</span>` : laneAuto(p, l) ? '<span class="lend">済</span>' : "";
 /* 進捗:節目ごとの達成度の平均(手で決めた値があればそれ)。目安:今日の時点で、節目の予定どおりなら来ているはずの値 */
 function prog(p, seen){
   if (!p) return 0; if (p.manualProgress != null && p.manualProgress !== "") return Math.max(0, Math.min(100, +p.manualProgress));
   seen = seen || new Set(); if (seen.has(p.id)) return 0; seen.add(p.id);
   if (!mainMs(p).length) return p.status === "完了" ? 100 : 0;
   let sum = 0, wsum = 0;
-  lanesOf(p).forEach(l => { const ms = laneMs(p, l); if (!ms.length) return;
+  lanesOf(p).forEach(l => { if (l.closed) { if (l.closed.count !== "外す") { sum += 100 * RW[l.rank]; wsum += RW[l.rank]; } return; }
+    const ms = laneMs(p, l); if (!ms.length) return;
     const v = ms.map(m => { if (m.done || autoDone(m, seen)) return 100; if (m.plan && P(m.plan)) return prog(P(m.plan), seen); if (m.total) return Math.min(100, (m.weeks || []).reduce((a, x) => a + x.done, 0) / m.total * 100); return 0; });
     sum += v.reduce((a, b) => a + b, 0) / v.length * RW[l.rank]; wsum += RW[l.rank]; });
   return wsum ? Math.round(sum / wsum) : 0;
@@ -843,9 +860,10 @@ function expct(p){
   const frac = (a, b) => Math.max(0, Math.min(1, days(a, TODAY) / Math.max(1, days(a, b))));
   if (!ms.length) return Math.round(frac(p.start, p.end) * 100);
   let sum = 0, wsum = 0;
-  lanesOf(p).forEach(l => { const xs = laneMs(p, l); if (!xs.length) return;
+  lanesOf(p).forEach(l => { if (l.closed) { if (l.closed.count !== "外す") { sum += RW[l.rank]; wsum += RW[l.rank]; } return; }
+    const xs = laneMs(p, l); if (!xs.length) return;
     sum += xs.reduce((s, m, i) => s + frac(i ? xs[i - 1].date : p.start, m.date), 0) / xs.length * RW[l.rank]; wsum += RW[l.rank]; });
-  return Math.round(sum / wsum * 100);
+  return wsum ? Math.round(sum / wsum * 100) : 0;
 }
 /* その節目の一つ前の節目の日(同じ道筋の中で) */
 /* 節目を消す:細かい節目・探り・目標・テストの判定・進め方のつながりも片付ける */
@@ -860,10 +878,10 @@ function dropMilestone(p, m){
   ids.forEach(i => { delete openMs[i]; });
 }
 function prevDate(p, m){ const xs = laneMs(p, laneOf(p, m)), i = xs.indexOf(m); return i > 0 ? xs[i - 1].date : p.start; }
-function nextLaneMs(p, l){ return laneMs(p, l).filter(m => !isDone(m))[0]; }
+function nextLaneMs(p, l){ return l.closed ? undefined : laneMs(p, l).filter(m => !isDone(m))[0]; }
 const mainMs = p => p.milestones.filter(m => !m.parent).sort((a, b) => a.date < b.date ? -1 : 1);
 const subsOf = (p, id) => p.milestones.filter(m => m.parent === id).sort((a, b) => a.date < b.date ? -1 : 1);
-function nextMs(p){ return p.milestones.filter(m => !m.parent && !isDone(m)).sort((a, b) => a.date < b.date ? -1 : 1)[0]; }
+function nextMs(p){ return p.milestones.filter(m => !m.parent && !isDone(m) && msLive(p, m)).sort((a, b) => a.date < b.date ? -1 : 1)[0]; }
 let undoSnap = null, undoArmed = false;
 function takeUndo(){ undoSnap = clone(dataOut()); undoArmed = true; }
 function toast(t){ document.querySelectorAll(".toast").forEach(x => x.remove());   // 新しいお知らせは前のものと入れ替える(重ならないように)
@@ -904,7 +922,7 @@ function risk(p, depth){
   const parts = [];
   const gap = Math.max(0, expct(p) - prog(p)); parts.push({ k: "目安からの遅れ", v: Math.min(35, gap * 2.2), d: gap ? "目安より " + gap + "% 遅れ" : "遅れなし" });
   if (p.buffer) { const used = bufUsed(p) / p.buffer.total * 100, over = Math.max(0, used - prog(p)); parts.push({ k: "予備の使いすぎ", v: Math.min(25, over * 0.45) + (bufLeft(p) <= 0 ? 8 : 0), d: "予備 " + bufUsed(p) + "/" + p.buffer.total + "日を使用・進み " + prog(p) + "%" + (bufLeft(p) <= 0 ? "・使い切った" : "") }); }
-  const missed = p.milestones.filter(m => !m.parent && !isDone(m) && m.date < TODAY).length;
+  const missed = p.milestones.filter(m => !m.parent && !isDone(m) && m.date < TODAY && msLive(p, m)).length;
   { const lp = (p.probes || []).filter(x => x.status !== "済" && x.limit && x.limit < TODAY).length; if (lp) parts.push({ k: "探りの遅れ", v: Math.min(8, lp * 4), d: "期限を過ぎた探り " + lp + "件" }); } parts.push({ k: "過ぎた未達の節目", v: Math.min(30, missed * 15), d: missed ? missed + "つ" : "なし" });
   if (typeof testsOf === "function" && testsOf(p).length) { const tr = testRisk(p); const mt = mainTest(p); let extra = 0, dd = tr.d;
     if (mt) { const it = mt.items[0], st = itemStats(mt, it), want = it.line ? lineAt(it, st.last ? st.last.date : TODAY) : null; if (st.n && want != null && !isBetter(it, st.last.v, want) && st.last.v !== want) { extra = Math.min(10, Math.abs(want - st.last.v) * 1.5); dd = "最新 " + fmtV(it, st.last.v) + "(予定の線 " + Math.round(want) + it.unit + ")・" + tr.d; } }
@@ -1010,7 +1028,7 @@ function groupHtml(key, title, sub, ps, foldable){
 function viewOverview(){
   if (!plans.length) return `<div class="empty"><b style="color:var(--ink);font-size:1rem">大計へようこそ</b><br>長期計画をここで作り、育てていく。まず計画を足すか、行軍表の計画を移す。<div class="fbar"><button class="btn sm" data-addplan>+ 計画を足す</button><button class="btn ghost sm" data-v="importv">行軍表から移す</button><button class="btn ghost sm" data-v="sync">GitHubにつなぐ</button></div></div>`;
   const ps = filtered();
-  const up = ps.flatMap(p => p.milestones.filter(m => !m.parent && !isDone(m) && days(TODAY, m.date) <= 30).map(m => ({ p, m }))).sort((a, b) => a.m.date < b.m.date ? -1 : 1);
+  const up = ps.flatMap(p => p.milestones.filter(m => !m.parent && !isDone(m) && msLive(p, m) && days(TODAY, m.date) <= 30).map(m => ({ p, m }))).sort((a, b) => a.m.date < b.m.date ? -1 : 1);
   const upShown = msMore ? up : up.slice(0, 4);
   const danger = live().map(p => ({ p, r: risk(p) })).filter(x => x.r.score >= 50).sort((a, b) => b.r.score - a.r.score);
   const head = (danger.length ? `<section class="sec"><h3>崩れかけている計画<small>危険度50以上</small></h3>${danger.map(({ p, r }) => `<button class="msi soon" data-goplan="${p.id}" data-risk="1"><span class="msd"><b class="lv-${r.level}" style="background:none;color:var(--bad)">${r.score}</b><small>${r.level}</small></span><span class="msn">${esc(p.name)}<small>いちばん効いている:${esc(r.parts[0].k)}(${esc(r.parts[0].d)})</small></span></button>`).join("")}</section>` : "") +
@@ -1080,7 +1098,7 @@ function viewTimeline(){
       ${bar(segsOf(L[0], 0))}${msBtns(p.milestones)}${marks}</div></div>`;
     /* 道筋が2本以上:計画の行には全体の帯と印だけ。その下に道筋ごとの細い行 */
     return `<div class="tl-row"><div class="tl-lab">${seal(p.grade)}<span><b>${esc(p.name)}</b></span></div><div class="tl-track" style="width:${width}px">${bar('<i style="width:100%;background:var(--rule)"></i>')}${marks}</div></div>` +
-      L.map((l, k) => `<div class="tl-row tl-lane"><div class="tl-lab"><span class="lc r-${l.rank}">${laneCode(p, l)}</span><span>${esc(l.name)}</span></div><div class="tl-track" style="width:${width}px">${bar(segsOf(l, k), true)}${msBtns(laneSet(l))}</div></div>`).join("");
+      L.map((l, k) => `<div class="tl-row tl-lane${laneEnded(p, l) ? " tl-ended" : ""}"><div class="tl-lab"><span class="lc r-${l.rank}">${laneCode(p, l)}</span><span>${esc(l.name)}</span></div><div class="tl-track" style="width:${width}px">${bar(segsOf(l, k), true)}${msBtns(laneSet(l))}</div></div>`).join("");
   }).join("");
   return `<div class="fbar"><span class="seg" role="group" aria-label="表示の幅">${Object.entries(ZOOMS).map(([k, v]) => `<button data-zoom="${k}" aria-pressed="${zoom === k}">${v.label}</button>`).join("")}</span>
     <select data-tlmin aria-label="省で絞る"><option value="">すべての省</option>${MINS().map(m => `<option${m === tlMin ? " selected" : ""}>${esc(m)}</option>`).join("")}</select>
@@ -1093,7 +1111,7 @@ function viewTimeline(){
 </script>
 <script>
 /* ───────── 計画(1本を深く扱う作業場) ───────── */
-let roadMode = "side", roadLane = {}, planId = "", ptab = "図", reqPath = [], reqView = "mandala", openMs = {}, showRisk = false, showComp = false, cmpVer = -1;
+let roadMode = "side", roadLane = {}, laneColOpen = {}, planId = "", ptab = "図", reqPath = [], reqView = "mandala", openMs = {}, showRisk = false, showComp = false, cmpVer = -1;
 const PTABS = ["図", "分解", "道のり", "探り", "テスト", "もしも", "歩み", "分野"];
 function emptyPlans(){ return `<div class="empty">まだ計画がない。<div class="fbar"><button class="btn sm" data-addplan>+ 計画を足す</button><button class="btn ghost sm" data-v="importv">行軍表から移す・まとめて入れる</button></div></div>`; }
 function viewPlan(){
@@ -1130,13 +1148,13 @@ function tabFigure(p){
     const ghosts = cv ? Object.entries(cv.ms || {}).map(([id, d]) => { const m = xs.find(x => x.id === id); if (!m || m.date === d) return ""; const a = pos(d), b = pos(m.date);
       return `<span class="mv" style="left:${Math.min(a, b)}%;width:${Math.abs(b - a)}%"></span><span class="ghost" style="left:${a}%" title="${esc("前:" + m.name + " " + md(d))}"></span>`; }).join("") : "";
     const pz = probesOf(p).filter(x => x.limit && (x.lane === l.id || ((!x.lane || !L.some(z => z.id === x.lane)) && k === 0))).map(x => `<button class="pq k-${x.kind}${pOpen(x) ? "" : " done"}" style="left:${pos(x.limit)}%" data-ms="${esc(x.kind + "「" + x.title + "」" + (pOpen(x) ? " 期限 " + md(x.limit) : " 済"))}" aria-label="探り">?</button>`).join("");
-    return `<div class="big${withMarks ? "" : " nm"}">${pz}${first ? `<span class="ed" style="left:0">${md(p.start)}</span><span class="ed" style="right:0">${md(p.end)}</span>` : ""}${per}${ghosts}${dms}${withMarks ? marks : ""}<span class="now" style="left:${pos(TODAY)}%">${first ? "<span>今日</span>" : ""}</span></div>`; };
-  const lhead = l => { const lp = laneProg(p, l); return `<div class="lhead"><span class="lc r-${l.rank}">${laneCode(p, l)}</span><span class="rk r-${l.rank}">${l.rank}</span><b>${esc(l.name)}</b><small>${lp == null ? "節目なし" : "進捗 " + lp + "%"}</small></div>`; };
+    return `<div class="big${withMarks ? "" : " nm"}${multiLane(p) && laneEnded(p, l) ? " endl" : ""}">${pz}${first ? `<span class="ed" style="left:0">${md(p.start)}</span><span class="ed" style="right:0">${md(p.end)}</span>` : ""}${per}${ghosts}${dms}${withMarks ? marks : ""}<span class="now" style="left:${pos(TODAY)}%">${first ? "<span>今日</span>" : ""}</span></div>`; };
+  const lhead = l => { const lp = laneProg(p, l); return `<div class="lhead${laneEnded(p, l) ? " ended" : ""}"><span class="lc r-${l.rank}">${laneCode(p, l)}</span><span class="rk r-${l.rank}">${l.rank}</span><b>${esc(l.name)}</b>${laneTag(p, l)}<small>${l.closed ? (l.closed.count === "外す" ? "進捗の計算から外した" : "100%として数える") : lp == null ? "節目なし" : "進捗 " + lp + "%"}</small></div>`; };
   const bands = many ? L.map((l, k) => lhead(l) + laneBig(l, k, false, k === 0)).join("") + `<div class="big marks"><span class="now" style="left:${pos(TODAY)}%"></span>${marks}</div>` : laneBig(L[0], 0, true, true);
   const msRow = m => { const f = isFixed(p, "ms:" + m.id), pr = msProg(m);
     return `<li><b class="n">${numOf(m)}</b><span class="d">${md(m.date)}</span><span style="flex:1">${m.plan && P(m.plan) ? '<span class="tag" style="color:var(--wave)">計画</span> ' : ""}${esc(msName(m))} ${m.plan ? "" : msTag(m.type)}${f ? " " + fixTag(f) : ""}${p.ifs.some(x => x.at === m.id) ? ' <span class="tag" style="color:var(--shu)">もしも</span>' : ""}${pr ? ` <b class="st ${pr.pct >= 100 ? "ok" : ""}" style="font-size:.76rem">${pr.pct}%</b>` : ""}</span><small class="note">${isDone(m) ? "済" : ago(days(TODAY, m.date))}</small></li>` +
       subsOf(p, m.id).map((sm, jj) => `<li class="subli"><b class="n">${numOf(m)}-${jj + 1}</b><span class="d">${md(sm.date)}</span><span style="flex:1">${esc(sm.name)} ${msTag(sm.type)}</span><small class="note">${isDone(sm) ? "済" : ago(days(TODAY, sm.date))}</small></li>`).join(""); };
-  const list = many ? L.map(l => `<li class="lli"><span class="lc r-${l.rank}">${laneCode(p, l)}</span><span class="rk r-${l.rank}">${l.rank}</span>${esc(l.name)}</li>` + laneMs(p, l).map(msRow).join("")).join("") : main.map(msRow).join("");
+  const list = many ? L.map(l => `<li class="lli${laneEnded(p, l) ? " ended" : ""}"><span class="lc r-${l.rank}">${laneCode(p, l)}</span><span class="rk r-${l.rank}">${l.rank}</span>${esc(l.name)}${laneTag(p, l)}</li>` + laneMs(p, l).map(m => l.closed ? msRow(m).replace(/<small class="note">[^<]*<\/small><\/li>/, `<small class="note">—</small></li>`) : msRow(m)).join("")).join("") : main.map(msRow).join("");
   const cmpBar = vers.length ? `<div class="fbar" style="margin:.2rem 0 .3rem"><label class="chk">前の版と比べる <select data-cmpver><option value="-1">比べない</option>${vers.map((v, i) => `<option value="${i}"${i === cmpVer ? " selected" : ""}>${esc(v.label)}</option>`).join("")}</select></label>${cv ? `<button class="linkx" data-verdel="${cmpVer}" style="color:var(--bad)">この版を消す</button>` : ""}</div>` : "";
   const fig = `<div class="card"><h4>${many ? "道筋と節目" : "期間と節目"}<small>押すと中身が出る</small></h4>
     <div class="legend" style="margin:0 0 .3rem"><span><i class="lg-d"></i>節目(番号は下の一覧)</span><span><i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--sub)"></i>細かい節目</span><span><i style="display:inline-block;width:9px;height:6px;background:var(--mid);border-radius:1px"></i>予備を使った日</span><span><i style="display:inline-block;width:3px;height:10px;background:var(--sub)"></i>変えた日</span><span><i style="display:inline-block;width:3px;height:10px;background:var(--shu)"></i>立て直した日</span></div>${cmpBar}
@@ -1272,14 +1290,16 @@ function tabRoad(p){
     })();
     const rest = lm.filter(m => !used.has(m.id));
     return blocks + (rest.length ? `<div class="period" style="border-left-color:var(--rule)"><div class="ph"><b>期間の外</b></div>${rest.map(m => msHtml(m)).join("")}</div>` : ""); };
-  const lp = l => { const v = laneProg(p, l), nx = nextLaneMs(p, l); return `<div class="lhead big2"><span class="lc r-${l.rank}">${laneCode(p, l)}</span><span class="rk r-${l.rank}">${l.rank}</span><b>${esc(l.name)}</b><small>${v == null ? "節目なし" : "進捗 " + v + "%"}${nx ? "・次:" + esc(msName(nx)) + "(" + md(nx.date) + ")" + (nx.pace ? " " + fmtN(nx.pace.amount) + esc(nx.pace.unit) : "") : ""}</small></div>`; };
+  const lp = l => { const v = laneProg(p, l), nx = nextLaneMs(p, l); return `<div class="lhead big2${laneEnded(p, l) ? " ended" : ""}"><span class="lc r-${l.rank}">${laneCode(p, l)}</span><span class="rk r-${l.rank}">${l.rank}</span><b>${esc(l.name)}</b>${laneTag(p, l)}<small>${v == null ? "節目なし" : "進捗 " + v + "%"}${nx ? "・次:" + esc(msName(nx)) + "(" + md(nx.date) + ")" + (nx.pace ? " " + fmtN(nx.pace.amount) + esc(nx.pace.unit) : "") : ""}</small></div>`; };
   const hint = `<p class="note" style="margin-top:0">節目の横の数字は、その節目に届くための週あたりのペース。節目を押すと、週ごとの実績・進捗の推移・やることが開く。計画も節目として並べられ、押すとその計画の中身が開き、「この計画の中へ」で入れる。日ごとのタスクは省と行軍表で扱う。</p>`;
   if (!many) return hint + roadProbes(p) + laneBlocks(L[0], 0);
   const sw = `<div class="fbar"><span class="seg" role="group" aria-label="見せ方">${[["side", "横に並べる"], ["one", "一つずつ"], ["date", "日付順"]].map(([k, t]) => `<button data-roadmode="${k}" aria-pressed="${roadMode === k}">${t}</button>`).join("")}</span></div>`;
   if (roadMode === "date") return sw + hint + roadProbes(p) + `<div class="period" style="border-left-color:var(--rule)">${main.map(m => `<div class="ldate"><span class="lc r-${laneOf(p, m).rank}">${laneCode(p, laneOf(p, m))}</span>${msHtml(m)}</div>` + subsOf(p, m.id).map(s => msHtml(s, true)).join("")).join("") || '<p class="note">節目がない</p>'}</div>`;
   if (roadMode === "one") { const cur = L.find(l => l.id === roadLane[p.id]) || L[0], k = L.indexOf(cur);
-    const chips = `<div class="lchips">${L.map(l => `<button class="lchip${l === cur ? " on" : ""}" data-roadlane="${l.id}"><span class="lc r-${l.rank}">${laneCode(p, l)}</span><span>${esc(l.name)}</span></button>`).join("")}</div>`;
-    return sw + chips + lp(cur) + roadProbes(p, cur) + laneBlocks(cur, k); }
+    const chips = `<div class="lchips">${L.map(l => `<button class="lchip${l === cur ? " on" : ""}${laneEnded(p, l) ? " ended" : ""}" data-roadlane="${l.id}"><span class="lc r-${l.rank}">${laneCode(p, l)}</span><span>${esc(l.name)}</span>${laneEnded(p, l) ? `<small class="lend">${l.closed ? l.closed.kind : "済"}</small>` : ""}</button>`).join("")}</div>`;
+    const endBar = p.status ? "" : cur.closed ? `<div class="lendbar"><span>${md(cur.closed.at)}に${cur.closed.kind}として終えた道筋${cur.closed.why ? ":" + esc(cur.closed.why) : ""}(${cur.closed.count === "外す" ? "進捗の計算から外している" : "100%として数えている"})</span><button class="btn ghost sm" data-lanereopen="${cur.id}">再開する</button></div>`
+      : laneAuto(p, cur) ? `<div class="lendbar"><span>この道筋の節目は全部達成した(済)</span></div>` : `<div class="lendbar plain"><button class="linkx" data-laneclose="${cur.id}">この道筋を終える</button><span class="note">やめる・別の形に切り替えるとき</span></div>`;
+    return sw + chips + lp(cur) + endBar + roadProbes(p, cur) + laneBlocks(cur, k); }
   /* 横に並べる:道筋ごとの列。節目を押すと、その道筋の「一つずつ」で開く */
   const col = (l, k) => { const lm = laneMs(p, l), used = new Set(), v = laneProg(p, l);
     const crow = m => { const pr = msProg(m), q = m.plan && P(m.plan);
@@ -1291,7 +1311,10 @@ function tabRoad(p){
     const rest = lm.filter(m => !used.has(m.id));
     return `<div class="lcol"><div class="lch"><span class="lc r-${l.rank}">${laneCode(p, l)}</span><span class="rk r-${l.rank}">${l.rank}</span><b>${esc(l.name)}</b></div>
       <div class="lcpr"><span class="mpb"><i style="width:${v || 0}%"></i></span><small>${v == null ? "節目なし" : "進捗 " + v + "%"}</small></div>${roadProbes(p, l)}${per}${rest.length ? `<div class="lcp" style="border-left-color:var(--rule)"><div class="lcph"><b>期間の外</b></div>${rest.map(crow).join("")}</div>` : ""}</div>`; };
-  return sw + `<p class="note" style="margin-top:0">道筋を横に並べて見比べる。節目を押すと、その道筋の詳しい道のりが開く。</p><div class="lcols">${L.map(col).join("")}</div>`;
+  const colEnded = (l, k) => laneColOpen[l.id] ? col(l, k).replace('<div class="lcol">', '<div class="lcol ended">').replace('</b></div>', `</b>${laneTag(p, l)}<button class="linkx" data-lcopen="${l.id}" style="margin-left:auto">畳む</button></div>`)
+    : `<div class="lcol ended folded"><div class="lch"><span class="lc r-${l.rank}">${laneCode(p, l)}</span><b>${esc(l.name)}</b></div><div style="margin:.3rem 0">${laneTag(p, l)}</div><button class="linkx" data-lcopen="${l.id}">開く</button></div>`;
+  const act = L.map((l, k) => [l, k]).filter(([l]) => !laneEnded(p, l)), ended = L.map((l, k) => [l, k]).filter(([l]) => laneEnded(p, l));
+  return sw + `<p class="note" style="margin-top:0">道筋を横に並べて見比べる。節目を押すと、その道筋の詳しい道のりが開く。${ended.length ? "終えた道筋は右端に畳んである。" : ""}</p><div class="lcols">${act.map(([l, k]) => col(l, k)).join("")}${ended.map(([l, k]) => colEnded(l, k)).join("")}</div>`;
 }
 
 /* もしも:下回ったとき・失敗したとき */
@@ -1472,7 +1495,7 @@ const live = () => plans.filter(p => !p.status && !drafting(p));   // 進行中�
 function weekHours(p, w){
   const we = addD(w, 6); if (p.status || p.end < w || p.start > we) return 0;
   const ms = mainMs(p); let h = 0, hit = false;
-  ms.forEach(m => { const from = prevDate(p, m); if (m.pace && m.pace.min && from <= we && m.date >= w && !isDone(m)) { h += m.pace.amount * m.pace.min / 60; hit = true; } });
+  ms.forEach(m => { if (!msLive(p, m)) return; const from = prevDate(p, m); if (m.pace && m.pace.min && from <= we && m.date >= w && !isDone(m)) { h += m.pace.amount * m.pace.min / 60; hit = true; } });
   return hit ? h : (+p.hpw || 0);
 }
 const capOf = w => capacity.base + capacity.ex.filter(x => x.from <= addD(w, 6) && x.to >= w).reduce((a, x) => a + x.delta, 0);
@@ -1571,7 +1594,7 @@ function notifyPlan(){
   const out = [], at = (d, h, mi) => new Date(d + "T" + String(h).padStart(2, "0") + ":" + String(mi || 0).padStart(2, "0") + ":00").getTime(), now = Date.now(), lim = now + 7 * 864e5;
   if (notifyCfg.week) { let d = TODAY; for (let i = 0; i < 8; i++) { if (new Date(d + "T00:00:00").getDay() === 0) out.push(["week:" + d, at(d, 20), "大計 — 週の締め", "今週の記録と見直しをする日です", "#week"]); d = addD(d, 1); } }
   if (notifyCfg.test) tests.filter(t => !P(t.plan) || !P(t.plan).status).forEach(t => { const d = nextDue(t); out.push(["test:" + t.id + ":" + d, d < TODAY ? at(TODAY, 18) : at(d, 18), "大計 — 実力テスト", "「" + t.name + "」の実施日です" + (d < TODAY ? "(遅れています)" : ""), "#tests"]); });
-  if (notifyCfg.ms) live().forEach(p => p.milestones.filter(m => !m.parent && !isDone(m) && m.date >= TODAY).forEach(m => out.push(["ms:" + p.id + ":" + m.id + ":" + m.date, at(addD(m.date, -3), 8), "大計 — 節目まで3日", p.name + "「" + msName(m) + "」(" + md(m.date) + ")", "#plan"])));
+  if (notifyCfg.ms) live().forEach(p => p.milestones.filter(m => !m.parent && !isDone(m) && m.date >= TODAY && msLive(p, m)).forEach(m => out.push(["ms:" + p.id + ":" + m.id + ":" + m.date, at(addD(m.date, -3), 8), "大計 — 節目まで3日", p.name + "「" + msName(m) + "」(" + md(m.date) + ")", "#plan"])));
   if (notifyCfg.risk) live().filter(p => risk(p).score >= 50).forEach(p => out.push(["risk:" + p.id + ":" + risk(p).level, now + 60000, "大計 — 計画が" + risk(p).level, p.name + " の危険度が " + risk(p).score + "。いちばん効いている:" + risk(p).parts[0].k, "#plan"]));
   return out.filter(x => x[1] > now && x[1] <= lim);
 }
@@ -2536,6 +2559,19 @@ document.addEventListener("click", e => {
     if (b.hasAttribute("data-laneup")) sib.before(bk); else sib.after(bk); return; }
   if (d.roadmode) { roadMode = d.roadmode; render(); return; }
   if (d.roadlane) { roadLane[p.id] = d.roadlane; render(); return; }
+  if (d.lcopen) { laneColOpen[d.lcopen] = !laneColOpen[d.lcopen]; render(); return; }
+  if (d.laneclose) { const l = p.lanes.find(x => x.id === d.laneclose); if (!l) return; const left = laneMs(p, l).filter(m => !isDone(m)).length;
+    sheet(`<h3>道筋「${esc(l.name)}」を終える</h3><p class="note">${left ? "まだ達成していない節目が " + left + "つある。" : ""}終えた道筋の節目は、遅れや「次の節目」、週の記録に数えなくなる。あとで再開もできる。</p>
+      <div class="seg dcseg" role="group" aria-label="終え方" style="margin:.3rem 0"><button data-lckind="完了" aria-pressed="true">完了</button><button data-lckind="中止" aria-pressed="false">中止</button></div><input type="hidden" id="lc-k" value="完了">
+      <div class="f"><label>計画全体の進捗では</label><select id="lc-c"><option value="100" selected>100%として数える</option><option value="外す">計算から外す</option></select></div>
+      <div class="f"><label>理由(歩みに残る)</label><input id="lc-w" placeholder="例:演習は過去問の道筋にまとめることにした"></div>
+      <button class="btn" data-lcsave="${l.id}">終える</button>`); return; }
+  if (d.lckind) { $("lc-k").value = d.lckind; document.querySelectorAll("[data-lckind]").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.lckind === d.lckind))); $("lc-c").value = d.lckind === "中止" ? "外す" : "100"; return; }
+  if (d.lcsave) { const l = p.lanes.find(x => x.id === d.lcsave); takeUndo(); l.closed = { kind: $("lc-k").value, at: TODAY, count: $("lc-c").value, why: $("lc-w").value.trim() };
+    if (!drafting(p)) p.changes.push({ date: TODAY, kind: "変更", what: "道筋「" + l.name + "」", before: "進行中", after: l.closed.kind + "として終えた", reason: (l.closed.why ? l.closed.why + "・" : "") + "進捗では" + (l.closed.count === "外す" ? "計算から外す" : "100%として数える"), size: "大" });
+    closeSheet(); render(); se("close"); toast("道筋「" + l.name + "」を終えた"); return; }
+  if (d.lanereopen) { const l = p.lanes.find(x => x.id === d.lanereopen); if (!confirm("道筋「" + l.name + "」を再開する?")) return; takeUndo(); const k = l.closed.kind; delete l.closed;
+    if (!drafting(p)) p.changes.push({ date: TODAY, kind: "変更", what: "道筋「" + l.name + "」", before: k + "として終えた", after: "再開した", reason: "", size: "小" }); render(); toast("再開した"); return; }
   if (d.lcgo) { const [lid, mid] = d.lcgo.split("|"); roadMode = "one"; roadLane[p.id] = lid; openMs[mid] = true; render(); setTimeout(() => { const el = $("ms-" + mid); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); }, 30); return; }
   if (b.hasAttribute("data-gostart")) { const el = $("cpanel"); if (el) el.scrollIntoView({ behavior: "smooth", block: "center" }); return; }
   if (d.planstart) { const q = P(d.planstart), past = q.start < TODAY;
@@ -2636,7 +2672,8 @@ document.addEventListener("click", e => {
   if (b.hasAttribute("data-rmread")) { $("rm-st").textContent = " 読んでいる…"; readRoadmapPlan().then(rp => { const ready = roadmapToPlans(rp); importPrev = ready.length ? { ready, plans: ready, tests: [], fields: [] } : { err: "行軍表の計画に、移せるものがなかった" }; render(); }).catch(e => { const el = $("rm-st"); if (el) el.textContent = " " + e.message; }); return; }
   if (b.hasAttribute("data-imcancel")) { importPrev = null; render(); return; }
   // 節目を手で達成にする
-  if (d.msdone) { takeUndo(); const m = p.milestones.find(x => x.id === d.msdone); m.done = !m.done; setTimeout(() => {}, 0); if (m.done) { m.doneAt = TODAY; se("rec"); } p.changes.push({ date: TODAY, kind: "記録", what: "節目「" + msName(m) + "」", before: m.done ? "未達" : "達成", after: m.done ? "達成" : "未達", reason: "手で" + (m.done ? "達成にした" : "取り消した"), size: "小" }); render(); toast(m.done ? "達成にした" : "達成を取り消した"); return; }
+  if (d.msdone) { takeUndo(); const m = p.milestones.find(x => x.id === d.msdone); m.done = !m.done; if (m.done) m.doneAt = TODAY;
+    const ln = m.done && !m.parent && multiLane(p) ? laneOf(p, m) : null, laneNow = ln && laneAuto(p, ln); if (m.done) se(laneNow ? "best" : "rec"); p.changes.push({ date: TODAY, kind: "記録", what: "節目「" + msName(m) + "」", before: m.done ? "未達" : "達成", after: m.done ? "達成" : "未達", reason: "手で" + (m.done ? "達成にした" : "取り消した"), size: "小" }); render(); toast(laneNow ? "達成にした。道筋「" + ln.name + "」の節目が全部達成になった(済)" : m.done ? "達成にした" : "達成を取り消した"); return; }
   // まとめて入れる
   if (b.hasAttribute("data-imread")) { importPrev = parsePack($("im-t").value); render(); return; }
   if (b.hasAttribute("data-imgo")) { const pk = importPrev; if (pk.ready && pk.ready.length) { pk.plans = []; } applyPack(pk); const n = (pk.ready || []).length + pk.plans.length + pk.tests.length + pk.fields.length; importPrev = null; render(); se("rec"); toast(n + "つ入れた"); return; }
