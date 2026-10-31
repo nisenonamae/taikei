@@ -263,6 +263,36 @@ details.wx summary{cursor:pointer;color:var(--wave)}
 .phase{display:inline-block;font-size:.66rem;font-weight:700;border:1.5px dashed var(--mid);color:var(--mid);border-radius:3px;padding:0 .35rem;line-height:1.5;margin-right:.3rem}
 .plan.draft{border-left-style:dashed;background:transparent;border:1px dashed var(--rule);border-left:6px dashed var(--mid)}
 .cpanel.start{border-color:var(--mid);border-style:dashed}
+/* 探り */
+.pb{display:inline-flex;align-items:center;justify-content:center;width:1.35rem;height:1.35rem;border-radius:50%;font-size:.68rem;font-weight:700;color:#fff;flex:none;vertical-align:middle}
+.pb.k-調査{background:var(--wave)} .pb.k-実験{background:var(--shu)} .pb.k-演習{background:var(--ok)}
+.pkadd{display:inline-flex;align-items:center;gap:.3rem}
+.pklegend{display:flex;flex-wrap:wrap;gap:.25rem .8rem;font-size:.72rem;color:var(--sub);margin:0 0 .5rem}
+.pcard{border:1px solid var(--rule);border-left:4px solid var(--wave);background:var(--sheet);border-radius:0 5px 5px 0;margin:.35rem 0}
+.pcard.k-実験{border-left-color:var(--shu)} .pcard.k-演習{border-left-color:var(--ok)} .pcard.late{box-shadow:0 0 0 1.5px var(--bad)}
+.pch{display:flex;align-items:center;gap:.5rem;width:100%;border:0;background:none;padding:.5rem .6rem;text-align:left}
+.pct{flex:1;display:flex;flex-direction:column;line-height:1.35;min-width:0}.pct small{font-size:.72rem;color:var(--sub)}
+.pcb{padding:0 .65rem .6rem;font-size:.86rem}
+.pkvs{margin:.1rem 0 .2rem}
+.pkv{display:grid;grid-template-columns:6.8rem 1fr;gap:.2rem .7rem;padding:.4rem 0;border-top:1px dotted var(--rule);align-items:baseline}
+.pkvs .pkv:first-child,.pres .prh + .pkv{border-top:0}
+.pkv .k{font-size:.66rem;color:var(--sub);letter-spacing:.04em;line-height:1.35}
+.pkv .v{font-size:.9rem;color:var(--ink);line-height:1.55;white-space:pre-wrap;min-width:0}
+.pkv .v .u{font-size:.72rem;color:var(--sub);margin-left:.35rem;white-space:nowrap}
+.pnotes{margin:0;padding-left:1rem;white-space:normal}.pnotes li{margin:0 0 .2rem}
+.pres{border:1px solid var(--ok);background:var(--ok-soft);border-radius:5px;padding:.4rem .6rem .2rem;margin-top:.5rem}
+.prh{font-size:.74rem;font-weight:700;color:var(--ok);letter-spacing:.1em;display:flex;justify-content:space-between}.prh span{font-weight:400;color:var(--sub);letter-spacing:0}
+.pref.pkvs{padding:.1rem .6rem}
+.pref{border:1px solid var(--rule);background:var(--sheet);border-radius:4px;padding:.35rem .55rem;margin:.4rem 0;font-size:.84rem}
+.pmlist{display:flex;flex-direction:column;gap:.15rem;font-size:.84rem}
+.rprobes{display:flex;flex-direction:column;gap:.25rem;margin:0 0 .5rem}
+.rpr{display:flex;align-items:center;gap:.4rem;width:100%;text-align:left;border:1px dashed var(--wave);background:var(--wave-soft);border-radius:4px;padding:.3rem .5rem;font-size:.8rem}
+.rpr span:nth-child(2){flex:1;font-weight:700;min-width:0}.rpr small{font-size:.66rem;color:var(--sub)}.rpr.late{border-color:var(--bad);border-style:solid}
+.tag.pwait{color:var(--wave);border-style:dashed}
+.big .pq{position:absolute;top:22px;width:16px;height:16px;transform:translateX(-8px);border-radius:50%;border:0;padding:0;font-size:.62rem;font-weight:700;color:#fff;line-height:16px;text-align:center;cursor:pointer;z-index:3}
+.big .pq.k-調査{background:var(--wave)} .big .pq.k-実験{background:var(--shu)} .big .pq.k-演習{background:var(--ok)} .big .pq.done{opacity:.4}
+.due.d4{border-color:var(--wave);background:var(--wave-soft)} .due.d4 b{color:var(--wave)}
+.kk.k-探り{background:var(--wave-soft);color:var(--wave)} .wk.k-探り::before{border-color:var(--wave);background:var(--wave-soft)}
 .addrow{display:block;margin:.2rem 0 .1rem;font-size:.76rem}
 details.eds{border:1px solid var(--rule);border-radius:6px;margin:.5rem 0;background:var(--sheet)}
 details.eds>summary{cursor:pointer;padding:.55rem .7rem;font-weight:700;font-size:.92rem;list-style:none;display:flex;justify-content:space-between;align-items:baseline;gap:.5rem}
@@ -585,7 +615,7 @@ label.mini{display:flex;flex-direction:column;gap:.1rem;font-size:.62rem;color:v
 <div id="sheet-root"></div>
 <script>
 /* ───────── 大計:データ ───────── */
-const APP_VERSION = "2026-11-01 r6";
+const APP_VERSION = "2026-11-01 r7";
 const SHO_APP = "https://nisenonamae.github.io/sho/";
 const GRADES = ["最重要", "重要", "通常", "軽易"];
 const COUNCIL = { 最重要: "最高評議会", 重要: "常任評議会" };
@@ -621,7 +651,7 @@ function dataIn(d){ d = Object.assign(blank(), d || {});
   repair(); }
 /* 古いデータや欠けたところを直して、どの画面でも落ちないようにする */
 function repair(){
-  plans.forEach(p => { ["periods", "milestones", "works", "ifs", "basis", "changes", "versions", "fixed", "rels", "fields"].forEach(k => { if (!Array.isArray(p[k])) p[k] = []; });
+  plans.forEach(p => { ["periods", "milestones", "works", "ifs", "basis", "changes", "versions", "fixed", "rels", "fields", "probes"].forEach(k => { if (!Array.isArray(p[k])) p[k] = []; });
     if (!p.req) p.req = { text: p.goal || p.name, kids: [] }; if (p.buffer && !Array.isArray(p.buffer.uses)) p.buffer.uses = [];
     if (!Array.isArray(p.lanes) || !p.lanes.length) { p.lanes = [{ id: "L" + uid(), name: "本筋", rank: "主", periods: p.periods || [] }]; }
     p.lanes.forEach(l => { if (!Array.isArray(l.periods)) l.periods = []; if (!RANKS.includes(l.rank)) l.rank = "主"; if (!l.id) l.id = "L" + uid(); });
@@ -845,7 +875,8 @@ function risk(p, depth){
   const parts = [];
   const gap = Math.max(0, expct(p) - prog(p)); parts.push({ k: "目安からの遅れ", v: Math.min(35, gap * 2.2), d: gap ? "目安より " + gap + "% 遅れ" : "遅れなし" });
   if (p.buffer) { const used = bufUsed(p) / p.buffer.total * 100, over = Math.max(0, used - prog(p)); parts.push({ k: "予備の使いすぎ", v: Math.min(25, over * 0.45) + (bufLeft(p) <= 0 ? 8 : 0), d: "予備 " + bufUsed(p) + "/" + p.buffer.total + "日を使用・進み " + prog(p) + "%" + (bufLeft(p) <= 0 ? "・使い切った" : "") }); }
-  const missed = p.milestones.filter(m => !m.parent && !isDone(m) && m.date < TODAY).length; parts.push({ k: "過ぎた未達の節目", v: Math.min(30, missed * 15), d: missed ? missed + "つ" : "なし" });
+  const missed = p.milestones.filter(m => !m.parent && !isDone(m) && m.date < TODAY).length;
+  { const lp = (p.probes || []).filter(x => x.status !== "済" && x.limit && x.limit < TODAY).length; if (lp) parts.push({ k: "探りの遅れ", v: Math.min(8, lp * 4), d: "期限を過ぎた探り " + lp + "件" }); } parts.push({ k: "過ぎた未達の節目", v: Math.min(30, missed * 15), d: missed ? missed + "つ" : "なし" });
   if (typeof testsOf === "function" && testsOf(p).length) { const tr = testRisk(p); const mt = mainTest(p); let extra = 0, dd = tr.d;
     if (mt) { const it = mt.items[0], st = itemStats(mt, it), want = it.line ? lineAt(it, st.last ? st.last.date : TODAY) : null; if (st.n && want != null && !isBetter(it, st.last.v, want) && st.last.v !== want) { extra = Math.min(10, Math.abs(want - st.last.v) * 1.5); dd = "最新 " + fmtV(it, st.last.v) + "(予定の線 " + Math.round(want) + it.unit + ")・" + tr.d; } }
     parts.push({ k: "実力テストの伸び悩み", v: Math.min(20, tr.v + extra), d: dd }); }
@@ -880,6 +911,7 @@ function completeness(p){
     { k: "分解", ok: !!p.req && reqCount(p.req) >= 3, hint: "「達成するには何が必要か」を分解する" },
     { k: "作戦", ok: p.works.some(w => w.kind === "作戦"), hint: "節目に届くための作戦を置く" },
     { k: "予備", ok: months <= 1.2 || p.works.some(w => w.kind === "予備") || !!p.buffer, hint: "1か月より長い計画には予備を置く" },
+    { k: "探り", ok: !p.milestones.some(m => !m.parent && m.type === "仮" && !isDone(m)) || (p.probes || []).length > 0, hint: "仮の節目は、探り(調査・実験・演習)で確かめてから決める" },
     { k: "もしもの手", ok: (p.ifs || []).length > 0, hint: "下回ったとき・失敗したときの計画を作る" },
     { k: "実力の測定", ok: typeof testsOf === "function" && testsOf(p).length > 0, hint: "やった量とは別に、実際の力を測るテストを作る" },
     { k: "根拠", ok: (p.basis || []).length > 0, hint: "到達点や期日をそう決めた理由を残す" },
@@ -955,8 +987,10 @@ function viewOverview(){
   const head = (danger.length ? `<section class="sec"><h3>崩れかけている計画<small>危険度50以上</small></h3>${danger.map(({ p, r }) => `<button class="msi soon" data-goplan="${p.id}" data-risk="1"><span class="msd"><b class="lv-${r.level}" style="background:none;color:var(--bad)">${r.score}</b><small>${r.level}</small></span><span class="msn">${esc(p.name)}<small>いちばん効いている:${esc(r.parts[0].k)}(${esc(r.parts[0].d)})</small></span></button>`).join("")}</section>` : "") +
     "";
   const tUp = tests.filter(t => (!P(t.plan) || !P(t.plan).status) && days(TODAY, nextDue(t)) <= 30).map(t => ({ t, date: nextDue(t) < TODAY ? TODAY : nextDue(t), late: days(nextDue(t), TODAY) }));
-  const ev = up.map(x => ({ k: "節目", date: x.m.date, x })).concat(tUp.map(x => ({ k: "テスト", date: x.date, x }))).sort((a, b) => a.date < b.date ? -1 : 1), evShown = msMore ? ev : ev.slice(0, 5);
+  const pUp = live().concat(plans.filter(p => drafting(p) && !p.status)).flatMap(p => probesOf(p).filter(x => pOpen(x) && x.limit && days(TODAY, x.limit) <= 30).map(x => ({ p, x })));
+  const ev = up.map(x => ({ k: "節目", date: x.m.date, x })).concat(tUp.map(x => ({ k: "テスト", date: x.date, x })), pUp.map(x => ({ k: "探り", date: x.x.limit < TODAY ? TODAY : x.x.limit, x }))).sort((a, b) => a.date < b.date ? -1 : 1), evShown = msMore ? ev : ev.slice(0, 5);
   const upHtml = `<section class="sec"><h3>これから<small>30日以内の節目とテスト・${ev.length}件</small></h3><div class="msl">${evShown.map(e => { const d = days(TODAY, e.date);
+      if (e.k === "探り") { const { p, x } = e.x, late = pLate(x); return `<button class="msi${late || d <= 3 ? " soon" : ""}" data-goplan="${p.id}" data-ptab="探り"><span class="msd"><b>${md(x.limit)}</b><small>${late ? -days(TODAY, x.limit) + "日過ぎ" : d === 0 ? "今日" : "あと" + d + "日"}</small></span><span class="msn"><span>${pbadge(x.kind)} ${esc(x.title)}</span><small>${seal(p.grade)} ${esc(p.name)}${drafting(p) ? "(作成中)" : ""}</small></span></button>`; }
       if (e.k === "テスト") { const t = e.x.t, p = P(t.plan); return `<button class="msi${d <= 3 || e.x.late > 0 ? " soon" : ""}" data-testgo="${t.id}"><span class="msd"><b>${md(e.date)}</b><small>${e.x.late > 0 ? e.x.late + "日遅れ" : d === 0 ? "今日" : ago(d)}</small></span><span class="msn"><span><span class="upk k-テスト">テスト</span> ${esc(t.name)}</span><small>${p ? seal(p.grade) + " " + esc(p.name) : ""}</small></span></button>`; }
       const { p, m } = e.x, f = isFixed(p, "ms:" + m.id);
       return `<button class="msi${d <= 7 ? " soon" : ""}" data-goplan="${p.id}" data-ptab="道のり"><span class="msd"><b>${md(m.date)}</b><small>${d === 0 ? "今日" : ago(d)}</small></span><span class="msn"><span><span class="upk k-節目">節目</span> ${esc(msName(m))} ${m.plan ? "" : msTag(m.type)}${f ? " " + fixTag(f) : ""}</span><small>${seal(p.grade)} ${esc(p.name)}</small></span></button>`; }).join("") || '<p class="note">30日以内に何もない。</p>'}</div>
@@ -1031,7 +1065,7 @@ function viewTimeline(){
 <script>
 /* ───────── 計画(1本を深く扱う作業場) ───────── */
 let roadMode = "side", roadLane = {}, planId = "", ptab = "図", reqPath = [], reqView = "mandala", openMs = {}, showRisk = false, showComp = false, cmpVer = -1;
-const PTABS = ["図", "分解", "道のり", "テスト", "もしも", "歩み", "分野"];
+const PTABS = ["図", "分解", "道のり", "探り", "テスト", "もしも", "歩み", "分野"];
 function emptyPlans(){ return `<div class="empty">まだ計画がない。<div class="fbar"><button class="btn sm" data-addplan>+ 計画を足す</button><button class="btn ghost sm" data-v="importv">行軍表から移す・まとめて入れる</button></div></div>`; }
 function viewPlan(){
   if (!live().length && !plans.length) return emptyPlans();
@@ -1040,8 +1074,8 @@ function viewPlan(){
   const head = `<div class="phead"><div style="display:flex;gap:.4rem;align-items:center;font-size:.76rem;color:var(--sub);flex-wrap:wrap">${seal(p.grade)}${p.grade}・${esc(p.ministry)}・${md(p.start)}〜${md(p.end)}${p.oneShot ? "・本番一度きり" : ""}${p.ministry !== "全体" && p.ministry !== "未分類" ? `<button class="linkx shogo" data-shogo="${esc(p.ministry)}">${esc(p.ministry)}を開く ↗</button>` : ""}</div>
     <div class="k" style="margin-top:.3rem">なぜ</div><div class="why">${esc(p.why)}</div><div class="k" style="margin-top:.25rem">到達点</div><div class="goal">${esc(p.goal)} ${isFixed(p, "goal") ? fixTag(isFixed(p, "goal")) : ""}</div>
     ${p.status ? "" : '<div class="acts"><button class="btn ghost sm" data-planops>操作 ▾</button></div>'}</div>${p.status ? `<div class="closedbar">この計画は ${md(p.closedAt)} に${esc(p.status)}として終えた。${esc(p.summary || "")}</div>` : ""}`;
-  const tabs = `<div class="ptabs" role="group" aria-label="計画の中">${PTABS.map(t => `<button data-ptab="${t}" aria-pressed="${ptab === t}">${t}${t === "もしも" && p.ifs.length ? " " + p.ifs.length : ""}${t === "分野" && (p.fields || []).length ? " " + p.fields.length : ""}${t === "テスト" && testsOf(p).length ? " " + testsOf(p).length : ""}</button>`).join("")}</div>`;
-  const body = { 図: tabFigure, 分解: tabReq, 道のり: tabRoad, テスト: tabTests, もしも: tabIf, 歩み: tabWalk, 分野: tabPlanField }[ptab](p);
+  const tabs = `<div class="ptabs" role="group" aria-label="計画の中">${PTABS.map(t => `<button data-ptab="${t}" aria-pressed="${ptab === t}">${t}${t === "もしも" && p.ifs.length ? " " + p.ifs.length : ""}${t === "分野" && (p.fields || []).length ? " " + p.fields.length : ""}${t === "テスト" && testsOf(p).length ? " " + testsOf(p).length : ""}${t === "探り" && probesOf(p).filter(pOpen).length ? " " + probesOf(p).filter(pOpen).length : ""}</button>`).join("")}</div>`;
+  const body = { 図: tabFigure, 分解: tabReq, 道のり: tabRoad, 探り: tabProbe, テスト: tabTests, もしも: tabIf, 歩み: tabWalk, 分野: tabPlanField }[ptab](p);
   const anc = ancestors(p), crumb = anc.length ? `<div class="pcrumb">${anc.map(a => `<button data-goplan="${a.q.id}" data-ptab="道のり">${esc(a.q.name)}</button> ›`).join(" ")} <b style="color:var(--ink)">${esc(p.name)}</b><span>(${esc(anc[anc.length - 1].q.name)}の節目)</span></div>` : "";
   const tcr = p.status ? null : chkRec(TODAY, p.id), tline = drafting(p) ? `<div class="tline"><span class="phase">作成中</span><button class="tchip" data-gostart>形ができたら、いちばん下で始める ↓</button></div>` : p.status ? "" : `<div class="tline"><span class="note">今日の確認:</span>${tcr ? `<span class="rs r-${tcr.r}">${tcr.r}</span>` : `<button class="tchip" data-due="today">まだ。見たらいちばん下で確認 ↓</button>`}</div>`;
   return crumb + pickBtn(p, "plan") + head + tline + draftBanner(p) + meters(p) + (showComp ? compCard(p) : "") + tabs + body + checkPanel(p);
@@ -1066,7 +1100,8 @@ function tabFigure(p){
       xs.flatMap(pm => subsOf(p, pm.id).map((m, j) => `<button class="sub" style="left:${pos(m.date)}%" data-ms="${esc("細かい節目 " + numOf(pm) + "-" + (j + 1) + ":" + m.name + "(" + md(m.date) + ")" + (isDone(m) ? "・済" : ""))}" aria-label="${esc(m.name)}"></button>`)).join("");
     const ghosts = cv ? Object.entries(cv.ms || {}).map(([id, d]) => { const m = xs.find(x => x.id === id); if (!m || m.date === d) return ""; const a = pos(d), b = pos(m.date);
       return `<span class="mv" style="left:${Math.min(a, b)}%;width:${Math.abs(b - a)}%"></span><span class="ghost" style="left:${a}%" title="${esc("前:" + m.name + " " + md(d))}"></span>`; }).join("") : "";
-    return `<div class="big${withMarks ? "" : " nm"}">${first ? `<span class="ed" style="left:0">${md(p.start)}</span><span class="ed" style="right:0">${md(p.end)}</span>` : ""}${per}${ghosts}${dms}${withMarks ? marks : ""}<span class="now" style="left:${pos(TODAY)}%">${first ? "<span>今日</span>" : ""}</span></div>`; };
+    const pz = probesOf(p).filter(x => x.limit && (x.lane === l.id || ((!x.lane || !L.some(z => z.id === x.lane)) && k === 0))).map(x => `<button class="pq k-${x.kind}${pOpen(x) ? "" : " done"}" style="left:${pos(x.limit)}%" data-ms="${esc(x.kind + "「" + x.title + "」" + (pOpen(x) ? " 期限 " + md(x.limit) : " 済"))}" aria-label="探り">?</button>`).join("");
+    return `<div class="big${withMarks ? "" : " nm"}">${pz}${first ? `<span class="ed" style="left:0">${md(p.start)}</span><span class="ed" style="right:0">${md(p.end)}</span>` : ""}${per}${ghosts}${dms}${withMarks ? marks : ""}<span class="now" style="left:${pos(TODAY)}%">${first ? "<span>今日</span>" : ""}</span></div>`; };
   const lhead = l => { const lp = laneProg(p, l); return `<div class="lhead"><span class="lc r-${l.rank}">${laneCode(p, l)}</span><span class="rk r-${l.rank}">${l.rank}</span><b>${esc(l.name)}</b><small>${lp == null ? "節目なし" : "進捗 " + lp + "%"}</small></div>`; };
   const bands = many ? L.map((l, k) => lhead(l) + laneBig(l, k, false, k === 0)).join("") + `<div class="big marks"><span class="now" style="left:${pos(TODAY)}%"></span>${marks}</div>` : laneBig(L[0], 0, true, true);
   const msRow = m => { const f = isFixed(p, "ms:" + m.id), pr = msProg(m);
@@ -1171,7 +1206,7 @@ function tabRoad(p){
     const q = m.plan && P(m.plan), pr = q ? null : msProg(m), need = msNeed(m), cd = m.cond, ct = cd && T(cd.test), ci = ct && (ct.items.find(x => x.id === cd.item) || ct.items[0]), cs = ci && itemStats(ct, ci), cok = cs && cs.n && (ci.better === "高い" ? cs.last.v >= cd.value : cs.last.v <= cd.value);
     const paceChip = m.pace ? `<span class="pace">${fmtN(m.pace.amount)}${esc(m.pace.unit)}</span>` : "";
     const head = `<button class="mh" data-msopen="${m.id}" aria-expanded="${!!open}"><span class="md">${md(m.date)}</span><span class="mn">${esc(m.name)}</span><span class="mr">${isDone(m) ? "済" : d === 0 ? "今日" : ago(d)} ${open ? "▴" : "▾"}</span>
-      <span class="mtags">${msTag(m.type)}${f ? fixTag(f) : ""}${paceChip}${q ? `<span class="tag" style="color:var(--wave)">計画</span>` : ""}${ct ? `<span class="tag" style="color:${cok ? "var(--ok)" : "var(--sub)"}">判定 ${cok ? "達成" : "まだ"}</span>` : ""}${ifs.length ? '<span class="tag" style="color:var(--shu)">もしも</span>' : ""}</span></button>
+      <span class="mtags">${waitingFor(p, m).length ? '<span class="tag pwait">探り待ち</span>' : ""}${msTag(m.type)}${f ? fixTag(f) : ""}${paceChip}${q ? `<span class="tag" style="color:var(--wave)">計画</span>` : ""}${ct ? `<span class="tag" style="color:${cok ? "var(--ok)" : "var(--sub)"}">判定 ${cok ? "達成" : "まだ"}</span>` : ""}${ifs.length ? '<span class="tag" style="color:var(--shu)">もしも</span>' : ""}</span></button>
       ${pr ? `<div class="mprog"><span class="mpb"><i style="width:${pr.pct}%"></i></span><b>${pr.pct}%</b><small>${esc(pr.label)}</small></div>` : ""}`;
     if (q && !sub) { const qr = risk(q);
       const h2 = `<button class="mh" data-msopen="${m.id}" aria-expanded="${!!open}"><span class="md">${md(m.date)}</span><span class="mn">${esc(q.name)}</span><span class="mr">${isDone(m) ? "済" : d === 0 ? "今日" : ago(d)} ${open ? "▴" : "▾"}</span>
@@ -1208,12 +1243,12 @@ function tabRoad(p){
     return blocks + (rest.length ? `<div class="period" style="border-left-color:var(--rule)"><div class="ph"><b>期間の外</b></div>${rest.map(m => msHtml(m)).join("")}</div>` : ""); };
   const lp = l => { const v = laneProg(p, l), nx = nextLaneMs(p, l); return `<div class="lhead big2"><span class="lc r-${l.rank}">${laneCode(p, l)}</span><span class="rk r-${l.rank}">${l.rank}</span><b>${esc(l.name)}</b><small>${v == null ? "節目なし" : "進捗 " + v + "%"}${nx ? "・次:" + esc(msName(nx)) + "(" + md(nx.date) + ")" + (nx.pace ? " " + fmtN(nx.pace.amount) + esc(nx.pace.unit) : "") : ""}</small></div>`; };
   const hint = `<p class="note" style="margin-top:0">節目の横の数字は、その節目に届くための週あたりのペース。節目を押すと、週ごとの実績・進捗の推移・やることが開く。計画も節目として並べられ、押すとその計画の中身が開き、「この計画の中へ」で入れる。日ごとのタスクは省と行軍表で扱う。</p>`;
-  if (!many) return hint + laneBlocks(L[0], 0);
+  if (!many) return hint + roadProbes(p) + laneBlocks(L[0], 0);
   const sw = `<div class="fbar"><span class="seg" role="group" aria-label="見せ方">${[["side", "横に並べる"], ["one", "一つずつ"], ["date", "日付順"]].map(([k, t]) => `<button data-roadmode="${k}" aria-pressed="${roadMode === k}">${t}</button>`).join("")}</span></div>`;
-  if (roadMode === "date") return sw + hint + `<div class="period" style="border-left-color:var(--rule)">${main.map(m => `<div class="ldate"><span class="lc r-${laneOf(p, m).rank}">${laneCode(p, laneOf(p, m))}</span>${msHtml(m)}</div>` + subsOf(p, m.id).map(s => msHtml(s, true)).join("")).join("") || '<p class="note">節目がない</p>'}</div>`;
+  if (roadMode === "date") return sw + hint + roadProbes(p) + `<div class="period" style="border-left-color:var(--rule)">${main.map(m => `<div class="ldate"><span class="lc r-${laneOf(p, m).rank}">${laneCode(p, laneOf(p, m))}</span>${msHtml(m)}</div>` + subsOf(p, m.id).map(s => msHtml(s, true)).join("")).join("") || '<p class="note">節目がない</p>'}</div>`;
   if (roadMode === "one") { const cur = L.find(l => l.id === roadLane[p.id]) || L[0], k = L.indexOf(cur);
     const chips = `<div class="lchips">${L.map(l => `<button class="lchip${l === cur ? " on" : ""}" data-roadlane="${l.id}"><span class="lc r-${l.rank}">${laneCode(p, l)}</span><span>${esc(l.name)}</span></button>`).join("")}</div>`;
-    return sw + chips + lp(cur) + laneBlocks(cur, k); }
+    return sw + chips + lp(cur) + roadProbes(p, cur) + laneBlocks(cur, k); }
   /* 横に並べる:道筋ごとの列。節目を押すと、その道筋の「一つずつ」で開く */
   const col = (l, k) => { const lm = laneMs(p, l), used = new Set(), v = laneProg(p, l);
     const crow = m => { const pr = msProg(m), q = m.plan && P(m.plan);
@@ -1224,7 +1259,7 @@ function tabRoad(p){
       return `<div class="lcp${now ? " now" : ""}" style="border-left-color:${PCOL[(i + k * 2) % 5]}"><div class="lcph"><b>${esc(x.name || "期間")}</b>${now ? '<span class="nowmark">いまここ</span>' : ""}<small>${md(x.start)}〜${md(x.end)}</small></div>${ms.map(crow).join("") || '<p class="note" style="margin:.1rem 0">節目なし</p>'}</div>`; }).join("");
     const rest = lm.filter(m => !used.has(m.id));
     return `<div class="lcol"><div class="lch"><span class="lc r-${l.rank}">${laneCode(p, l)}</span><span class="rk r-${l.rank}">${l.rank}</span><b>${esc(l.name)}</b></div>
-      <div class="lcpr"><span class="mpb"><i style="width:${v || 0}%"></i></span><small>${v == null ? "節目なし" : "進捗 " + v + "%"}</small></div>${per}${rest.length ? `<div class="lcp" style="border-left-color:var(--rule)"><div class="lcph"><b>期間の外</b></div>${rest.map(crow).join("")}</div>` : ""}</div>`; };
+      <div class="lcpr"><span class="mpb"><i style="width:${v || 0}%"></i></span><small>${v == null ? "節目なし" : "進捗 " + v + "%"}</small></div>${roadProbes(p, l)}${per}${rest.length ? `<div class="lcp" style="border-left-color:var(--rule)"><div class="lcph"><b>期間の外</b></div>${rest.map(crow).join("")}</div>` : ""}</div>`; };
   return sw + `<p class="note" style="margin-top:0">道筋を横に並べて見比べる。節目を押すと、その道筋の詳しい道のりが開く。</p><div class="lcols">${L.map(col).join("")}</div>`;
 }
 
@@ -1257,7 +1292,7 @@ function walkEntries(p){
 }
 let walkKind = "すべて";
 function tabWalk(p){
-  const all = walkEntries(p), kinds = ["すべて", "確認", "週の見直し", "予備", "立て直し", "改造", "変更", "記録"], xs = walkKind === "すべて" ? all : all.filter(e => e.k === walkKind);
+  const all = walkEntries(p), kinds = ["すべて", "確認", "週の見直し", "探り", "予備", "立て直し", "改造", "変更", "記録"], xs = walkKind === "すべて" ? all : all.filter(e => e.k === walkKind);
   const tl = t => t === "goal" ? "到達点" : t === "end" ? "期日" : t.startsWith("ms:") ? "節目「" + ((p.milestones.find(m => "ms:" + m.id === t) || {}).name || "") + "」" : t;
   const c30 = p.changes.filter(c => days(c.date, TODAY) <= 30).length, b30 = (p.buffer ? p.buffer.uses : []).filter(u => days(u.date, TODAY) <= 30).length;
   return `<div class="card"><h4>この計画の歩み<small>30日で 予備 ${b30}回・変更 ${c30}回</small></h4>
@@ -1461,6 +1496,8 @@ function viewLessons(){
     <div class="card"><h4>あなたの見積もりのずれ<small>完了した計画から</small></h4>${lessons.some(l => l.kind === "完了" && l.planned) ? `<div class="sv" style="font-size:1.6rem;font-weight:700">${r}倍</div><div class="note">予定した日数の平均 ${r}倍 かかっている。新しい計画を足すときに、この倍率を目安に出す。</div>` : '<div class="note">完了した計画がたまると、予定に比べて実際は何倍かかるかが出る。</div>'}
       <div class="cause" style="margin-top:.4rem">遅れの原因(全部の計画):${Object.entries(causeAll).sort((a, b) => b[1] - a[1]).map(([c, d]) => `<span>${esc(c)} <b>${d}日</b></span>`).join("")}</div></div>
     ${closed.length ? `<section class="sec"><h3>大計で終えた計画</h3>${closed.map(p => `<div class="basis"><div class="bt">${esc(p.status)}・${md(p.closedAt)}</div><b>${esc(p.name)}</b><div>${esc(p.summary || "")}</div></div>`).join("")}</section>` : ""}
+    ${(() => { const rs = plans.flatMap(p => probesOf(p).filter(x => x.status === "済" && x.result).map(x => ({ p, x }))).sort((a, b) => a.x.result.date < b.x.result.date ? 1 : -1);
+      return rs.length ? `<section class="sec"><h3>探りで分かったこと<small>${rs.length}件・調査・実験・演習の結果</small></h3>${rs.map(({ p, x }) => `<div class="basis"><div class="bt">${pbadge(x.kind)} ${md(x.result.date)}・${esc(p.name)}</div><b>${esc(x.title)}</b><div>${esc(x.result.found)}</div>${x.result.actual ? `<div class="note">実際の値 ${esc(x.result.actual)}${esc(x.unit || "")}${x.predict ? "(予想 " + esc(x.predict) + ")" : ""}</div>` : ""}</div>`).join("")}</section>` : ""; })()}
     <section class="sec"><h3>これまでの総括</h3>${lessons.map(card).join("")}</section>`;
 }
 
@@ -1708,6 +1745,8 @@ function dueBar(){
   if (pt.length) { const here = cur && pt.includes(cur);
     items.push(`<button class="due d1" data-due="today"><b>今日の確認</b><span>${here ? "この計画を見たら、いちばん下で確認する" : "のこり " + pt.length + "本 › " + esc(pt[0].name) + " へ"}</span></button>`); }
   if (pw.length && (wl <= 2 || missedLastWeek().length)) items.push(`<button class="due d2${wl === 0 ? " hot" : ""}" data-v="week"><b>今週の見直し</b><span>のこり ${pw.length}本・${wl === 0 ? "今日まで" : "日曜まであと" + wl + "日"}</span></button>`);
+  const lateP = plans.filter(p => !p.status).flatMap(p => probesOf(p).filter(pLate).map(x => ({ p, x })));
+  if (lateP.length) items.push(`<button class="due d4" data-goplan="${lateP[0].p.id}" data-ptab="探り"><b>探りの期限が過ぎている</b><span>${lateP.length}件 › ${esc(lateP[0].x.title)}(${esc(lateP[0].p.name)})。結果を書くか、期限を直す</span></button>`);
   if (missedLastWeek().length) items.push(`<button class="due d3" data-v="week"><b>先週の見直しが抜けている</b><span>${missedLastWeek().length}本。今週の見直しで取り戻す</span></button>`);
   return items.join("");
 }
@@ -1730,6 +1769,7 @@ function startPanel(p){
   const c = completeness(p), miss = c.items.filter(x => !x.ok);
   return `<div class="cpanel start"><h4>作成中の計画</h4><p class="note" style="margin:0 0 .4rem">いまは自由に組み立てる段階。直しても歩みには残らず、確認や危険度の対象にもならない。形ができたら始める。始めたあとの直しは、すべて普通の修正として残る(作成中には戻れない)。</p>
     <div class="note" style="margin:0 0 .4rem">完成度 <b style="color:var(--ink)">${c.score}%</b>${miss.length ? "・まだ:" + miss.map(x => esc(x.k)).join("、") : "・点検はすべて済み"}</div>
+    ${probesOf(p).filter(pOpen).length ? `<div class="note" style="margin:0 0 .4rem;color:var(--mid)">まだ結果の出ていない探りが ${probesOf(p).filter(pOpen).length}件ある。材料がそろってから始めるほうがいい(始めることはできる)。</div>` : ""}
     <button class="btn" data-planstart="${p.id}">この計画を始める</button></div>`;
 }
 function checkPanel(p){
@@ -1764,6 +1804,8 @@ function weekSummary(p, w){
   lanesOf(p).forEach(l => { const m = nextLaneMs(p, l); if (!(m && m.pace && m.total)) return; const x = (m.weeks || []).find(y => y.w === w), j = x ? weekJudge(p, x.done, m.pace.amount) : null;
     out.push((multiLane(p) ? laneCode(p, l) + "(" + l.rank + ")" + l.name + ":" : "量:") + (x ? fmtN(x.done) + "/" + fmtN(m.pace.amount) + (m.unit || "") + "(" + (j === "吸収" ? "週の予備で吸収" : j) + ")" : "まだ記録していない(週の記録で入れる)")); });
   const bu = (p.buffer ? p.buffer.uses : []).concat((p.mbuf && p.mbuf.uses) || []).filter(u => u.date >= w && u.date <= we); if (bu.length) out.push("予備:" + bu.reduce((a, u) => a + u.days, 0) + "日使った");
+  const pd = probesOf(p).filter(x => x.status === "済" && x.result && x.result.date >= w && x.result.date <= we).length, pl = probesOf(p).filter(pLate).length;
+  if (pd || pl) out.push("探り:" + (pd ? "今週 " + pd + "件の結果が出た" : "") + (pd && pl ? "・" : "") + (pl ? "期限切れ " + pl + "件" : ""));
   const r = risk(p); out.push("危険度:" + r.score + "(" + r.level + ")・いちばん効いている:" + r.parts[0].k);
   const notes = Array.from({ length: 7 }, (_, i) => addD(w, i)).map(d => [d, chkRec(d, p.id)]).filter(([, c]) => c && c.r !== "問題なし");
   const missed = Array.from({ length: 7 }, (_, i) => addD(w, i)).filter(d => d < TODAY && d >= fromDay(p) && !chkRec(d, p.id)).length;
@@ -1847,6 +1889,106 @@ document.addEventListener("click", e => {
   if (b.hasAttribute("data-kzdrop")) { if (!confirm("改造の下書きをやめる?(今の計画はそのまま)")) return; delete p.draft; render(); return; }
   if (b.hasAttribute("data-kzapply")) { sheet(`<h3>改造を反映する</h3><p class="note">${p.draft.log.length}か所の変更を、今の計画に反映する。前の形は版として残り、図で比べられる。</p><div class="f"><label>改造の理由(歩みに残る)</label><textarea id="kz-why" placeholder="例:冬の模試の日程が出たので、節目を組み直した"></textarea></div><button class="btn" data-kzgo>反映する</button>`); return; }
   if (b.hasAttribute("data-kzgo")) { takeUndo(); applyDraft(p, $("kz-why").value.trim()); closeSheet(); ptab = "図"; render(); se("replan"); toast("改造を反映した。図で前の版と比べられる"); return; }
+});
+</script>
+<script>
+/* ───────── 探り:計画を作るための材料を取りに行く(調査・実験・演習) ─────────
+   知りたいこと・決めること・期限を決めて行い、分かったことを残す。
+   「もし結果がこうなら」は参考の文章として何本でも書いておける(結果のときに選んだりはしない) */
+const PKINDS = { 調査: { mark: "調", word: "調べて知る" }, 実験: { mark: "実", word: "やってみて効くか確かめる" }, 演習: { mark: "演", word: "試しにやって量・時間・難しさを測る" } };
+const probesOf = p => (p.probes || []);
+const pbadge = k => `<span class="pb k-${k}" title="${k}:${PKINDS[k].word}">${PKINDS[k].mark}</span>`;
+const pOpen = x => x.status !== "済";
+const pLate = x => pOpen(x) && x.limit && x.limit < TODAY;
+const waitingFor = (p, m) => probesOf(p).filter(x => pOpen(x) && (x.ms || []).includes(m.id));
+let probeOpen = {};
+/* 見出し(左・薄い)と、自分で書いた中身(右・濃い)を分けて並べる */
+const kv = (k, v) => v ? `<div class="pkv"><span class="k">${k}</span><span class="v">${v}</span></div>` : "";
+/* 計画の中の「探り」タブ */
+function tabProbe(p){
+  const xs = probesOf(p), grp = [["実施中", xs.filter(x => x.status === "実施中")], ["これから", xs.filter(x => x.status === "予定" || !x.status)], ["済んだ", xs.filter(x => x.status === "済").sort((a, b) => (b.result || {}).date < (a.result || {}).date ? -1 : 1)]];
+  const card = x => { const l = lanesOf(p).find(z => z.id === x.lane), ms = (x.ms || []).map(id => p.milestones.find(m => m.id === id)).filter(Boolean), open = probeOpen[x.id] != null ? probeOpen[x.id] : x.status !== "済", r = x.result;
+    return `<div class="pcard k-${x.kind}${pLate(x) ? " late" : ""}" id="probe-${x.id}"><button class="pch" data-probeopen="${x.id}">${pbadge(x.kind)}<span class="pct"><b>${esc(x.title)}</b><small>${x.status === "済" ? "済・" + md(r.date) : x.limit ? (pLate(x) ? '<span style="color:var(--bad)">期限を' + -days(TODAY, x.limit) + "日過ぎ</span>" : "期限 " + md(x.limit) + "・" + ago(days(TODAY, x.limit))) : "期限なし"}${x.hours ? "・上限 " + x.hours + "時間" : ""}${multiLane(p) && l ? "・" + laneCode(p, l) + " " + esc(l.name) : ""}</small></span><span class="note">${open ? "▴" : "▾"}</span></button>
+      ${open ? `<div class="pcb">
+        <div class="pkvs">
+        ${kv("知りたいこと", esc(x.question))}
+        ${kv("決めること", esc(x.decides))}
+        ${kv("予想", x.predict ? esc(x.predict) + (x.unit ? `<span class="u">${esc(x.unit)}</span>` : "") : "")}
+        ${kv("待っている節目", ms.map(m => esc(msName(m)) + `<span class="u">${md(m.date)}</span>`).join("、"))}
+        ${kv("もし結果がこうなら", (x.notes || []).length ? `<ul class="pnotes">${x.notes.map(n => `<li>${esc(n)}</li>`).join("")}</ul>` : "")}
+        </div>
+        ${r ? `<div class="pres"><div class="prh">結果<span>${md(r.date)}</span></div>
+          ${kv("分かったこと", esc(r.found))}
+          ${kv("実際の値", r.actual ? `<b>${esc(r.actual)}</b><span class="u">${esc(x.unit || "")}</span>${x.predict ? `<span class="u">予想 ${esc(x.predict)}</span>` : ""}` : "")}
+          ${kv("予想との違い", esc(r.diff))}
+          ${kv("かかった時間", r.spent ? esc(r.spent) + "時間" + (x.hours ? `<span class="u">上限 ${x.hours}時間</span>` : "") : "")}</div>` : ""}
+        <div class="fbar" style="margin:.4rem 0 0">${x.status === "予定" || !x.status ? `<button class="btn ghost sm" data-probestart="${x.id}">始める</button>` : ""}${x.status !== "済" ? `<button class="btn sm" data-proberes="${x.id}">結果を書く</button>` : `<button class="btn ghost sm" data-proberes="${x.id}">結果を直す</button>`}<button class="btn ghost sm" data-probeedit="${x.id}">探りを直す</button><button class="linkx" data-probedel="${x.id}" style="color:var(--bad)">消す</button></div></div>` : ""}</div>`; };
+  return `<p class="note" style="margin-top:0">計画を作るのに足りない材料を取りに行く。何を知りたいか・それで何を決めるか・いつまでにやるかを決めてから始め、分かったことを残す。</p>
+    <div class="fbar"><span class="note">探りを足す:</span>${Object.keys(PKINDS).map(k => `<button class="btn ghost sm pkadd" data-probenew="${k}">${pbadge(k)} ${k}</button>`).join("")}</div>
+    <div class="pklegend">${Object.entries(PKINDS).map(([k, v]) => `<span>${pbadge(k)} ${k}:${v.word}</span>`).join("")}</div>
+    ${grp.map(([t, ys]) => ys.length ? `<section class="sec"><h3>${t}<small>${ys.length}件</small></h3>${ys.map(card).join("")}</section>` : "").join("") || '<p class="note">まだ探りはない。仮の節目や、見積もりがつかないところがあれば、探りで確かめてから決める。</p>'}`;
+}
+/* 道のり・図に出す小さな印 */
+function roadProbes(p, l){ const xs = probesOf(p).filter(x => pOpen(x) && (!l || !x.lane || x.lane === l.id || !lanesOf(p).some(z => z.id === x.lane)));
+  return xs.length ? `<div class="rprobes">${xs.map(x => `<button class="rpr${pLate(x) ? " late" : ""}" data-probego="${x.id}">${pbadge(x.kind)}<span>${esc(x.title)}</span><small>${x.limit ? (pLate(x) ? "期限切れ" : md(x.limit)) : ""}${x.status === "実施中" ? "・実施中" : ""}</small></button>`).join("")}</div>` : ""; }
+/* 探りを作る・直す */
+function openProbe(p, x, kind){
+  const v = x || { kind: kind || "調査", notes: [] }, L = lanesOf(p);
+  const noteRow = n => `<div class="er pnote" style="display:block"><textarea data-pn rows="2" placeholder="例:1題に10分以上かかるなら、IIBの演習量を減らし、その分を解き直しに回す">${esc(n || "")}</textarea></div>`;
+  sheet(`<h3>${x ? "探りを直す" : "探りを足す"}</h3>
+    <div class="seg dcseg" role="group" aria-label="種類" style="margin-bottom:.4rem">${Object.keys(PKINDS).map(k => `<button data-pkind="${k}" aria-pressed="${v.kind === k}">${pbadge(k)} ${k}</button>`).join("")}</div>
+    <p class="note" id="pk-word" style="margin:0 0 .3rem">${PKINDS[v.kind].word}</p>
+    <input type="hidden" id="pk-k" value="${v.kind}">
+    <div class="f"><label>名前</label><input id="pk-t" value="${esc(v.title || "")}" placeholder="例:青チャートIAを10題解いて時間を測る"></div>
+    <div class="f"><label>知りたいこと(問い)</label><textarea id="pk-q" rows="2" placeholder="例:1題に何分かかるか。どの単元で詰まるか">${esc(v.question || "")}</textarea></div>
+    <div class="f"><label>これで決めること</label><input id="pk-d" value="${esc(v.decides || "")}" placeholder="例:IAを一周する節目の日付と、週のペース"></div>
+    <div class="row2"><div class="f"><label>期限</label><input id="pk-l" type="date" value="${v.limit || addD(TODAY, 7)}"></div><div class="f"><label>かける時間の上限(時間)</label><input id="pk-h" type="number" step="0.5" min="0" value="${v.hours ?? ""}" placeholder="例:2"></div></div>
+    <div class="row2"><div class="f"><label>予想(やる前の見込み)</label><input id="pk-p" value="${esc(v.predict || "")}" placeholder="例:1題6分くらい"></div><div class="f"><label>測る単位(あれば)</label><input id="pk-u" value="${esc(v.unit || "")}" placeholder="例:分/題"></div></div>
+    ${L.length > 1 ? `<div class="f"><label>道筋</label><select id="pk-ln"><option value="">計画全体</option>${L.map(l => `<option value="${l.id}"${v.lane === l.id ? " selected" : ""}>${laneCode(p, l)} ${esc(l.name)}(${l.rank})</option>`).join("")}</select></div>` : ""}
+    ${mainMs(p).length ? `<div class="f"><label>結果を待っている節目(この探りで日付や量が決まるもの)</label><div class="pmlist">${mainMs(p).map(m => `<label class="chk"><input type="checkbox" data-pm="${m.id}"${(v.ms || []).includes(m.id) ? " checked" : ""}> ${esc(msName(m))}(${md(m.date)}・${m.type})</label>`).join("")}</div></div>` : ""}
+    <h4 class="eh">もし結果がこうなら(参考)<small class="note" style="font-weight:400;letter-spacing:0"> 文章で、何本でも</small></h4>
+    <div id="pk-notes">${(v.notes && v.notes.length ? v.notes : [""]).map(noteRow).join("")}</div><button class="linkx addrow" data-pnrow>+ もう1つ書く</button>
+    <div style="margin-top:.6rem"><button class="btn" data-probesave="${x ? x.id : ""}">${x ? "直す" : "足す"}</button></div>`);
+  window.__pnoteRow = noteRow;
+}
+/* 結果を書く */
+function openProbeResult(p, x){
+  const r = x.result || {}, ms = (x.ms || []).map(id => p.milestones.find(m => m.id === id)).filter(m => m && m.pace);
+  sheet(`<h3>${pbadge(x.kind)} 結果を書く</h3><p style="margin:.1rem 0 .3rem"><b>${esc(x.title)}</b></p>
+    <div class="pkvs pref">${kv("知りたいこと", esc(x.question))}${kv("決めること", esc(x.decides))}${kv("予想", x.predict ? esc(x.predict) + (x.unit ? `<span class="u">${esc(x.unit)}</span>` : "") : "")}
+    ${kv("もし結果がこうなら", (x.notes || []).filter(Boolean).length ? `<ul class="pnotes">${x.notes.filter(Boolean).map(n => `<li>${esc(n)}</li>`).join("")}</ul>` : "")}</div>
+    <div class="f"><label>分かったこと(必ず書く)</label><textarea id="pr-f" rows="4" placeholder="例:IAの例題は平均8分。整数と確率で詰まる">${esc(r.found || "")}</textarea></div>
+    <div class="row2"><div class="f"><label>実際の値${x.unit ? "(" + esc(x.unit) + ")" : ""}</label><input id="pr-a" value="${esc(r.actual || "")}" placeholder="${x.predict ? "予想:" + esc(x.predict) : "例:8"}"></div><div class="f"><label>かかった時間(時間)</label><input id="pr-s" type="number" step="0.25" min="0" value="${esc(r.spent || "")}" placeholder="${x.hours ? "上限 " + x.hours : ""}"></div><div class="f"><label>結果の日</label><input id="pr-d" type="date" value="${r.date || TODAY}"></div></div>
+    ${x.predict ? `<div class="f"><label>予想(${esc(x.predict)})との違い</label><input id="pr-x" value="${esc(r.diff || "")}" placeholder="例:思ったより2分長い。図をかく時間を数えていなかった"></div>` : ""}
+    ${x.kind === "演習" && ms.length ? `<div class="pref">${ms.map(m => `<label class="chk" style="display:flex"><input type="checkbox" data-prmin="${m.id}"> 実際の値(分)を、節目「${esc(msName(m))}」の「1つあたりの時間」にする(今:${m.pace.min ? m.pace.min + "分" : "なし"})</label>`).join("")}</div>` : ""}
+    <button class="btn" data-prsave="${x.id}">結果を残す</button>`);
+}
+/* 操作 */
+document.addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return; const d = b.dataset, p = P(planId);
+  if (d.probego) { ptab = "探り"; probeOpen[d.probego] = true; render(); setTimeout(() => { const el = $("probe-" + d.probego); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); }, 30); return; }
+  if (!p) return;
+  if (d.probenew) { openProbe(p, null, d.probenew); return; }
+  if (d.probeedit) { openProbe(p, probesOf(p).find(x => x.id === d.probeedit)); return; }
+  if (d.pkind) { $("pk-k").value = d.pkind; document.querySelectorAll("[data-pkind]").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.pkind === d.pkind))); $("pk-word").textContent = PKINDS[d.pkind].word; return; }
+  if (b.hasAttribute("data-pnrow")) { $("pk-notes").insertAdjacentHTML("beforeend", window.__pnoteRow("")); const t = $("pk-notes").lastElementChild.querySelector("textarea"); t.focus(); return; }
+  if (d.probesave != null && b.hasAttribute("data-probesave")) { const t = $("pk-t").value.trim(); if (!t) { toast("名前を入れてください"); return; }
+    takeUndo(); p.probes = p.probes || []; let x = d.probesave ? p.probes.find(y => y.id === d.probesave) : null;
+    const v = { kind: $("pk-k").value, title: t, question: $("pk-q").value.trim(), decides: $("pk-d").value.trim(), limit: $("pk-l").value, hours: $("pk-h").value === "" ? undefined : +$("pk-h").value, predict: $("pk-p").value.trim(), unit: $("pk-u").value.trim(),
+      lane: ($("pk-ln") || {}).value || "", ms: [...document.querySelectorAll("[data-pm]:checked")].map(c => c.dataset.pm), notes: [...document.querySelectorAll("[data-pn]")].map(n => n.value.trim()).filter(Boolean) };
+    if (x) Object.assign(x, v); else { x = Object.assign({ id: "pr" + uid(), status: "予定", created: TODAY }, v); p.probes.push(x); }
+    probeOpen[x.id] = true; closeSheet(); ptab = "探り"; render(); toast(d.probesave ? "探りを直した" : "探りを足した"); return; }
+  if (d.probestart) { const x = probesOf(p).find(y => y.id === d.probestart); takeUndo(); x.status = "実施中"; x.startedAt = TODAY; render(); se("rec"); toast("始めた。期限は " + (x.limit ? md(x.limit) : "なし")); return; }
+  if (d.proberes) { openProbeResult(p, probesOf(p).find(y => y.id === d.proberes)); return; }
+  if (d.prsave) { const x = probesOf(p).find(y => y.id === d.prsave), f = $("pr-f").value.trim(); if (!f) { toast("分かったことを書いてください"); return; }
+    takeUndo(); const first = x.status !== "済";
+    x.result = { date: $("pr-d").value || TODAY, found: f, actual: $("pr-a").value.trim(), spent: $("pr-s").value.trim(), diff: ($("pr-x") || {}).value ? $("pr-x").value.trim() : "" }; x.status = "済";
+    const num = parseFloat(x.result.actual);
+    document.querySelectorAll("[data-prmin]:checked").forEach(c => { const m = p.milestones.find(y => y.id === c.dataset.prmin); if (m && m.pace && !isNaN(num)) { m.pace.min = num; } });
+    if (first) p.changes.push({ date: x.result.date, kind: "探り", what: x.kind + "「" + x.title + "」の結果", before: "", after: "", reason: f + (x.result.actual ? "(実際の値 " + x.result.actual + (x.unit || "") + ")" : ""), size: "小" });
+    probeOpen[x.id] = true; closeSheet(); render(); se(first ? "best" : "rec"); toast("結果を残した"); return; }
+  if (d.probedel) { if (!confirm("この探りを消す?")) return; takeUndo(); p.probes = probesOf(p).filter(y => y.id !== d.probedel); render(); toast("消した"); return; }
+  if (d.probeopen) { const x = probesOf(p).find(y => y.id === d.probeopen); probeOpen[x.id] = !(probeOpen[x.id] != null ? probeOpen[x.id] : x.status !== "済"); render(); return; }
 });
 </script>
 <script>
@@ -2388,6 +2530,7 @@ document.addEventListener("click", e => {
     const mid = {}; q.milestones.forEach(m => { mid[m.id] = "m" + uid(); });
     q.milestones = q.milestones.map(m => Object.assign(m, { id: mid[m.id], parent: m.parent ? mid[m.parent] : undefined, lane: idm[m.lane] || m.lane, date: sh(m.date), weeks: [], records: [], done: false, doneAt: undefined, taskDone: {}, cond: undefined, plan: undefined }));
     q.works = (q.works || []).map(w => Object.assign(w, { start: sh(w.start), end: sh(w.end), lane: idm[w.lane] || w.lane }));
+    q.probes = (q.probes || []).map(x => Object.assign(x, { id: "pr" + uid(), status: "予定", startedAt: undefined, result: undefined, created: TODAY, limit: sh(x.limit), lane: idm[x.lane] || x.lane, ms: (x.ms || []).map(i => mid[i]).filter(Boolean) }));
     if (q.buffer) q.buffer.uses = []; if (q.mbuf) q.mbuf.uses = [];
     q.ifs = $("cp-if").checked ? (q.ifs || []).map(x => Object.assign(x, { at: mid[x.at] || x.at })) : [];
     if (!$("cp-req").checked) q.req = { text: q.goal, kids: [] }; else { const strip = n => { delete n.plan; (n.kids || []).forEach(strip); }; strip(q.req); }
