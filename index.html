@@ -325,6 +325,12 @@ button.closedbar{display:flex;width:100%;text-align:left;border:0;cursor:pointer
 .lanerm{border:1px solid var(--bad);border-radius:3px;background:var(--white);color:var(--bad);font-size:.76rem;padding:.15rem .5rem;white-space:nowrap}
 .lhd{grid-template-columns:1fr 3.5rem 1.8rem 1.8rem auto}
 .pnote{padding-top:.5rem}
+/* 分野の真ん中のマス */
+.fcenter .pkv .v textarea{width:100%;padding:.35rem .45rem;border:1px solid var(--rule);border-radius:3px;background:var(--white);font-size:.86rem}
+.frow{display:flex;gap:.35rem;align-items:center;flex-wrap:wrap}.frow input{flex:1;min-width:6rem;padding:.3rem .45rem;border:1px solid var(--rule);border-radius:3px;background:var(--white);font-size:.88rem}
+.fplan{display:inline-flex;gap:.4rem;align-items:baseline;margin:0 .6rem .25rem 0}
+.mc .fmemo{position:absolute;right:4px;top:4px;font-size:.55rem;color:var(--wave);font-weight:700}.mc.fs-定着 .fmemo{color:var(--paper)}
+.msi.fmto{border-left:3px solid var(--rule)}
 .addrow{display:block;margin:.2rem 0 .1rem;font-size:.76rem}
 details.eds{border:1px solid var(--rule);border-radius:6px;margin:.5rem 0;background:var(--sheet)}
 details.eds>summary{cursor:pointer;padding:.55rem .7rem;font-weight:700;font-size:.92rem;list-style:none;display:flex;justify-content:space-between;align-items:baseline;gap:.5rem}
@@ -647,7 +653,7 @@ label.mini{display:flex;flex-direction:column;gap:.1rem;font-size:.62rem;color:v
 <div id="sheet-root"></div>
 <script>
 /* ───────── 大計:データ ───────── */
-const APP_VERSION = "2026-11-01 r8";
+const APP_VERSION = "2026-11-01 r9";
 const SHO_APP = "https://nisenonamae.github.io/sho/";
 const GRADES = ["最重要", "重要", "通常", "軽易"];
 const COUNCIL = { 最重要: "最高評議会", 重要: "常任評議会" };
@@ -691,7 +697,8 @@ function repair(){
     p.milestones.forEach(m => { if (!m.parent && (!m.lane || !p.lanes.some(l => l.id === m.lane))) m.lane = p.lanes[0].id;
       if (!Array.isArray(m.tasks)) m.tasks = []; if (!Array.isArray(m.records)) m.records = []; if (!Array.isArray(m.weeks)) m.weeks = []; if (!m.type) m.type = "予定"; }); });
   tests.forEach(t => { if (!Array.isArray(t.sessions)) t.sessions = []; if (!Array.isArray(t.items)) t.items = []; });
-  fields.forEach(f => { if (!f.root) f.root = { text: f.name, kids: [] }; if (!Array.isArray(f.always)) f.always = []; });
+  fields.forEach(f => { if (!f.root) f.root = { text: f.name, kids: [] }; if (!Array.isArray(f.always)) f.always = []; if (typeof ensureIds === "function") ensureIds(f.root); });
+  if (typeof nodeAt === "function") plans.forEach(p => (p.fields || []).forEach(l => { if (l.node) return; const f = fields.find(x => x.id === l.f), n = f && nodeAt(f.root, l.path || []); if (n) l.node = n.id; }));
   lessons.forEach(l => { if (!l.id) l.id = uid(); });
   headGoals = headGoals.filter(g => { const p = plans.find(x => x.id === g.p); return p && p.milestones.some(m => m.id === g.m); });
 }
@@ -1366,12 +1373,15 @@ function tabWalk(p){
 function tabPlanField(p){
   const links = p.fields || [];
   if (!links.length) return `<p class="note">この計画は、まだ分野とつながっていない。</p>${linkFieldForm(p)}`;
-  return `<p class="note" style="margin-top:0">この計画が受け持つ分野の全体像。塗り替えは分野のタブと同じものに反映される。</p>` + links.map((l, i) => { const f = fields.find(x => x.id === l.f), n = nodeAt(f.root, l.path);
-    return `<div class="card"><h4>${esc(f.name)}${l.path.length ? " › " + esc(n.text) : ""}<small><button class="linkx" data-openfield="${f.id}:${l.path.join(",")}">分野で開く</button> <button class="linkx" data-fdunlink="${i}">外す</button></small></h4>${fieldMiniGrid(f, l.path)}</div>`; }).join("") + linkFieldForm(p);
+  return `<p class="note" style="margin-top:0">この計画が受け持つ分野の全体像。塗り替えは分野のタブと同じものに反映される。</p>` + links.map((l, i) => { const f = fields.find(x => x.id === l.f);
+    if (!f) return `<div class="card"><h4>消えた分野<small><button class="linkx" data-fdunlink="${i}">外す</button></small></h4><p class="note">つないでいた分野は、もうない。</p></div>`;
+    const path = linkPath(f, l); if (!path) return `<div class="card"><h4>${esc(f.name)}<small><button class="linkx" data-fdunlink="${i}">外す</button></small></h4><p class="note">つないでいたマスは、もうない(消された)。</p></div>`;
+    const n = nodeAt(f.root, path);
+    return `<div class="card"><h4>${esc(f.name)}${path.length ? " › " + esc(n.text) : ""}<small><button class="linkx" data-openfield="${f.id}:${path.join(",")}">分野で開く</button> <button class="linkx" data-fdunlink="${i}">外す</button></small></h4>${fieldMiniGrid(f, path)}</div>`; }).join("") + linkFieldForm(p);
 }
 function linkFieldForm(p){
-  const opts = fields.flatMap(f => [[f.id, [], f.name]].concat((f.root.kids || []).map((k, i) => [f.id, [i], f.name + " › " + k.text])));
-  return `<div class="card"><h4>分野とつなぐ</h4><div class="row2"><div class="f"><select id="fd-l">${opts.map(o => `<option value="${o[0]}|${o[1].join(",")}">${esc(o[2])}</option>`).join("")}</select></div><button class="btn sm" data-fdlink style="align-self:center">つなぐ</button></div></div>`;
+  const opts = fields.flatMap(f => walkNodes(f.root, 0, [], []).filter(x => x.depth <= 2).map(x => [f.id, x.n.id, x.depth ? "　".repeat(x.depth) + "› " + esc(x.n.text) : esc(f.name) + "(全体)"]));
+  return `<div class="card"><h4>分野とつなぐ<small>分野の画面の「真ん中のマス」からもつなげる</small></h4><div class="row2"><div class="f"><select id="fd-l">${opts.map(o => `<option value="${o[0]}|${o[1]}">${o[2]}</option>`).join("")}</select></div><button class="btn sm" data-fdlink style="align-self:center">つなぐ</button></div></div>`;
 }
 </script>
 <script>
@@ -2100,7 +2110,12 @@ function relMap(){
 /* ───────── 分野(全体像):入れ子のマンダラ ───────── */
 let fieldId = "", fieldPath = [];
 const NEXT_ST = { 未: "学習中", 学習中: "定着", 定着: "未" };
-const nodeAt = (root, path) => path.reduce((n, i) => (n.kids || [])[i], root);
+const nodeAt = (root, path) => path.reduce((n, i) => (n ? (n.kids || [])[i] : undefined), root);
+/* マスの名札:並べ替えたり移したりしても、計画とのつながりがずれないように */
+function ensureIds(n){ if (!n.id) n.id = "fn" + uid(); (n.kids || []).forEach(ensureIds); }
+function pathOf(root, id, path){ path = path || []; if (root.id === id) return path; const ks = root.kids || []; for (let i = 0; i < ks.length; i++) { const r = pathOf(ks[i], id, path.concat(i)); if (r) return r; } return null; }
+function linkPath(f, l){ return l.node ? pathOf(f.root, l.node) : (l.path || []); }
+function walkNodes(n, depth, path, out){ out.push({ n, depth, path }); (n.kids || []).forEach((k, i) => walkNodes(k, depth + 1, path.concat(i), out)); return out; }
 function leaves(n){ return (n.kids && n.kids.length) ? n.kids.flatMap(leaves) : [n]; }
 function fStatus(n){ if (n.kids && n.kids.length) { const l = leaves(n), d = l.filter(x => x.st === "定着").length; return d === l.length ? "定着" : l.some(x => x.st !== "未" && x.st) ? "学習中" : "未"; } return n.st || "未"; }
 function covHtml(n){ const l = leaves(n), c = s => l.filter(x => (x.st || "未") === s).length;
@@ -2109,33 +2124,44 @@ function covHtml(n){ const l = leaves(n), c = s => l.filter(x => (x.st || "未")
 function fieldCell(n, i, prefix, path){
   if (!n) return prefix === "f" && i === (nodeAt((fields.find(x => x.id === fieldId) || fields[0]).root, path).kids || []).length ? `<button class="mc empty" data-fadd>+ 足す</button>` : `<span class="mc empty" style="opacity:.35"></span>`;
   const st = fStatus(n), k = (n.kids || []).length, l = leaves(n), dn = l.filter(x => x.st === "定着").length;
-  return `<button class="mc fs-${st}" data-fin="${prefix}|${path.concat(i).join(",")}"><span class="mt">${esc(n.text)}</span><span class="ms"><span>${st}</span>${k ? `<span class="kids">${dn}/${l.length}</span>` : ""}</span></button>`;
+  return `<button class="mc fs-${st}" data-fin="${prefix}|${path.concat(i).join(",")}"><span class="mt">${esc(n.text)}</span>${n.memo ? '<span class="fmemo">メモ</span>' : ""}<span class="ms"><span>${st}</span>${k ? `<span class="kids">${dn}/${l.length}</span>` : ""}</span></button>`;
 }
 function fieldMiniGrid(f, path){ const n = nodeAt(f.root, path), kids = n.kids || [];
   return `<div class="ftiles">${kids.map((k, i) => { const st = fStatus(k), l = leaves(k), dn = l.filter(x => x.st === "定着").length; return `<button class="ftile fs-${st}" data-fin="p:${f.id}|${path.concat(i).join(",")}"><b>${esc(k.text)}</b><small>${st}${(k.kids || []).length ? "・" + dn + "/" + l.length : ""}</small></button>`; }).join("")}</div>${covHtml(n)}`; }
 function viewField(){
   if (!fields.length) return `<div class="empty">まだ分野がない。教科などの全体像を、入れ子の地図として作っておく場所。<div class="fbar"><button class="btn sm" data-fieldnew>+ 分野を足す</button></div></div>`;
   if (!fields.some(x => x.id === fieldId)) fieldId = fields[0].id;
-  const f = fields.find(x => x.id === fieldId), n = nodeAt(f.root, fieldPath) || f.root, kids = n.kids || [], ago = days(f.updated, TODAY);
+  const f = fields.find(x => x.id === fieldId); if (!nodeAt(f.root, fieldPath)) fieldPath = [];
+  const n = nodeAt(f.root, fieldPath), kids = n.kids || [], ago = days(f.updated, TODAY), isRoot = !fieldPath.length;
   const crumbs = [f.root]; { let c = f.root; for (const i of fieldPath) { c = c.kids[i]; crumbs.push(c); } }
   const linked = plans.filter(p => (p.fields || []).some(l => l.f === f.id));
+  const here = plans.flatMap(p => (p.fields || []).map((l, i) => ({ p, l, i })).filter(x => x.l.f === f.id && x.l.node === n.id));
+  const sibs = isRoot ? [] : nodeAt(f.root, fieldPath.slice(0, -1)).kids, pos = fieldPath[fieldPath.length - 1];
   const order = [0, 1, 2, 3, null, 4, 5, 6, 7];
   const grid = order.map(o => o === null ? `<div class="mc center">${esc(n.text)}<small style="font-weight:400;font-size:.66rem;opacity:.8;margin-top:.2rem">${fStatus(n)}・中に ${kids.length}</small></div>` : fieldCell(kids[o], o, "f", fieldPath)).join("");
   const leaf = !kids.length;
+  const center = `<div class="card fcenter"><h4>真ん中のマス<small>${isRoot ? "分野のいちばん上" : "深さ " + (fieldPath.length + 1)}</small></h4><div class="pkvs">
+      ${kv("名前", `<span class="frow"><input id="fn-name" value="${esc(n.text)}"><button class="btn ghost sm" data-fren>直す</button></span>`)}
+      ${kv("状態", leaf ? `<span class="seg" role="group" aria-label="状態">${["未", "学習中", "定着"].map(x => `<button data-fst="${x}" aria-pressed="${fStatus(n) === x}">${x}</button>`).join("")}</span>` : `${fStatus(n)}<span class="u">中のマスの状態から自動で決まる</span>`)}
+      ${kv("メモ", `<textarea id="fn-memo" rows="2" placeholder="例:確率漸化式でつまずく。解き方の型がまだない">${esc(n.memo || "")}</textarea><button class="btn ghost sm" data-fmemo style="margin-top:.25rem">メモを残す</button>`)}
+      ${isRoot ? "" : kv("並べ替え", `<span class="frow"><button class="btn ghost sm" data-fmove="-1"${pos === 0 ? " disabled" : ""}>◀ 前へ</button><button class="btn ghost sm" data-fmove="1"${pos === sibs.length - 1 ? " disabled" : ""}>後ろへ ▶</button><span class="u">${pos + 1}/${sibs.length}番目</span></span>`)}
+      ${isRoot ? "" : kv("移す", `<button class="btn ghost sm" data-fmovein>別のマスの中へ移す</button>`)}
+      ${kv("受け持つ計画", `${here.map(x => `<span class="fplan"><button class="linkx" data-goplan="${x.p.id}" data-ptab="分野">${esc(x.p.name)}</button><button class="linkx" data-fdun="${x.p.id}|${x.i}" style="color:var(--bad)">外す</button></span>`).join("")}<button class="btn ghost sm" data-flink>${here.length ? "ほかの計画ともつなぐ" : "このマスを計画とつなぐ"}</button>`)}
+    </div>
+    <div class="fbar" style="margin:.4rem 0 0">${isRoot ? "" : '<button class="btn ghost sm" data-fup>一つ上へ</button><button class="btn shu sm" data-fdel>このマスを消す</button>'}</div></div>`;
   return `<div class="fbar"><span class="seg" role="group" aria-label="分野">${fields.map(x => `<button data-fieldsel="${x.id}" aria-pressed="${x === f}">${esc(x.name.replace(/\(.*\)/, ""))}</button>`).join("")}</span><button class="btn ghost sm" data-fieldnew>+ 分野</button></div>
     <div class="phead"><div class="k">分野の全体像・${esc(f.ministry)}</div><div class="goal">${esc(f.name)}</div>${covHtml(f.root)}
       <div class="note">最後に全体像を見直したのは <b style="color:${ago > 14 ? "var(--bad)" : "var(--ink)"}">${ago}日前</b>${linked.length ? "・受け持つ計画:" + linked.map(q => `<button class="linkx" data-goplan="${q.id}" data-ptab="分野">${esc(q.name)}</button>`).join("、") : ""}</div>
-      <div class="fbar" style="margin:.4rem 0 0"><button class="btn sm" data-fieldupd>全体像を見直した</button><button class="linkx" data-fielddel style="margin-left:auto;color:var(--bad)">この分野を消す</button></div></div>
+      <div class="fbar" style="margin:.4rem 0 0"><button class="btn sm" data-fieldupd>全体像を見直した</button><button class="btn ghost sm" data-fedit>分野の名前・省を直す</button><button class="linkx" data-fielddel style="margin-left:auto;color:var(--bad)">この分野を消す</button></div></div>
     <section class="sec"><h3>全体像<small>押すとその中へ。深さは自由</small></h3>
       <div class="crumb">${crumbs.map((c, i) => i === crumbs.length - 1 ? `<b>${esc(c.text)}</b>` : `<button data-fto="${i}">${esc(c.text)}</button> ›`).join(" ")}<span style="margin-left:auto">深さ ${fieldPath.length + 1}</span></div>
       <div class="mandala">${grid}</div>${kids.length > 8 ? `<p class="note">ほか:${kids.slice(8).map((k, i) => `<button class="linkx" data-fin="f|${fieldPath.concat(8 + i).join(",")}">${esc(k.text)}</button>`).join("、")}</p>` : ""}
-      <div class="card"><h4>真ん中:${esc(n.text)}<small>${leaf ? "中に何もないときは、押して状態を塗る" : "中の状態から自動で決まる"}</small></h4>
-        <div class="fbar" style="margin:0"><span class="seg" role="group" aria-label="状態">${["未", "学習中", "定着"].map(x => `<button data-fst="${x}" aria-pressed="${fStatus(n) === x}"${leaf ? "" : " disabled"}>${x}</button>`).join("")}</span>
-        ${fieldPath.length ? '<button class="btn ghost sm" data-fup>一つ上へ</button><button class="btn shu sm" data-fdel>これを消す</button>' : ""}</div></div></section>
-    <section class="sec"><h3>常にやること<small>全体像を掴み続けるために</small></h3><ul class="always" style="list-style:none;padding:0;margin:0">${f.always.map((a, i) => `<li style="display:flex;justify-content:space-between;gap:.5rem"><label><input type="checkbox" data-alw="${i}"${a.done ? " checked" : ""}> ${esc(a.t)}</label><button class="linkx" data-alwdel="${i}">消す</button></li>`).join("")}</ul>
+      ${center}</section>
+    <section class="sec"><h3>常にやること<small>全体像を掴み続けるために</small></h3><ul class="always" style="list-style:none;padding:0;margin:0">${f.always.map((a, i) => `<li style="display:flex;justify-content:space-between;gap:.5rem;align-items:baseline"><label><input type="checkbox" data-alw="${i}"${a.done ? " checked" : ""}> ${esc(a.t)}</label><span style="white-space:nowrap"><button class="linkx" data-alwedit="${i}">直す</button> <button class="linkx" data-alwdel="${i}" style="color:var(--bad)">消す</button></span></li>`).join("")}</ul>
       <div class="row2" style="margin-top:.3rem"><input id="alw-in" placeholder="常にやることを足す" style="flex:1;padding:.3rem .45rem;border:1px solid var(--rule);border-radius:3px;background:var(--white)"><button class="btn ghost sm" data-alwadd>足す</button></div></section>
-    <p class="note">全体像が見えていると、どこに計画を立てるべきかが分かり、計画づくりが楽になる。全体像そのものも、分かってきたら足したり分けたりして育てる。</p>`;
+    <p class="note">全体像が見えていると、どこに計画を立てるべきかが分かり、計画づくりが楽になる。全体像そのものも、分かってきたら名前を直したり、並べ替えたり、別のマスへ移したりして育てる。</p>`;
 }
+
 
 /* ───────── 下から出る画面 ───────── */
 let pickFor = null, pickQ = "";
@@ -2485,9 +2511,26 @@ document.addEventListener("click", e => {
   if (b.hasAttribute("data-fasave")) { const ts = $("fa-n").value.split("\n").map(x => x.trim()).filter(Boolean); if (!ts.length) return; const n = nodeAt(F().root, fieldPath); n.kids = n.kids || []; if (!n.kids.length) delete n.st; ts.forEach(t => n.kids.push({ text: t, st: "未" })); closeSheet(); render(); toast(ts.length + "つ足した"); return; }
   if (b.hasAttribute("data-fieldnew")) { sheet(`<h3>分野を足す</h3><div class="row2"><div class="f"><label>名前</label><input id="fn-n" placeholder="例:化学"></div><div class="f"><label>省</label><input id="fn-m" placeholder="例:理科省"></div></div><button class="btn" data-fnsave>足す</button>`); return; }
   if (b.hasAttribute("data-fnsave")) { const n = $("fn-n").value.trim(); if (!n) return; const id = "f" + Date.now().toString(36); fields.push({ id, ministry: $("fn-m").value.trim() || "未分類", name: n, updated: TODAY, always: [], root: { text: n, kids: [] } }); fieldId = id; fieldPath = []; closeSheet(); render(); return; }
+  if (b.hasAttribute("data-fren")) { const n = nodeAt(F().root, fieldPath), t = $("fn-name").value.trim(); if (!t) { toast("名前を入れてください"); return; } if (t === n.text) return; takeUndo(); n.text = t; render(); toast("名前を直した"); return; }
+  if (b.hasAttribute("data-fmemo")) { const n = nodeAt(F().root, fieldPath); takeUndo(); const t = $("fn-memo").value.trim(); if (t) n.memo = t; else delete n.memo; render(); toast(t ? "メモを残した" : "メモを消した"); return; }
+  if (d.fmove) { const sibs = nodeAt(F().root, fieldPath.slice(0, -1)).kids, i = fieldPath[fieldPath.length - 1], j = i + +d.fmove; if (j < 0 || j >= sibs.length) return; takeUndo(); [sibs[i], sibs[j]] = [sibs[j], sibs[i]]; fieldPath[fieldPath.length - 1] = j; render(); return; }
+  if (b.hasAttribute("data-fmovein")) { const f = F(), n = nodeAt(f.root, fieldPath), parentId = nodeAt(f.root, fieldPath.slice(0, -1)).id, bad = new Set(walkNodes(n, 0, [], []).map(x => x.n.id));
+    const opts = walkNodes(f.root, 0, [], []).filter(x => !bad.has(x.n.id) && x.n.id !== parentId);
+    sheet(`<h3>「${esc(n.text)}」を移す</h3><p class="note">どのマスの中へ入れるか選ぶ。中に何もないマスへ入れると、そのマスに塗っていた状態は消え、中のマスから決まるようになる。</p><div class="msl">${opts.map(x => `<button class="msi fmto" data-fmto="${x.n.id}" style="padding-left:${.6 + x.depth * 1.1}rem"><span class="msn"><span>${x.depth ? "" : "◆ "}${esc(x.n.text)}</span><small>${x.depth ? fStatus(x.n) + ((x.n.kids || []).length ? "・中に " + x.n.kids.length : "・中は空") : "分野のいちばん上"}</small></span></button>`).join("")}</div>`); return; }
+  if (d.fmto) { const f = F(), n = nodeAt(f.root, fieldPath), parent = nodeAt(f.root, fieldPath.slice(0, -1)), tgt = walkNodes(f.root, 0, [], []).find(x => x.n.id === d.fmto).n; takeUndo();
+    parent.kids.splice(fieldPath[fieldPath.length - 1], 1); tgt.kids = tgt.kids || []; if (!tgt.kids.length) delete tgt.st; tgt.kids.push(n); fieldPath = pathOf(f.root, n.id) || []; closeSheet(); render(); toast("「" + tgt.text + "」の中へ移した"); return; }
+  if (b.hasAttribute("data-flink")) { const f = F(), n = nodeAt(f.root, fieldPath), cand = plans.filter(p => !p.status && !(p.fields || []).some(l => l.f === f.id && l.node === n.id));
+    if (!cand.length) { toast("つなげる計画がない"); return; }
+    sheet(`<h3>「${esc(n.text)}」を計画とつなぐ</h3><p class="note">つないだ計画の「分野」タブに、このマスの中が出る。</p><div class="f"><select id="fl-p">${cand.map(p => `<option value="${p.id}">${esc(p.name)}${drafting(p) ? "(作成中)" : ""}</option>`).join("")}</select></div><button class="btn" data-flsave>つなぐ</button>`); return; }
+  if (b.hasAttribute("data-flsave")) { const f = F(), n = nodeAt(f.root, fieldPath), q = P($("fl-p").value); takeUndo(); q.fields = q.fields || []; q.fields.push({ f: f.id, node: n.id }); closeSheet(); render(); toast("計画「" + q.name + "」とつないだ"); return; }
+  if (d.fdun) { const [pid, i] = d.fdun.split("|"), q = P(pid); if (!confirm("計画「" + q.name + "」とのつながりを外す?")) return; takeUndo(); q.fields.splice(+i, 1); render(); toast("外した"); return; }
+  if (b.hasAttribute("data-fedit")) { const f = F(); sheet(`<h3>分野を直す</h3><div class="f"><label>名前</label><input id="fe-n" value="${esc(f.name)}"></div><div class="f"><label>省</label><input id="fe-m" list="fe-ml" value="${esc(f.ministry)}"><datalist id="fe-ml">${MINS().map(m => `<option value="${esc(m)}">`).join("")}</datalist></div><button class="btn" data-fesave>直す</button>`); return; }
+  if (b.hasAttribute("data-fesave")) { const f = F(), nm = $("fe-n").value.trim(); if (!nm) { toast("名前を入れてください"); return; } takeUndo(); if (f.root.text === f.name) f.root.text = nm; f.name = nm; f.ministry = $("fe-m").value.trim() || f.ministry; closeSheet(); render(); toast("分野を直した"); return; }
+  if (d.alwedit != null && b.hasAttribute("data-alwedit")) { const a = F().always[+d.alwedit]; sheet(`<h3>常にやることを直す</h3><div class="f"><input id="ae-t" value="${esc(a.t)}"></div><button class="btn" data-aesave="${d.alwedit}">直す</button>`); return; }
+  if (d.aesave != null && b.hasAttribute("data-aesave")) { const t = $("ae-t").value.trim(); if (!t) { toast("中身を入れてください"); return; } takeUndo(); F().always[+d.aesave].t = t; closeSheet(); render(); toast("直した"); return; }
   if (b.hasAttribute("data-alwadd")) { const t = $("alw-in").value.trim(); if (!t) return; F().always.push({ t, done: false }); render(); return; }
   if (d.openfield) { const [fid, path] = d.openfield.split(":"); fieldId = fid; fieldPath = path ? path.split(",").map(Number) : []; location.hash = "field"; return; }
-  if (b.hasAttribute("data-fdlink")) { const [fid, path] = $("fd-l").value.split("|"); p.fields = p.fields || []; p.fields.push({ f: fid, path: path ? path.split(",").map(Number) : [] }); render(); toast("分野とつないだ"); return; }
+  if (b.hasAttribute("data-fdlink")) { const [fid, node] = $("fd-l").value.split("|"); p.fields = p.fields || []; if (p.fields.some(l => l.f === fid && l.node === node)) { toast("もうつながっている"); return; } takeUndo(); p.fields.push({ f: fid, node }); render(); toast("分野とつないだ"); return; }
   if (d.fdunlink) { p.fields.splice(+d.fdunlink, 1); render(); return; }
   // 予備・立て直し
   if (b.hasAttribute("data-bufuse")) { openBufUse(p); return; }
