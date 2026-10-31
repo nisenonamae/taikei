@@ -395,6 +395,74 @@ button.closedbar{display:flex;width:100%;text-align:left;border:0;cursor:pointer
 .tk-unlock .box b{display:block;font-size:.8rem;letter-spacing:.3em;color:#E2B456}.tk-unlock .box span{display:block;font-size:1.1rem;font-weight:700;margin-top:.2rem}
 .tk-spark{position:fixed;left:50%;top:50%;width:8px;height:8px;border-radius:50%;background:#E2B456;z-index:61;pointer-events:none;animation:tkfly .9s ease-out forwards}
 @keyframes tkfly{to{transform:translate(var(--dx),var(--dy)) scale(.2);opacity:0}}
+/* 手順録の手順(手順録と同じ見た目) */
+.tjv{--line:var(--rule);--fork:#9A5B12;--forkbg:#F5ECDF;--accent:var(--wave);--bg:var(--paper);--warn:var(--shu)}
+.tjv{clear:both;padding-top:.3rem}
+.tjv .tj-card{background:var(--white);border:1px solid var(--rule);border-radius:4px;padding:12px 14px 14px}
+.tjv .tj-card .sh-title{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap;border-bottom:2px solid var(--ink);padding-bottom:6px;margin-bottom:10px}
+.tjv .tj-card .sh-title b{font-size:1.0625rem}
+.tjv .tj-card .sh-title span{font-size:.8125rem;color:var(--sub)}
+.tjv .tj-card .sh-note{font-size:.75rem;color:var(--sub);margin:0 0 8px}
+.tjv .pv-list{list-style:none;margin:0;padding:0 0 0 26px;position:relative}
+.tjv .pv-list::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:2px;background:var(--ink)}
+.tjv .pv-list.inner{margin:6px 0 2px;padding-left:24px}
+.tjv .pv-list.inner::before{background:var(--fork)}
+.tjv .pv-step{position:relative;padding:4px 0 14px}
+.tjv .pv-num{font-weight:700;font-variant-numeric:tabular-nums}
+.tjv .pv-check{position:absolute;left:-26px;top:4px;width:20px;height:20px;border-radius:50%;border:2px solid var(--ink);background:var(--sheet);padding:0}
+.tjv .pv-list.inner > .pv-step > .pv-check{left:-24px;border-color:var(--fork)}
+.tjv .pv-step.done > .pv-check{background:var(--ok);border-color:var(--ok)}
+.tjv .pv-step.done > .pv-body .pv-text{color:var(--sub);text-decoration:line-through;text-decoration-color:var(--line)}
+.tjv .pv-body{cursor:pointer;display:grid;grid-template-columns:auto minmax(0,1fr) auto;column-gap:8px;align-items:baseline;line-height:1.65}
+.tjv .pv-text,.tjv .pv-q{white-space:pre-wrap;word-break:break-word}
+.tjv .pv-sec{margin:6px 0 12px -26px;padding:5px 10px;background:var(--ink);color:#fff;border-radius:4px;display:flex;justify-content:space-between;gap:10px;align-items:baseline;cursor:pointer;position:relative;z-index:1}
+.tjv .pv-list.inner > .pv-sec{margin-left:-24px;background:var(--sub)}
+.tjv .pv-list .pv-sec.lv2{background:#EFE9DD;color:var(--ink);margin-left:-12px;border-left:4px solid var(--ink);border-radius:0 4px 4px 0;padding:3px 10px}
+.tjv .pv-list .pv-sec.lv2 .pv-sec-m{color:var(--sub)}
+.tjv .pv-list .pv-sec.lv3{background:transparent;color:var(--ink);margin-left:0;border-radius:0;border-bottom:1px dashed var(--sub);padding:1px 2px;font-size:.9375rem}
+.tjv .pv-list .pv-sec.lv3 .pv-sec-m{color:var(--sub)}
+.tjv .pv-list .pv-sec.lv2 .pv-sec-t .pv-blank,.tjv .pv-list .pv-sec.lv3 .pv-sec-t .pv-blank{color:var(--sub)}
+.tjv .pv-alw{margin:0 0 12px;padding:6px 10px;border:1px solid #9CC9B0;border-left:4px solid var(--ok);background:#EDF6F0;border-radius:4px;font-size:.875rem;line-height:1.55}
+.tjv .pv-alw-h{font-size:.75rem;color:var(--ok);font-weight:700;margin-bottom:2px}
+.tjv .pv-alw ul{margin:0;padding:0;list-style:none}
+.tjv .pv-alw li{display:flex;flex-wrap:wrap;gap:2px 6px;align-items:baseline;padding:2px 0}
+.tjv .aw-always{font-size:.6875rem;font-weight:700;background:var(--ok);color:#fff;border-radius:3px;padding:0 5px}
+.tjv .aw-when{font-weight:700;white-space:pre-wrap}
+.tjv .aw-text{white-space:pre-wrap;word-break:break-word}
+.tjv .aw-arrow{color:var(--sub)}
+.tjv .pv-alw-li{list-style:none;position:relative;z-index:1}
+.tjv .pv-sec-t{font-weight:700;letter-spacing:.04em}
+.tjv .pv-sec-t .pv-blank{color:#C9C0B2}
+.tjv .pv-sec-m{font-size:.8125rem;color:#E7E0D3;white-space:nowrap}
+.tjv .pv-min{font-size:.8125rem;color:var(--sub);white-space:nowrap;background:var(--bg);border-radius:3px;padding:0 6px}
+.tjv .pv-blank{color:var(--sub)}
+.tjv .pv-step.br > .pv-mark{position:absolute;left:-23px;top:7px;width:14px;height:14px;background:var(--fork);transform:rotate(45deg)}
+.tjv .pv-q{font-weight:700}
+.tjv .pv-opts{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 2px}
+.tjv .pv-opts button{border:1.5px solid var(--fork);color:var(--fork);background:#fff;border-radius:999px;padding:2px 12px;font-size:.9375rem}
+.tjv .pv-opts button[aria-pressed="true"]{background:var(--fork);color:#fff}
+.tjv .pv-hint{font-size:.8125rem;color:var(--sub);margin:2px 0 0}
+.tjv .rng{display:inline-block;border:1px solid var(--accent);color:var(--accent);border-radius:3px;padding:0 5px;font-size:.875em;line-height:1.4}
+.tjv .pv-step.pt > .pv-mark{position:absolute;left:-23px;top:7px;width:14px;height:14px;background:var(--accent)}
+.tjv .pv-list.inner.part::before{background:var(--accent)}
+.tjv .pv-list.inner.part > .pv-step > .pv-check{border-color:var(--accent)}
+.tjv .rng.missing{border-color:var(--warn);color:var(--warn)}
+.tkproc{display:flex;align-items:center;gap:.5rem;margin:.2rem 0 .4rem;padding:.4rem .55rem;border:1px solid var(--rule);border-left:4px solid var(--ink);border-radius:0 4px 4px 0;background:var(--sheet)}
+.tkuses{display:flex;flex-direction:column;gap:.25rem;margin:.25rem 0 .4rem}
+.tkuse{display:flex;align-items:baseline;gap:.4rem;width:100%;text-align:left;border:1px solid var(--rule);border-left:4px solid var(--c);background:var(--white);border-radius:0 4px 4px 0;padding:.3rem .55rem;font-size:.84rem}
+.tkuse .tkk{font-size:.62rem;font-weight:700;color:var(--paper);background:var(--ink);border-radius:2px;padding:0 .3rem}
+.tkuse .tkn{flex:1;font-weight:700;min-width:0}.tkuse .tkp{font-size:.72rem;color:var(--wave);font-weight:700;white-space:nowrap}.tkuse small{font-size:.66rem;color:var(--sub);white-space:nowrap}
+.tkuse.s-研究中{box-shadow:0 0 0 2px var(--shu-soft)}.tkuse.s-ひらめき .tkn{color:var(--sub)}.tkuse.s-やめた{opacity:.5}
+.tkadd{margin-left:.5rem;font-size:.72rem}
+/* 用語(定義集の言葉):藍・点線の下線・右肩に「定」 */
+.term{display:inline;color:var(--wave);font-weight:700;border:0;background:none;padding:0;font:inherit;font-weight:700;cursor:pointer;text-decoration:underline dotted var(--wave);text-decoration-thickness:1.5px;text-underline-offset:3px}
+.term sup{font-size:.55em;font-weight:700;color:var(--paper);background:var(--wave);border-radius:2px;padding:0 .18em;margin-left:.12em;vertical-align:super;line-height:1;text-decoration:none;display:inline-block}
+.term.term-lg{font-size:1.1rem}
+.mh .term,.tchip .term{color:var(--wave)}
+.defchip{display:inline-flex;align-items:baseline;gap:.3rem;font-size:.8rem;color:var(--sub);flex-wrap:wrap}.defchip small{font-size:.66rem;border:1px solid var(--rule);border-radius:2px;padding:0 .25rem}
+.glcard{border:1px solid var(--rule);border-left:4px solid var(--wave);background:var(--sheet);border-radius:0 5px 5px 0;padding:.5rem .7rem;margin:.45rem 0}
+.glh{display:flex;align-items:baseline;gap:.5rem;margin-bottom:.2rem}
+.glk{font-size:.66rem;font-weight:700;border-radius:3px;padding:0 .35rem;line-height:1.6}.glk.k-成果{background:var(--ok-soft);color:var(--ok)}.glk.k-作業{background:var(--mid-soft);color:var(--mid)}
 .addrow{display:block;margin:.2rem 0 .1rem;font-size:.76rem}
 details.eds{border:1px solid var(--rule);border-radius:6px;margin:.5rem 0;background:var(--sheet)}
 details.eds>summary{cursor:pointer;padding:.55rem .7rem;font-weight:700;font-size:.92rem;list-style:none;display:flex;justify-content:space-between;align-items:baseline;gap:.5rem}
@@ -718,7 +786,7 @@ label.mini{display:flex;flex-direction:column;gap:.1rem;font-size:.62rem;color:v
 <div id="sheet-root"></div>
 <script>
 /* ───────── 大計:データ ───────── */
-const APP_VERSION = "2026-11-01 r12";
+const APP_VERSION = "2026-11-01 r14";
 const SHO_APP = "https://nisenonamae.github.io/sho/";
 const GRADES = ["最重要", "重要", "通常", "軽易"];
 const COUNCIL = { 最重要: "最高評議会", 重要: "常任評議会" };
@@ -740,17 +808,17 @@ let TODAY = localDay();
 
 /* みんなで同期するデータ */
 let plans = [], tests = [], fields = [], lessons = [], reviews = [], proposals = [];
-let capacity = { base: 40, ex: [] }, headGoals = [], weekClosed = {}, dailyChecks = {}, weeklyReviews = {}, since = "", techLanes = [], techs = [], ideas = [];   // 技術ツリー:系統・技術・ひらめき   // since:大計を使い始めた日(それより前の確認・見直しは「抜け」に数えない)   // weeklyReviews:「週の月曜|計画」→ { r, note }   // dailyChecks:「日付|計画」→ 順調/少し遅れ/大きくずれ
+let capacity = { base: 40, ex: [] }, headGoals = [], weekClosed = {}, dailyChecks = {}, weeklyReviews = {}, since = "", techLanes = [], techs = [], ideas = [], glossary = [];   // glossary:定義集   // 技術ツリー:系統・技術・ひらめき   // since:大計を使い始めた日(それより前の確認・見直しは「抜け」に数えない)   // weeklyReviews:「週の月曜|計画」→ { r, note }   // dailyChecks:「日付|計画」→ 順調/少し遅れ/大きくずれ
 /* この端末だけの設定 */
 let recent = [], seCfg = { on: true, vol: 0.6, ui: true, uiVol: 0.45 }, notifyCfg = { topic: "", test: false, ms: false, week: false, risk: false }, sent = {};
 
 const KEY = "taikei-data", LOCAL_KEY = "taikei-local";
 const clone = x => JSON.parse(JSON.stringify(x));
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-function blank(){ return { version: 1, plans: [], tests: [], fields: [], lessons: [], reviews: [], proposals: [], capacity: { base: 40, ex: [] }, headGoals: [], weekClosed: {}, dailyChecks: {}, weeklyReviews: {}, since: "", techLanes: [], techs: [], ideas: [] }; }
-function dataOut(){ return { version: 1, plans, tests, fields, lessons, reviews, proposals, capacity, headGoals, weekClosed, dailyChecks, weeklyReviews, since, techLanes, techs, ideas }; }
+function blank(){ return { version: 1, plans: [], tests: [], fields: [], lessons: [], reviews: [], proposals: [], capacity: { base: 40, ex: [] }, headGoals: [], weekClosed: {}, dailyChecks: {}, weeklyReviews: {}, since: "", techLanes: [], techs: [], ideas: [], glossary: [] }; }
+function dataOut(){ return { version: 1, plans, tests, fields, lessons, reviews, proposals, capacity, headGoals, weekClosed, dailyChecks, weeklyReviews, since, techLanes, techs, ideas, glossary }; }
 function dataIn(d){ d = Object.assign(blank(), d || {});
-  plans = d.plans; tests = d.tests; fields = d.fields; lessons = d.lessons; reviews = d.reviews; proposals = d.proposals; capacity = d.capacity; headGoals = d.headGoals; weekClosed = d.weekClosed; dailyChecks = d.dailyChecks || {}; weeklyReviews = d.weeklyReviews || {}; since = d.since || ""; techLanes = d.techLanes || []; techs = d.techs || []; ideas = d.ideas || [];
+  plans = d.plans; tests = d.tests; fields = d.fields; lessons = d.lessons; reviews = d.reviews; proposals = d.proposals; capacity = d.capacity; headGoals = d.headGoals; weekClosed = d.weekClosed; dailyChecks = d.dailyChecks || {}; weeklyReviews = d.weeklyReviews || {}; since = d.since || ""; techLanes = d.techLanes || []; techs = d.techs || []; ideas = d.ideas || []; glossary = d.glossary || [];
   repair(); }
 /* 古いデータや欠けたところを直して、どの画面でも落ちないようにする */
 function repair(){
@@ -759,7 +827,8 @@ function repair(){
     if (!Array.isArray(p.lanes) || !p.lanes.length) { p.lanes = [{ id: "L" + uid(), name: "本筋", rank: "主", periods: p.periods || [] }]; }
     p.lanes.forEach(l => { if (!Array.isArray(l.periods)) l.periods = []; if (!RANKS.includes(l.rank)) l.rank = "主"; if (!l.id) l.id = "L" + uid(); });
     delete p.periods;
-    p.milestones.forEach(m => { if (!m.parent && (!m.lane || !p.lanes.some(l => l.id === m.lane))) m.lane = p.lanes[0].id;
+    p.milestones.forEach(m => { if (m.def && !(glossary || []).some(g => g.id === m.def)) delete m.def;
+      if (!m.parent && (!m.lane || !p.lanes.some(l => l.id === m.lane))) m.lane = p.lanes[0].id;
       if (!Array.isArray(m.tasks)) m.tasks = []; if (!Array.isArray(m.records)) m.records = []; if (!Array.isArray(m.weeks)) m.weeks = []; if (!m.type) m.type = "予定"; }); });
   tests.forEach(t => { if (!Array.isArray(t.sessions)) t.sessions = []; if (!Array.isArray(t.items)) t.items = []; });
   fields.forEach(f => { if (!f.root) f.root = { text: f.name, kids: [] }; if (!Array.isArray(f.always)) f.always = []; if (typeof ensureIds === "function") ensureIds(f.root); });
@@ -802,7 +871,7 @@ function ghErr(r){
   if (r.status >= 500) return "GitHubが不調(しばらくしてもう一度)";
   return "GitHubとの通信に失敗した(" + r.status + ")";
 }
-const MKEYS = { plans: x => x.id, tests: x => x.id, fields: x => x.id, lessons: x => x.id, reviews: x => x.w, proposals: x => x.id, headGoals: x => x.p + ":" + x.m, techLanes: x => x.id, techs: x => x.id, ideas: x => x.id };
+const MKEYS = { plans: x => x.id, tests: x => x.id, fields: x => x.id, lessons: x => x.id, reviews: x => x.w, proposals: x => x.id, headGoals: x => x.p + ":" + x.m, techLanes: x => x.id, techs: x => x.id, ideas: x => x.id, glossary: x => x.id };
 function mergeArr(b, l, r, key){
   const B = new Map((b || []).map(x => [key(x), x])), L = new Map((l || []).map(x => [key(x), x])), R = new Map((r || []).map(x => [key(x), x])), out = new Map(R);
   B.forEach((v, k) => { if (!L.has(k)) out.delete(k); });
@@ -1058,6 +1127,7 @@ function completeness(p){
     { k: "分解", ok: !!p.req && reqCount(p.req) >= 3, hint: "「達成するには何が必要か」を分解する" },
     { k: "作戦", ok: p.works.some(w => w.kind === "作戦"), hint: "節目に届くための作戦を置く" },
     { k: "予備", ok: months <= 1.2 || p.works.some(w => w.kind === "予備") || !!p.buffer, hint: "1か月より長い計画には予備を置く" },
+    { k: "定義", ok: !p.milestones.some(m => !m.parent && m.total && !isDone(m) && !(m.def && typeof GL === "function" && GL(m.def))), hint: "目標の量がある節目に、数え方の定義(定義集)をつなぐ。「覚えた」の基準などをそろえる" },
     { k: "探り", ok: !p.milestones.some(m => !m.parent && m.type === "仮" && !isDone(m)) || (p.probes || []).length > 0, hint: "仮の節目は、探り(調査・実験・演習)で確かめてから決める" },
     { k: "もしもの手", ok: (p.ifs || []).length > 0, hint: "下回ったとき・失敗したときの計画を作る" },
     { k: "実力の測定", ok: typeof testsOf === "function" && testsOf(p).length > 0, hint: "やった量とは別に、実際の力を測るテストを作る" },
@@ -1219,7 +1289,7 @@ function viewPlan(){
   if (!P(planId)) planId = (live()[0] || plans[0]).id;
   const p = P(planId);
   const head = `<div class="phead"><div style="display:flex;gap:.4rem;align-items:center;font-size:.76rem;color:var(--sub);flex-wrap:wrap">${seal(p.grade)}${p.grade}・${esc(p.ministry)}・${md(p.start)}〜${md(p.end)}${p.oneShot ? "・本番一度きり" : ""}${p.ministry !== "全体" && p.ministry !== "未分類" ? `<button class="linkx shogo" data-shogo="${esc(p.ministry)}">${esc(p.ministry)}を開く ↗</button>` : ""}</div>
-    <div class="k" style="margin-top:.3rem">なぜ</div><div class="why">${esc(p.why)}</div><div class="k" style="margin-top:.25rem">到達点</div><div class="goal">${esc(p.goal)} ${isFixed(p, "goal") ? fixTag(isFixed(p, "goal")) : ""}</div>
+    <div class="k" style="margin-top:.3rem">なぜ</div><div class="why">${esc(p.why)}</div><div class="k" style="margin-top:.25rem">到達点</div><div class="goal">${tx(p.goal)} ${isFixed(p, "goal") ? fixTag(isFixed(p, "goal")) : ""}</div>
     <div class="acts"><button class="btn ghost sm" data-planops>操作 ▾</button></div></div>${p.status ? `<div class="closedbar">この計画は ${md(p.closedAt)} に${esc(p.status)}として終えた。${esc(p.summary || "")}</div>` : ""}`;
   const tabs = `<div class="ptabs" role="group" aria-label="計画の中">${PTABS.map(t => `<button data-ptab="${t}" aria-pressed="${ptab === t}">${t}${t === "もしも" && p.ifs.length ? " " + p.ifs.length : ""}${t === "分野" && (p.fields || []).length ? " " + p.fields.length : ""}${t === "テスト" && testsOf(p).length ? " " + testsOf(p).length : ""}${t === "探り" && probesOf(p).filter(pOpen).length ? " " + probesOf(p).filter(pOpen).length : ""}</button>`).join("")}</div>`;
   const body = { 図: tabFigure, 分解: tabReq, 道のり: tabRoad, 探り: tabProbe, メモ: tabMemo, 技術: tabPlanTech, テスト: tabTests, もしも: tabIf, 歩み: tabWalk, 分野: tabPlanField }[ptab](p);
@@ -1252,7 +1322,7 @@ function tabFigure(p){
   const lhead = l => { const lp = laneProg(p, l); return `<div class="lhead${laneEnded(p, l) ? " ended" : ""}"><span class="lc r-${l.rank}">${laneCode(p, l)}</span><span class="rk r-${l.rank}">${l.rank}</span><b>${esc(l.name)}</b>${laneTag(p, l)}<small>${l.closed ? (l.closed.count === "外す" ? "進捗の計算から外した" : "100%として数える") : lp == null ? "節目なし" : "進捗 " + lp + "%"}</small></div>`; };
   const bands = many ? L.map((l, k) => lhead(l) + laneBig(l, k, false, k === 0)).join("") + `<div class="big marks"><span class="now" style="left:${pos(TODAY)}%"></span>${marks}</div>` : laneBig(L[0], 0, true, true);
   const msRow = m => { const f = isFixed(p, "ms:" + m.id), pr = msProg(m);
-    return `<li><b class="n">${numOf(m)}</b><span class="d">${md(m.date)}</span><span style="flex:1">${m.plan && P(m.plan) ? '<span class="tag" style="color:var(--wave)">計画</span> ' : ""}${esc(msName(m))} ${m.plan ? "" : msTag(m.type)}${f ? " " + fixTag(f) : ""}${p.ifs.some(x => x.at === m.id) ? ' <span class="tag" style="color:var(--shu)">もしも</span>' : ""}${pr ? ` <b class="st ${pr.pct >= 100 ? "ok" : ""}" style="font-size:.76rem">${pr.pct}%</b>` : ""}</span><small class="note">${isDone(m) ? "済" : ago(days(TODAY, m.date))}</small></li>` +
+    return `<li><b class="n">${numOf(m)}</b><span class="d">${md(m.date)}</span><span style="flex:1">${m.plan && P(m.plan) ? '<span class="tag" style="color:var(--wave)">計画</span> ' : ""}${m.plan ? esc(msName(m)) : tx(msName(m))} ${m.plan ? "" : msTag(m.type)}${f ? " " + fixTag(f) : ""}${p.ifs.some(x => x.at === m.id) ? ' <span class="tag" style="color:var(--shu)">もしも</span>' : ""}${pr ? ` <b class="st ${pr.pct >= 100 ? "ok" : ""}" style="font-size:.76rem">${pr.pct}%</b>` : ""}</span><small class="note">${isDone(m) ? "済" : ago(days(TODAY, m.date))}</small></li>` +
       subsOf(p, m.id).map((sm, jj) => `<li class="subli"><b class="n">${numOf(m)}-${jj + 1}</b><span class="d">${md(sm.date)}</span><span style="flex:1">${esc(sm.name)} ${msTag(sm.type)}</span><small class="note">${isDone(sm) ? "済" : ago(days(TODAY, sm.date))}</small></li>`).join(""); };
   const list = many ? L.map(l => `<li class="lli${laneEnded(p, l) ? " ended" : ""}"><span class="lc r-${l.rank}">${laneCode(p, l)}</span><span class="rk r-${l.rank}">${l.rank}</span>${esc(l.name)}${laneTag(p, l)}</li>` + laneMs(p, l).map(m => l.closed ? msRow(m).replace(/<small class="note">[^<]*<\/small><\/li>/, `<small class="note">—</small></li>`) : msRow(m)).join("")).join("") : main.map(msRow).join("");
   const cmpBar = vers.length ? `<div class="fbar" style="margin:.2rem 0 .3rem"><label class="chk">前の版と比べる <select data-cmpver><option value="-1">比べない</option>${vers.map((v, i) => `<option value="${i}"${i === cmpVer ? " selected" : ""}>${esc(v.label)}</option>`).join("")}</select></label>${cv ? `<button class="linkx" data-verdel="${cmpVer}" style="color:var(--bad)">この版を消す</button>` : ""}</div>` : "";
@@ -1354,7 +1424,7 @@ function tabRoad(p){
   const msHtml = (m, sub) => { const f = isFixed(p, "ms:" + m.id), d = days(TODAY, m.date), open = openMs[m.id], ifs = p.ifs.filter(x => x.at === m.id), bs = p.basis.filter(b => b.target === "ms:" + m.id);
     const q = m.plan && P(m.plan), pr = q ? null : msProg(m), need = msNeed(m), cd = m.cond, ct = cd && T(cd.test), ci = ct && (ct.items.find(x => x.id === cd.item) || ct.items[0]), cs = ci && itemStats(ct, ci), cok = cs && cs.n && (ci.better === "高い" ? cs.last.v >= cd.value : cs.last.v <= cd.value);
     const paceChip = m.pace ? `<span class="pace">${fmtN(m.pace.amount)}${esc(m.pace.unit)}</span>` : "";
-    const head = `<button class="mh" data-msopen="${m.id}" aria-expanded="${!!open}"><span class="md">${md(m.date)}</span><span class="mn">${esc(m.name)}</span><span class="mr">${isDone(m) ? "済" : d === 0 ? "今日" : ago(d)} ${open ? "▴" : "▾"}</span>
+    const head = `<button class="mh" data-msopen="${m.id}" aria-expanded="${!!open}"><span class="md">${md(m.date)}</span><span class="mn">${tx(m.name)}</span><span class="mr">${isDone(m) ? "済" : d === 0 ? "今日" : ago(d)} ${open ? "▴" : "▾"}</span>
       <span class="mtags">${waitingFor(p, m).length ? '<span class="tag pwait">探り待ち</span>' : ""}${msTag(m.type)}${f ? fixTag(f) : ""}${paceChip}${q ? `<span class="tag" style="color:var(--wave)">計画</span>` : ""}${ct ? `<span class="tag" style="color:${cok ? "var(--ok)" : "var(--sub)"}">判定 ${cok ? "達成" : "まだ"}</span>` : ""}${ifs.length ? '<span class="tag" style="color:var(--shu)">もしも</span>' : ""}</span></button>
       ${pr ? `<div class="mprog"><span class="mpb"><i style="width:${pr.pct}%"></i></span><b>${pr.pct}%</b><small>${esc(pr.label)}</small></div>` : ""}`;
     if (q && !sub) { const qr = risk(q);
@@ -1367,13 +1437,13 @@ function tabRoad(p){
     const body = `<div class="body"><div class="note">${esc(m.type)}:${esc(MS_TYPES[m.type])}</div>
       ${!q && !sub ? `<div class="bl">この節目を計画にする</div><div class="fbar" style="margin:.1rem 0 0"><button class="btn ghost sm" data-msplan="${m.id}">計画にする</button><span class="note">大きな節目は、それ自体を1つの計画として置ける</span></div>` : ""}
       ${ct ? `<div class="bl">テストで判定する</div><div>「${esc(ct.name)}」の${esc(ci.name)}が ${cd.value}${ci.unit}${ci.better === "高い" ? "以上" : "以下"}で達成。最新 ${cs.n ? fmtV(ci, cs.last.v) : "—"} <b class="st ${cok ? "ok" : "bad"}">${cok ? "達成" : "まだ"}</b> <button class="linkx" data-testgo="${ct.id}">テストを見る</button></div>` : ""}
-      ${m.pace ? `<div class="bl">ペース(この節目に届くための週あたりの量)</div><div>${fmtN(m.pace.amount)}${esc(m.pace.unit)}<span class="note">・1日あたり約${fmtN(m.pace.amount / wdays(p))}(週${wdays(p)}日で割る。日の予備 ${7 - wdays(p)}日)</span>${need != null ? `<span class="note">・のこりを今から割ると ${need}${esc(m.pace.unit)}</span>` : ""}${(m.pace.hist || []).map(h => `<div class="note">${md(h.date)}に ${fmtN(h.from)}→${fmtN(h.to)}(${esc(h.reason)})</div>`).join("")}</div>` : ""}
+      ${m.def ? `<div class="bl">数え方</div><div>${defChip(m, true)}</div>` : ""}${m.pace ? `<div class="bl">ペース(この節目に届くための週あたりの量)</div><div>${fmtN(m.pace.amount)}${esc(m.pace.unit)}<span class="note">・1日あたり約${fmtN(m.pace.amount / wdays(p))}(週${wdays(p)}日で割る。日の予備 ${7 - wdays(p)}日)</span>${need != null ? `<span class="note">・のこりを今から割ると ${need}${esc(m.pace.unit)}</span>` : ""}${(m.pace.hist || []).map(h => `<div class="note">${md(h.date)}に ${fmtN(h.from)}→${fmtN(h.to)}(${esc(h.reason)})</div>`).join("")}</div>` : ""}
       ${rows.length ? `<div class="bl">週ごとの実績</div><div class="wrows">${rows.map(r => { const t = m.pace ? m.pace.amount : 0, pc = r.done == null ? 0 : Math.min(100, r.done / Math.max(t, 0.0001) * 100);
           const j = r.w === tw && r.done != null && r.done < t ? null : weekJudge(p, r.done, t);
           return `<div class="wr${r.w === tw ? " cur" : ""}" data-wkedit="${m.id}|${r.w}" role="button" tabindex="0" title="押すと直せる"><span class="ww">${wk(r.w)}</span><span class="wb2"><i class="${j === "足りない" ? "short" : j === "吸収" ? "abs" : ""}" style="width:${pc}%"></i></span><span class="wv">${r.done == null ? (r.w === tw ? "記録前" : "記録なし") : fmtN(r.done) + "/" + fmtN(t)}${j === "吸収" ? '<small class="absl">週の予備で吸収</small>' : j === "足りない" ? `<small class="shl">あと${fmtN(t - r.done)}</small>` : ""}</span></div>`; }).join("")}</div>
         <div class="row2" style="margin:.3rem 0"><label class="note" style="align-self:center">今週(${wk(tw)})やった量</label><input id="wk-in-${m.id}" type="number" step="0.5" inputmode="decimal" style="width:5.5rem;padding:.25rem .4rem;border:1px solid var(--rule);border-radius:3px;background:var(--white)" value="${((m.weeks || []).find(x => x.w === tw) || {}).done ?? ""}"><span class="note" style="align-self:center">${esc(m.unit || "")}</span><button class="btn sm" data-wkrec="${m.id}">記録する</button></div>` : ""}
       ${hist.length > 1 ? `<div class="bl">進捗の推移</div><div class="hist">${hist.map(h => `<span title="${esc(wk(h.w) + " 累計 " + fmtN(h.cum))}"><i style="height:${h.pct || 0}%"></i></span>`).join("")}</div><div class="note">${wk(hist[0].w)} から ${hist.length}週・今 ${hist[hist.length - 1].pct}%</div>` : ""}
-      <div class="bl">この節目でやること(週ごとの目安)</div>${(m.tasks || []).length ? `<ul style="list-style:none;padding:0">${m.tasks.map((t, i) => `<li style="display:flex;justify-content:space-between;gap:.4rem"><label><input type="checkbox" data-task="${m.id}:${i}"${(m.taskDone || {})[i] ? " checked" : ""}> ${esc(t)}</label><button class="linkx" data-taskdel="${m.id}:${i}" aria-label="消す">消す</button></li>`).join("")}</ul>` : '<p class="note" style="margin:.1rem 0">まだ書いていない</p>'}
+      <div class="bl">この節目でやること(週ごとの目安)</div>${(m.tasks || []).length ? `<ul style="list-style:none;padding:0">${m.tasks.map((t, i) => `<li style="display:flex;justify-content:space-between;gap:.4rem"><label><input type="checkbox" data-task="${m.id}:${i}"${(m.taskDone || {})[i] ? " checked" : ""}> ${tx(t)}</label><button class="linkx" data-taskdel="${m.id}:${i}" aria-label="消す">消す</button></li>`).join("")}</ul>` : '<p class="note" style="margin:.1rem 0">まだ書いていない</p>'}
       <div class="row2" style="margin:.2rem 0"><input id="task-in-${m.id}" placeholder="例:週3回、過去問を1教科" style="flex:1;padding:.25rem .4rem;border:1px solid var(--rule);border-radius:3px;background:var(--white)"><button class="btn ghost sm" data-taskadd="${m.id}">足す</button></div>
       ${(m.records || []).length ? `<div class="bl">記録</div>${m.records.map((r, ri) => `<div class="rec"><span class="note">${md(r.date)}</span><b>${esc(r.value)}</b><span class="note">${esc(r.note)}</span><button class="linkx" data-walkdel="rec|${m.id}|${ri}" style="margin-left:auto">消す</button></div>`).join("")}` : ""}
       ${bs.map(b => `<div class="bl">根拠</div><div>${esc(b.text)} <span class="note">(${esc(b.src)})</span></div>`).join("")}
@@ -1384,8 +1454,9 @@ function tabRoad(p){
     const inPer = x => lm.filter(m => m.date >= x.start && m.date <= x.end && !used.has(m.id) && used.add(m.id));
     const blocks = (() => {
     return per.map((x, i) => { const ms = inPer(x), now = TODAY >= x.start && TODAY <= x.end, ws = p.works.filter(w => w.start <= x.end && w.end >= x.start && (w.lane && lanesOf(p).some(z => z.id === w.lane) ? w.lane : lanesOf(p)[0].id) === l.id);
-    return `<div class="period${now ? " now-p" : ""}" style="border-left-color:${PCOL[(i + k * 2) % 5]}"><div class="ph"><b>${esc(x.name || "期間")}${now ? '<span class="nowmark">いまここ</span>' : ""}</b><small>${md(x.start)}〜${md(x.end)}・${Math.round((days(x.start, x.end) + 1) / 7)}週</small></div>
-      ${x.purpose ? `<div class="pp">${esc(x.purpose)}</div>` : ""}${ws.length ? `<div class="pp">${ws.map(w => `<span class="tag" style="color:var(--sub)">${w.kind}</span> ${esc(w.name)}`).join("　")}</div>` : ""}
+    return `<div class="period${now ? " now-p" : ""}" style="border-left-color:${PCOL[(i + k * 2) % 5]}"><div class="ph"><b>${esc(x.name || "期間")}${now ? '<span class="nowmark">いまここ</span>' : ""}</b><small>${md(x.start)}〜${md(x.end)}・${Math.round((days(x.start, x.end) + 1) / 7)}週${p.status ? "" : `<button class="linkx tkadd" data-tkuseadd="${l.id}|${x.start}|${x.end}">+ 技術</button>`}</small></div>
+      ${x.purpose ? `<div class="pp">${tx(x.purpose)}</div>` : ""}${ws.filter(w => w.kind !== "技術").length ? `<div class="pp">${ws.filter(w => w.kind !== "技術").map(w => `<span class="tag" style="color:var(--sub)">${w.kind}</span> ${tx(w.name)}`).join("　")}</div>` : ""}${ws.filter(w => w.kind === "技術").length ? `<div class="tkuses">${ws.filter(w => w.kind === "技術").map(w => { const t = TK(w.tech), l2 = t && TL(t.lane);
+        return `<button class="tkuse s-${t ? t.st : "やめた"}" data-tkuse="${w.tech}" style="--c:${l2 ? l2.color : "var(--rule)"}"><span class="tkk">技術</span><span class="tkn">${esc(t ? t.name : w.name)}</span>${t && t.proc ? '<span class="tkp">手順 ›</span>' : ""}<small>${md(w.start)}〜${md(w.end)}</small></button>`; }).join("")}</div>` : ""}
       ${ms.map(m => msHtml(m) + subsOf(p, m.id).map(s => msHtml(s, true)).join("")).join("") || '<p class="note">この期間に節目はない</p>'}</div>`; }).join("");
     })();
     const rest = lm.filter(m => !used.has(m.id));
@@ -1617,7 +1688,7 @@ function propose(p, what, council, act){ proposals.push({ id: "pr" + Date.now().
 
 /* ───────── その他 ───────── */
 function viewMore(){
-  const items = [ ["sync", "保存と同期", conf ? "GitHubとつながっている" : "まだこの端末の中だけ。GitHubにつなぐ・控えを書き出す"], ["week", "週の見直し", "計画ごとに、この1週間を振り返って決める(毎週必ず)"], ["weekrec", "週の記録", "やった量とテストを入れる"], ["load", "負荷", "1週に使う時間と、使える時間を比べる"], ["lessons", "学び", "終わった計画の総括と、見積もりのずれ"],
+  const items = [ ["sync", "保存と同期", conf ? "GitHubとつながっている" : "まだこの端末の中だけ。GitHubにつなぐ・控えを書き出す"], ["week", "週の見直し", "計画ごとに、この1週間を振り返って決める(毎週必ず)"], ["weekrec", "週の記録", "やった量とテストを入れる"], ["glossary", "定義集", "「覚えた」「一周」など、言葉の判定の基準"], ["load", "負荷", "1週に使う時間と、使える時間を比べる"], ["lessons", "学び", "終わった計画の総括と、見積もりのずれ"],
     ["council", "評議会の案", proposals.filter(x => x.status === "審議待ち").length + "件が審議待ち"], ["notify", "通知", notifyCfg.topic ? "ntfy に送っている" : "テスト・節目・週の締めを知らせる"], ["sound", "音", "効果音のオン・オフと音量"], ["importv", "まとめて入れる・行軍表から移す", "計画・分野・テストをファイルから入れる。行軍表の計画を移す"] ];
   return `<div class="phead"><div class="goal">その他</div></div>${items.map(([k, t, s]) => `<button class="tcard" data-v="${k}" style="border-left-color:var(--ink)"><div class="th"><b>${t}</b><span class="note">›</span></div><div class="note">${esc(s)}</div></button>`).join("")}
     <p class="note" style="margin-top:1.2rem">大計 ${APP_VERSION}</p>`;
@@ -1949,7 +2020,7 @@ function viewWeekRec(){
   const rows = live().flatMap(p => lanesOf(p).flatMap(l => { const m = nextLaneMs(p, l); if (!m || !m.pace || !m.total) return []; return [{ p, l, m, cur: (m.weeks || []).find(x => x.w === w) }]; }));
   const dueT = tests.filter(t => !P(t.plan) || !P(t.plan).status).filter(t => nextDue(t) <= we);
   return `<div class="phead"><div class="k">週の記録</div><div class="goal">${wk(w)}(${md(w)}〜${md(we)})</div><div class="note">やった量とテストを入れるだけ。見直しは「週の見直し」で、別にやる。</div></div>
-    <section class="sec"><h3>今週やった量</h3>${rows.map(({ p, l, m, cur }) => `<div class="wkrow"><div><b>${esc(p.name)}</b><small>${multiLane(p) ? laneCode(p, l) + " " + esc(l.name) + "・" : ""}節目「${esc(msName(m))}」・ペース ${fmtN(m.pace.amount)}${esc(m.pace.unit)}</small></div><input type="number" step="0.5" inputmode="decimal" data-wkv="${p.id}:${m.id}" value="${cur ? cur.done : ""}"><span class="note">${esc(m.unit || "")}</span></div>`).join("") || '<p class="note">ペースのある節目はない。</p>'}
+    <section class="sec"><h3>今週やった量</h3>${rows.map(({ p, l, m, cur }) => `<div class="wkrow"><div><b>${esc(p.name)}</b><small>${multiLane(p) ? laneCode(p, l) + " " + esc(l.name) + "・" : ""}節目「${tx(msName(m))}」・ペース ${fmtN(m.pace.amount)}${esc(m.pace.unit)}</small>${defChip(m)}</div><input type="number" step="0.5" inputmode="decimal" data-wkv="${p.id}:${m.id}" value="${cur ? cur.done : ""}"><span class="note">${esc(m.unit || "")}</span></div>`).join("") || '<p class="note">ペースのある節目はない。</p>'}
       ${rows.length ? '<button class="btn sm" data-wkall>まとめて記録する</button>' : ""}</section>
     <section class="sec"><h3>今週の実力テスト<small>${dueT.length}つ</small></h3>${dueT.map(t => `<div class="wkrow"><div><b>${esc(t.name)}</b><small>${P(t.plan) ? esc(P(t.plan).name) : ""}・${days(TODAY, nextDue(t)) < 0 ? -days(TODAY, nextDue(t)) + "日遅れ" : md(nextDue(t)) + "まで"}</small></div><button class="btn ghost sm" data-testrec="${t.id}">実施して記録</button></div>`).join("") || '<p class="note">今週のテストはない。</p>'}</section>`;
 }
@@ -2249,7 +2320,7 @@ function laneTree(l){
   return `<div class="note" style="margin:0 0 .35rem">★${tkCount(xs, "定着")}・研究中 ${tkCount(xs, "研究中")}・ひらめき ${tkCount(xs, "ひらめき")}・やめた ${tkCount(xs, "やめた")}</div>
     ${xs.length ? `<div class="tk-treebox"><div class="tk-tree" style="width:${W}px;height:${H}px"><svg width="${W}" height="${H}">${lines}</svg>
       ${rows.map((r, i) => `<span class="lv" style="top:${6 + i * (NH + GY) + NH / 2 - 8}px">Lv.${lvs[i]}</span>`).join("")}
-      ${xs.map(t => `<button class="tk-node s-${t.st}${tkPop === t.id ? " pop" : ""}" data-tk="${t.id}" style="left:${pos[t.id].x}px;top:${pos[t.id].y}px"><span class="t">${esc(t.name)}</span><span class="m"><span>${(t.notes || []).length ? "ノート " + t.notes.length : ""}</span><b>${t.st === "定着" ? "★" : t.st === "研究中" ? "研究中" : ""}</b></span></button>`).join("")}
+      ${xs.map(t => `<button class="tk-node s-${t.st}${tkPop === t.id ? " pop" : ""}" data-tk="${t.id}" style="left:${pos[t.id].x}px;top:${pos[t.id].y}px"><span class="t">${esc(t.name)}</span><span class="m"><span>${t.proc ? "手順 " : ""}${(t.notes || []).length ? "ノート " + t.notes.length : ""}</span><b>${t.st === "定着" ? "★" : t.st === "研究中" ? "研究中" : ""}</b></span></button>`).join("")}
     </div></div><p class="note" style="margin:.3rem 0 0">上から下へ育つ。同じ段に並ぶのは、別のやり方の候補(枝分かれ)。</p>` : '<p class="note">まだ技術がない。</p>'}
     ${pre ? `<h3 class="tk-h">ほかの系統とのつながり</h3><ul class="tk-pre">${pre}</ul>` : ""}
     <div class="fbar" style="margin:.6rem 0 0"><button class="btn sm" data-tkadd="${l.id}">+ 技術を足す</button><button class="btn ghost sm" data-tklaneedit="${l.id}">系統を直す</button><button class="linkx" data-tktoggle="${l.id}" style="margin-left:auto">畳む ▴</button></div>`;
@@ -2289,7 +2360,8 @@ function openTk(t){
   const l = TL(t.lane), line = []; { let c = t, seen = new Set(); while (c && !seen.has(c.id)) { seen.add(c.id); line.unshift(c); c = c.parent ? TK(c.parent) : null; } }
   sheet(`<span class="tk-st s-${t.st}">${t.st}</span><span class="note">${l ? esc(l.name) : ""}・Lv.${tkLv(t)}</span><h3 style="margin:.2rem 0">${esc(t.name)}</h3>
     ${line.length > 1 ? `<div class="note" style="margin:0 0 .4rem">${line.map(x => x === t ? `<b style="color:var(--ink)">${esc(x.name)}</b>` : esc(x.name)).join(" → ")}</div>` : ""}
-    <div class="pkvs">${kv("今のやり方", esc(t.now))}${kv("困っていること", esc(t.trouble))}${kv("作りたいもの", esc(t.want))}${kv("土台の技術", (t.pre || []).map(TK).filter(Boolean).map(x => esc(x.name)).join("、"))}${t.started ? kv("研究", md(t.started) + "から") : ""}${t.at ? kv("定着した日", md(t.at)) : ""}</div>
+    ${t.proc ? `<div class="tkproc"><button class="btn sm" data-tjopen="${t.proc}" data-tjfrom="${esc((l ? l.name + " › " : "") + t.name)}">手順を見る</button><span class="note">${tjProc(t.proc) ? esc(tjProc(t.proc).name) : "手順録の手順書"}</span></div>` : ""}
+    <div class="pkvs">${kv("今のやり方", esc(t.now))}${kv("困っていること", esc(t.trouble))}${kv("作りたいもの", esc(t.want))}${kv("土台の技術", (t.pre || []).map(TK).filter(Boolean).map(x => esc(x.name)).join("、"))}${t.started ? kv("研究", md(t.started) + "から") : ""}${t.at ? kv("定着した日", md(t.at)) : ""}${kv("使う時期", tkUses(t.id).map(x => esc(x.p.name) + " " + md(x.w.start) + "〜" + md(x.w.end)).join("<br>"))}</div>
     <div class="tk-notes"><b>研究ノート</b><span class="note">(試したこと・分かったことを、何回でも)</span>
       ${(t.notes || []).map((n, i) => `<div class="tk-note"><small>${md(n.d)} <button class="linkx" data-tknotedel="${t.id}|${i}">消す</button></small>${esc(n.t)}</div>`).join("") || '<p class="note" style="margin:.3rem 0">まだない</p>'}
       <div class="tk-addnote"><textarea id="tk-note" placeholder="例:例文の候補を3つ出して選ぶ形にしたら速い"></textarea><button class="btn sm" data-tknote="${t.id}">書く</button></div></div>
@@ -2305,6 +2377,8 @@ function openTkEdit(t, laneId, parentId){
     <div class="row2"><div class="f"><label>系統</label><select id="tke-l">${techLanes.map(l => `<option value="${l.id}"${l.id === lid ? " selected" : ""}>${esc(l.name)}</option>`).join("")}</select></div>
       <div class="f"><label>どの技術から伸びたか</label><select id="tke-p"><option value="">(系統の最初)</option>${xs.map(x => `<option value="${x.id}"${x.id === v.parent ? " selected" : ""}>Lv.${x._lv} ${esc(x.name)}</option>`).join("")}</select></div>
       <div class="f"><label>状態</label><select id="tke-s">${TK_ST.map(s => `<option${s === v.st ? " selected" : ""}>${s}</option>`).join("")}</select></div></div>
+    <div class="f"><label>手順書(手順録)<small class="note" style="margin-left:.4rem">このやり方の手順。つなぐと、技術から手順が開く</small></label>${tjProcs().length ? `<select id="tke-proc"><option value="">(つながない)</option>${tjProcs().map(x => `<option value="${x.id}"${x.id === v.proc ? " selected" : ""}>${esc(x.name || "名前なし")}</option>`).join("")}</select>`
+      : `<div class="note">${tejun ? "手順録に手順書がまだない。" : "手順録のデータを読み込めていない(同期をつなぐと選べる)。"}<button class="linkx" data-tjreload>読み直す</button></div>${v.proc ? `<input type="hidden" id="tke-proc" value="${v.proc}">` : ""}`}</div>
     <div class="f"><label>今のやり方</label><textarea id="tke-now" rows="2">${esc(v.now || "")}</textarea></div>
     <div class="f"><label>困っていること</label><textarea id="tke-tr" rows="2">${esc(v.trouble || "")}</textarea></div>
     <div class="f"><label>作りたいもの・変えたいこと</label><textarea id="tke-w" rows="2">${esc(v.want || "")}</textarea></div>
@@ -2350,7 +2424,7 @@ document.addEventListener("click", e => {
   if (d.tkadd) { if (!techLanes.length) return; const fr = tkFront(d.tkadd); openTkEdit(null, d.tkadd, fr ? fr.id : ""); return; }
   if (d.tkedit) { openTkEdit(TK(d.tkedit)); return; }
   if (d.tkesave != null && b.hasAttribute("data-tkesave")) { const n = $("tke-n").value.trim(); if (!n) { toast("名前を入れてください"); return; } takeUndo();
-    const v = { name: n, lane: $("tke-l").value, parent: $("tke-p").value, st: $("tke-s").value, now: $("tke-now").value.trim(), trouble: $("tke-tr").value.trim(), want: $("tke-w").value.trim(), pre: [...document.querySelectorAll("[data-tkpre]:checked")].map(c => c.dataset.tkpre) };
+    const v = { name: n, proc: ($("tke-proc") || {}).value || "", lane: $("tke-l").value, parent: $("tke-p").value, st: $("tke-s").value, now: $("tke-now").value.trim(), trouble: $("tke-tr").value.trim(), want: $("tke-w").value.trim(), pre: [...document.querySelectorAll("[data-tkpre]:checked")].map(c => c.dataset.tkpre) };
     let t = d.tkesave ? TK(d.tkesave) : null; const was = t ? t.st : "";
     if (t) { if (v.lane !== t.lane) v.parent = ""; Object.assign(t, v); } else { t = Object.assign({ id: "tk" + uid(), notes: [], created: TODAY }, v); techs.push(t); }
     if (v.parent === t.id) t.parent = "";
@@ -2377,6 +2451,161 @@ document.addEventListener("click", e => {
 });
 document.addEventListener("input", e => { const t = e.target; if (t.id === "tk-q" || t.id === "tk-iq") { techView[t.id === "tk-q" ? "q" : "ideaQ"] = t.value.trim(); const pos = t.selectionStart, id = t.id; render(); const el = $(id); if (el) { el.focus(); el.setSelectionRange(pos, pos); } } });
 document.addEventListener("keydown", e => { if (e.key === "Enter" && e.target.id === "tk-cap") { const b = document.querySelector("[data-tkcap]"); if (b) b.click(); } });
+</script>
+<script>
+/* ───────── 手順録とのつながり(見るだけ) ─────────
+   手順書を作るのは手順録。大計は notion-daily の roadmap/apps/tejunroku/data.json を読んで、
+   技術につないだ手順書を、手順録と同じ形(区切り・分かれ道・常にすること・所要時間)で見せる。
+   手順を描く計算は、手順録の core.js をそのまま使う */
+const TJ_PATH = "roadmap/apps/tejunroku/data.json", TJ_APP = "https://nisenonamae.github.io/tejunroku/", TJ_CACHE = "taikei-tejun";
+let tejun = (() => { try { const c = JSON.parse(localStorage.getItem(TJ_CACHE) || "null"); return c && c.data ? c.data : null; } catch (e) { return null; } })();
+let tejunState = tejun ? "控え" : "", tjPick = {}, tjChecks = {}, tjOpenId = null;
+const tjCore = () => (window.TJCore && typeof window.TJCore.numbering === "function") ? window.TJCore : null;
+let tjCoreP = null;
+function ensureTjCore(){ if (tjCore()) return Promise.resolve(true); if (tjCoreP) return tjCoreP;
+  tjCoreP = new Promise(res => { const sc = document.createElement("script"); sc.src = new URL("../tejunroku/core.js", location.href).href; sc.onload = () => res(!!tjCore()); sc.onerror = () => { tjCoreP = null; res(false); }; document.head.appendChild(sc); });
+  return tjCoreP; }
+async function loadTejun(){
+  if (!conf) { tejunState = tejun ? "控え" : "つないでいない"; return; }
+  if (tejunState === "読み込み中") return; tejunState = "読み込み中";
+  try { const r = await fetch("https://api.github.com/repos/" + conf.repo + "/contents/" + TJ_PATH + "?ref=" + encodeURIComponent(conf.branch || "main"), { headers: { Authorization: "Bearer " + conf.token, Accept: "application/vnd.github+json" }, cache: "no-store" });
+    if (r.status === 404) { tejun = { version: 1, procs: [], ranges: [], parts: [], cycles: [], links: {} }; tejunState = "まだない"; }
+    else if (!r.ok) throw new Error(String(r.status));
+    else { const j = await r.json(); tejun = JSON.parse(b64d(j.content)); tejunState = "読めた"; try { localStorage.setItem(TJ_CACHE, JSON.stringify({ data: tejun, at: Date.now() })); } catch (e) {} }
+  } catch (e) { tejunState = tejun ? "控え" : "失敗"; }
+  await ensureTjCore(); if (tejun && tjCore()) { try { tejun = tjCore().normalize(tejun); } catch (e) {} }
+  if (typeof safeRender === "function") safeRender();
+}
+const tjProcs = () => (tejun && Array.isArray(tejun.procs)) ? tejun.procs : [];
+const tjProc = id => tjProcs().find(p => p.id === id) || null;
+const tjPart = id => ((tejun && tejun.parts) || []).find(p => p.id === id) || null;
+const tjRange = name => ((tejun && tejun.ranges) || []).find(r => r.name === name) || null;
+function tjRangeChip(name){ const C = tjCore(), r = tjRange(name); if (!r) return `<span class="rng missing">${esc(name)}</span>`; let t = ""; try { t = C.rangeText(r, C.rangeState(r, {})); } catch (e) {} return `<span class="rng">${esc(name)} ${esc(t)}</span>`; }
+function tjRich(t){ const C = tjCore(); t = String(t || ""); if (!C || !C.RANGE_RE) return esc(t); let out = "", last = 0; t.replace(C.RANGE_RE, (m, name, idx) => { out += esc(t.slice(last, idx)) + tjRangeChip(name); last = idx + m.length; return m; }); return out + esc(t.slice(last)); }
+function tjAlways(rules, label){ const C = tjCore(), rs = C.liveRules(rules); if (!rs.length) return "";
+  return `<div class="pv-alw"><div class="pv-alw-h">${esc(label)}</div><ul>` + rs.map(r => `<li>` + (r.when.trim() ? `<span class="aw-when">${tjRich(r.when)}</span><span class="aw-arrow">→</span>` : `<span class="aw-always">常に</span>`) +
+    `<span class="aw-text">${r.text.trim() ? tjRich(r.text) : '<span class="pv-blank">(することを書いていません)</span>'}</span></li>`).join("") + `</ul></div>`; }
+function tjList(steps, labels, inner){ return `<ol class="pv-list${inner ? " inner " + inner : ""}">` + steps.map((s, i) => s.type === "section" ? tjSection(steps, i) : tjStep(s, labels)).join("") + `</ol>`; }
+function tjSection(steps, i){ const C = tjCore(), s = steps[i], t = C.fmtSpan(C.sectionSpan(steps, i, tejun));
+  return `<li class="pv-sec lv${+s.level || 1}"><span class="pv-sec-t">${s.title ? esc(s.title) : '<span class="pv-blank">(区切りの名前なし)</span>'}</span>${t ? `<span class="pv-sec-m">${t}</span>` : ""}</li>` +
+    (C.liveRules(s.always).length ? `<li class="pv-alw-li">${tjAlways(s.always, "「" + (s.title || "区切り") + "」のあいだ")}</li>` : ""); }
+function tjStep(s, labels){ const C = tjCore(), num = `<span class="pv-num">${labels[s.id] || ""}</span>`;
+  if (s.type === "branch") { const o = s.options.find(o => o.id === tjPick[s.id]);
+    return `<li class="pv-step br"><span class="pv-mark"></span><div class="pv-body">${num}<span class="pv-q">${s.question ? tjRich(s.question) : '<span class="pv-blank">(問いを書いていません)</span>'}</span></div>
+      <div class="pv-opts">` + s.options.map(x => `<button type="button" data-tjpick="${s.id}|${x.id}" aria-pressed="${o === x}">${esc(x.label || "名前なし")}</button>`).join("") + `</div>` +
+      (o ? (o.steps.length ? tjList(o.steps, labels, "fork") : `<p class="pv-hint">この道には手順がありません。そのまま次へ進みます。</p>`) : `<p class="pv-hint">選ぶと、その先の手順が出ます。</p>`) + `</li>`; }
+  if (s.type === "part") { const pt = tjPart(s.partId), inner = C.expandPart(s, tejun);
+    return `<li class="pv-step pt"><span class="pv-mark"></span><div class="pv-body">${num}<span class="pv-q">${esc(pt ? pt.name || "名前なし" : "見つからない部品")}</span></div>` +
+      (pt ? tjAlways(pt.always, "「" + (pt.name || "部品") + "」のあいだ") : "") + (inner.length ? tjList(inner, labels, "part") : "") + `</li>`; }
+  const done = !!tjChecks[s.id];
+  return `<li class="pv-step do${done ? " done" : ""}"><button type="button" class="pv-check" data-tjcheck="${s.id}" aria-pressed="${done}" aria-label="済みの印"></button>
+    <div class="pv-body">${num}<span class="pv-text">${s.text ? tjRich(s.text) : '<span class="pv-blank">(まだ書いていません)</span>'}</span>${C.fmtStep(s) ? `<span class="pv-min">${C.fmtStep(s)}</span>` : ""}</div></li>`; }
+function tjProcHtml(p){ const C = tjCore();
+  if (!C) return '<p class="note">手順の描き方(手順録の core.js)を読み込めていない。電波を確かめて、開き直してください。</p>';
+  const whole = C.fmtSpan(C.span(p.steps, tejun)); let chosen = "";
+  if (C.hasBranch(p.steps, tejun) && C.allPicked(p.steps, tjPick, tejun)) { const c = C.fmtSpan(C.span(p.steps, tejun, tjPick)); chosen = c ? "選んだ道では " + c : ""; }
+  return `<div class="tj-card"><div class="sh-title"><b>${esc(p.name || "名前なし")}</b><span class="pvTotal">${whole ? "合計 " + whole : ""}${chosen ? "(" + chosen + ")" : ""}</span></div>
+    <p class="sh-note">丸を押すと済みの印、分かれ道は選ぶと先が出る(どちらも保存はしない)。手順書を直すのは手順録で。</p>
+    ${tjAlways(p.always, "この手順書のあいだ")}${p.steps.length ? tjList(p.steps, C.numbering(p.steps, tejun), "") : '<p class="pv-hint">この手順書には、まだ手順がない。</p>'}</div>`; }
+function openTjSheet(procId, from){
+  const p = tjProc(procId); tjOpenId = procId;
+  if (!p) { sheet(`<h3>手順</h3><p class="note">${tejun ? "つないだ手順書が手順録に見つからない(消されたか、名前の変わった別のものかもしれない)。" : "手順録のデータをまだ読み込めていない。同期をつなぐと読める。"}</p><div class="fbar"><button class="btn ghost sm" data-tjreload>手順録を読み直す</button><a class="btn ghost sm" href="${TJ_APP}" target="_blank" rel="noopener">手順録を開く ↗</a></div>`); return; }
+  sheet(`${from ? `<div class="note" style="margin:0 0 .3rem">${esc(from)}</div>` : ""}<div class="tjv">${tjProcHtml(p)}</div>
+    <div class="fbar" style="margin:.6rem 0 0"><a class="btn ghost sm" href="${TJ_APP}" target="_blank" rel="noopener">手順録で開く ↗</a><button class="linkx" data-tjreset style="margin-left:auto">印と選んだ道を消す</button></div>`);
+}
+/* 技術を使う時期(道のりの期間に並べる) */
+function tkUses(tid){ return plans.filter(p => !p.status).flatMap(p => (p.works || []).filter(w => w.kind === "技術" && w.tech === tid).map(w => ({ p, w }))); }
+function openTkUseAdd(p, lane, from, to){
+  const mine = new Set(techLanes.filter(l => (l.plans || []).includes(p.id)).map(l => l.id));
+  const xs = techs.filter(t => t.st !== "やめた").sort((a, b) => (mine.has(b.lane) - mine.has(a.lane)) || (TK_ST.indexOf(b.st) - TK_ST.indexOf(a.st)));
+  if (!xs.length) { toast("技術がまだない。技術のタブで系統と技術を作る"); return; }
+  sheet(`<h3>この期間に使う技術</h3><p class="note">道のりの期間の中に、作戦・仕込み・予備と並んで出る。手順書をつないだ技術なら、押すと手順が開く。</p>
+    <div class="f"><label>技術</label><select id="tu-t">${xs.map(t => `<option value="${t.id}">${TL(t.lane) ? esc(TL(t.lane).name) + " › " : ""}${esc(t.name)}(${t.st})${t.proc ? "・手順あり" : ""}</option>`).join("")}</select></div>
+    <div class="row2"><div class="f"><label>使い始め</label><input id="tu-s" type="date" value="${from}"></div><div class="f"><label>使い終わり</label><input id="tu-e" type="date" value="${to}"></div></div>
+    <button class="btn" data-tusave="${p.id}|${lane}">使う</button>`);
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return; const d = b.dataset;
+  if (d.tjopen) { openTjSheet(d.tjopen, d.tjfrom || ""); return; }
+  if (d.tjpick) { const [sid, oid] = d.tjpick.split("|"); if (tjPick[sid] === oid) delete tjPick[sid]; else tjPick[sid] = oid; if (tjOpenId) openTjSheet(tjOpenId); return; }
+  if (d.tjcheck) { tjChecks[d.tjcheck] = !tjChecks[d.tjcheck]; if (tjOpenId) openTjSheet(tjOpenId); return; }
+  if (b.hasAttribute("data-tjreset")) { tjPick = {}; tjChecks = {}; if (tjOpenId) openTjSheet(tjOpenId); return; }
+  if (b.hasAttribute("data-tjreload")) { closeSheet(); tejunState = ""; loadTejun().then(() => toast(tejunState === "読めた" ? "手順録を読み直した" : "読めなかった(" + tejunState + ")")); return; }
+  if (d.tkuse) { const t = TK(d.tkuse); if (!t) { toast("その技術はもうない"); return; } if (t.proc) openTjSheet(t.proc, (TL(t.lane) ? TL(t.lane).name + " › " : "") + t.name); else openTk(t); return; }
+  if (d.tkuseadd) { const [lane, from, to] = d.tkuseadd.split("|"), p = P(planId); if (p) openTkUseAdd(p, lane, from, to); return; }
+  if (d.tusave) { const [pid, lane] = d.tusave.split("|"), p = P(pid), t = TK($("tu-t").value), s0 = $("tu-s").value, e0 = $("tu-e").value; if (!t || !s0 || !e0) { toast("技術と日付を入れてください"); return; }
+    takeUndo(); p.works = p.works || []; p.works.push({ kind: "技術", tech: t.id, name: t.name, start: s0 <= e0 ? s0 : e0, end: s0 <= e0 ? e0 : s0, lane });
+    if (!drafting(p)) p.changes.push({ date: TODAY, kind: "変更", what: "使う技術", before: "(なし)", after: t.name + " " + md(s0) + "〜" + md(e0), reason: "", size: "小" });
+    closeSheet(); render(); toast("この期間に使う技術に入れた", true); return; }
+});
+</script>
+<script>
+/* ───────── 定義集:言葉の基準をそろえる ─────────
+   glossary:{ id, term, alias: [別の書き方], kind: "成果"|"作業", how: 判定のしかた, check: 確かめ方, pass: 合格ライン, note, created, updated }
+   用語が文に出てきたら、藍色・点線の下線・右肩に「定」の見た目にして、押すと定義が出る */
+const GL_KINDS = { 成果: "身についた量を数える", 作業: "やった量を数える" };
+const GL = id => glossary.find(g => g.id === id);
+let glRe = null, glKey = "";
+function glPattern(){
+  const key = glossary.map(g => g.id + ":" + g.term + "|" + (g.alias || []).join(",")).join(";");
+  if (key === glKey) return glRe; glKey = key;
+  const words = []; glossary.forEach(g => [g.term].concat(g.alias || []).forEach(w => { w = String(w || "").trim(); if (w) words.push({ w, id: g.id }); }));
+  words.sort((a, b) => b.w.length - a.w.length); glRe = words.length ? { re: new RegExp(words.map(x => x.w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|"), "g"), map: Object.fromEntries(words.map(x => [x.w, x.id])) } : null;
+  return glRe;
+}
+/* 文を、用語に印を付けて返す(ほかは esc と同じ) */
+function tx(text){ text = String(text == null ? "" : text); const P0 = glPattern(); if (!P0) return esc(text);
+  let out = "", last = 0; text.replace(P0.re, (m, idx) => { out += esc(text.slice(last, idx)) + termBtn(P0.map[m], m); last = idx + m.length; return m; }); return out + esc(text.slice(last)); }
+const termBtn = (id, label) => `<span role="button" tabindex="0" class="term" data-term="${id}" title="定義を見る">${esc(label)}<sup>定</sup></span>`;   // ボタンの中に入っても壊れないように span
+/* 節目の数え方(つないだ定義) */
+function defChip(m, bare){ const g = m && m.def && GL(m.def); return g ? `<span class="defchip">${bare ? "" : "数え方:"}${termBtn(g.id, g.term)}<small>${g.kind}</small></span>` : ""; }
+/* 用語を押したとき */
+function openTerm(id){ const g = GL(id); if (!g) { toast("その定義はもうない"); return; }
+  const uses = plans.filter(p => !p.status).flatMap(p => p.milestones.filter(m => m.def === g.id).map(m => esc(p.name) + " › " + esc(msName(m))));
+  sheet(`<div class="note" style="margin:0 0 .2rem">定義</div><h3 style="margin:.1rem 0 .3rem"><span class="term term-lg">${esc(g.term)}<sup>定</sup></span> <span class="glk k-${g.kind}">${g.kind}</span></h3>
+    <div class="pkvs">${kv("判定のしかた", esc(g.how))}${kv("確かめ方", esc(g.check))}${kv("合格ライン", esc(g.pass))}${kv("別の書き方", esc((g.alias || []).join("、")))}${kv("メモ", esc(g.note))}${kv("この定義で数える節目", uses.join("<br>"))}</div>
+    <p class="note" style="margin:.4rem 0 0">${g.kind}の定義:${GL_KINDS[g.kind]}。</p>
+    <div class="fbar" style="margin:.6rem 0 0"><button class="btn ghost sm" data-gledit="${g.id}">直す</button><button class="btn ghost sm" data-v="glossary">定義集へ</button></div>`);
+}
+/* その他 › 定義集 */
+let glQ = "";
+function viewGlossary(){
+  const xs = glossary.filter(g => !glQ || [g.term].concat(g.alias || [], [g.how, g.check, g.pass]).some(t => String(t || "").includes(glQ))).sort((a, b) => a.term.localeCompare(b.term, "ja"));
+  return `<div class="phead"><div class="k">定義集</div><div class="goal">言葉の基準をそろえる</div><div class="note">「覚えた」「一周」「解けた」のような言葉の、判定のしかたを決めておく。計画の中で出てくると<span class="term">用語<sup>定</sup></span>の見た目になり、押すと定義が出る。</div>
+      <div class="fbar" style="margin:.4rem 0 0"><button class="btn sm" data-glnew>+ 定義を作る</button></div></div>
+    ${glossary.length > 5 ? `<div class="tk-tools"><input id="gl-q" placeholder="用語を探す" value="${esc(glQ)}"></div>` : ""}
+    ${xs.map(g => { const n = plans.filter(p => !p.status).reduce((a, p) => a + p.milestones.filter(m => m.def === g.id).length, 0);
+      return `<div class="glcard"><div class="glh"><span role="button" tabindex="0" class="term term-lg" data-term="${g.id}">${esc(g.term)}<sup>定</sup></span><span class="glk k-${g.kind}">${g.kind}</span><button class="linkx" data-gledit="${g.id}" style="margin-left:auto">直す</button></div>
+        <div class="pkvs">${kv("判定のしかた", esc(g.how))}${kv("確かめ方", esc(g.check))}${kv("合格ライン", esc(g.pass))}${kv("別の書き方", esc((g.alias || []).join("、")))}</div>${n ? `<div class="note">この定義で数える節目 ${n}つ</div>` : ""}</div>`; }).join("") || '<p class="note">まだ定義がない。まず、計画の到達点や節目に出てくる「覚える」「一周」などから作る。</p>'}`;
+}
+function openGlEdit(g){
+  const v = g || { term: "", alias: [], kind: "成果", how: "", check: "", pass: "", note: "" };
+  sheet(`<h3>${g ? "定義を直す" : "定義を作る"}</h3>
+    <div class="f"><label>用語</label><input id="gle-t" value="${esc(v.term)}" placeholder="例:覚えた"></div>
+    <div class="seg dcseg" role="group" aria-label="種類" style="margin:.2rem 0 .1rem">${Object.keys(GL_KINDS).map(k => `<button data-glkind="${k}" aria-pressed="${v.kind === k}">${k}</button>`).join("")}</div><input type="hidden" id="gle-k" value="${v.kind}">
+    <p class="note" id="gle-kw" style="margin:0 0 .3rem">${GL_KINDS[v.kind]}</p>
+    <div class="f"><label>判定のしかた(だれが見ても同じに判定できるように)</label><textarea id="gle-h" rows="3" placeholder="例:日本語を見て、3秒以内に英単語が言えて、つづりも書ける">${esc(v.how)}</textarea></div>
+    <div class="f"><label>確かめ方</label><textarea id="gle-c" rows="2" placeholder="例:覚えたと思った2日後に、もう一度Ankiで出して言えたら数える">${esc(v.check)}</textarea></div>
+    <div class="f"><label>合格ライン</label><input id="gle-p" value="${esc(v.pass)}" placeholder="例:10語中9語"></div>
+    <div class="f"><label>別の書き方(読点で区切る。文に出てきたら同じ用語として印が付く)</label><input id="gle-a" value="${esc((v.alias || []).join("、"))}" placeholder="例:覚える、暗記した"></div>
+    <div class="f"><label>メモ</label><textarea id="gle-n" rows="2">${esc(v.note || "")}</textarea></div>
+    <div class="fbar" style="margin:.6rem 0 0"><button class="btn" data-glsave="${g ? g.id : ""}">${g ? "直す" : "作る"}</button>${g ? `<button class="linkx" data-gldel="${g.id}" style="margin-left:auto;color:var(--bad)">この定義を消す</button>` : ""}</div>`);
+}
+document.addEventListener("click", e => {
+  const tm = e.target.closest("[data-term]"); if (tm) { e.stopPropagation(); e.preventDefault(); openTerm(tm.dataset.term); return; }
+  const b = e.target.closest("button"); if (!b) return; const d = b.dataset;
+  if (b.hasAttribute("data-glnew")) { openGlEdit(null); return; }
+  if (d.gledit) { openGlEdit(GL(d.gledit)); return; }
+  if (d.glkind) { $("gle-k").value = d.glkind; document.querySelectorAll("[data-glkind]").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.glkind === d.glkind))); $("gle-kw").textContent = GL_KINDS[d.glkind]; return; }
+  if (d.glsave != null && b.hasAttribute("data-glsave")) { const t = $("gle-t").value.trim(); if (!t) { toast("用語を入れてください"); return; }
+    const dup = glossary.find(x => x.term === t && x.id !== d.glsave); if (dup) { toast("「" + t + "」はもう定義集にある"); return; }
+    takeUndo(); const v = { term: t, kind: $("gle-k").value, how: $("gle-h").value.trim(), check: $("gle-c").value.trim(), pass: $("gle-p").value.trim(), note: $("gle-n").value.trim(), alias: $("gle-a").value.split(/[、,，\s]+/).map(x => x.trim()).filter(x => x && x !== t), updated: TODAY };
+    let g = d.glsave ? GL(d.glsave) : null; if (g) Object.assign(g, v); else { g = Object.assign({ id: "gl" + uid(), created: TODAY }, v); glossary.push(g); }
+    closeSheet(); render(); toast(d.glsave ? "定義を直した" : "定義を作った", true); return; }
+  if (d.gldel) { const g = GL(d.gldel), n = plans.reduce((a, p) => a + p.milestones.filter(m => m.def === g.id).length, 0); if (!confirm("定義「" + g.term + "」を消す?" + (n ? "(" + n + "つの節目の数え方も外れる)" : ""))) return;
+    takeUndo(); glossary = glossary.filter(x => x !== g); plans.forEach(p => p.milestones.forEach(m => { if (m.def === g.id) delete m.def; })); closeSheet(); render(); toast("消した", true); return; }
+}, true);
+document.addEventListener("input", e => { if (e.target.id === "gl-q") { glQ = e.target.value.trim(); const pos = e.target.selectionStart; render(); const el = $("gl-q"); if (el) { el.focus(); el.setSelectionRange(pos, pos); } } });
 </script>
 <script>
 /* ───────── 関係 ───────── */
@@ -2539,12 +2768,13 @@ function openEdit(p, focus, mode){
     ${(l.periods || []).map(perRow).join("")}<div class="er" data-lper="new"><button type="button" class="rowrm" data-rowrm aria-label="この行を消す(保存しなくてよい)">×</button><input data-k="name" placeholder="+ 期間を足す(名前)"><input data-k="purpose" placeholder="何のための期間か"><input data-k="start" type="date"><input data-k="end" type="date"></div><button class="linkx addrow" data-lperrow>+ 期間の行を足す</button></div>`;
   window.__laneBlock = laneBlock;
   const msRow = m => { const fx = isFixed(p, "ms:" + m.id);
-    return `<div class="er ms-e${m.parent ? " subm" : ""}" data-msr="${m.id}" id="er-${m.id}"><div class="er2"><input data-k="name" value="${esc(m.name)}" placeholder="節目の名前"><input data-k="date" type="date" value="${m.date}"${fx ? " disabled" : ""}><select data-k="type">${Object.keys(MS_TYPES).map(t => `<option${t === m.type ? " selected" : ""}>${t}</option>`).join("")}</select></div>${m.parent ? `<div class="er2" style="grid-template-columns:1fr auto"><span class="note">細かい節目</span><label class="chk delx"><input type="checkbox" data-k="del"> 消す</label></div>` : `<div class="er2" style="grid-template-columns:1fr"><select data-k="lane" aria-label="道筋">${laneOpts(laneId(p, m))}</select></div>`}
+    return `<div class="er ms-e${m.parent ? " subm" : ""}" data-msr="${m.id}" id="er-${m.id}"><div class="er2"><input data-k="name" value="${esc(m.name)}" placeholder="節目の名前"><input data-k="date" type="date" value="${m.date}"${fx ? " disabled" : ""}><select data-k="type">${Object.keys(MS_TYPES).map(t => `<option${t === m.type ? " selected" : ""}>${t}</option>`).join("")}</select></div>${m.parent ? `<div class="er2" style="grid-template-columns:1fr auto"><span class="note">細かい節目</span><label class="chk delx"><input type="checkbox" data-k="del"> 消す</label></div>` : `<div class="er2" style="grid-template-columns:1fr 1fr"><select data-k="lane" aria-label="道筋">${laneOpts(laneId(p, m))}</select><select data-k="def" aria-label="数え方の定義"><option value="">数え方の定義:なし</option>${glossary.map(g => `<option value="${g.id}"${g.id === m.def ? " selected" : ""}>定義:${esc(g.term)}(${g.kind})</option>`).join("")}</select></div>`}
       ${m.parent ? "" : `<div class="er2 lab4"><label class="mini">目標の量<input data-k="total" type="number" step="0.5" value="${m.total ?? ""}" placeholder="例:300"></label><label class="mini">単位<input data-k="unit" value="${esc(m.unit || "")}" placeholder="題・年分"></label><label class="mini">週のペース<input data-k="pace" type="number" step="0.5" value="${m.pace ? m.pace.amount : ""}" placeholder="例:50"></label><label class="mini">ペースの単位<input data-k="paceu" value="${esc(m.pace ? m.pace.unit : (m.unit ? m.unit + "/週" : ""))}" placeholder="題/週"></label></div>
       <div class="er2" style="grid-template-columns:1fr 1fr"><label class="note" style="display:flex;align-items:center;gap:.3rem">1つあたり<input data-k="min" type="number" step="0.5" min="0" value="${m.pace && m.pace.min ? m.pace.min : ""}" placeholder="分" style="width:4.5rem">分</label><label class="chk" style="white-space:nowrap;justify-self:end"><input type="checkbox" data-k="done"${m.done ? " checked" : ""}> 達成した</label></div>
       <div class="er2" style="grid-template-columns:1fr auto"><select data-k="plan"><option value="">計画とつながない</option>${plans.filter(x => x.id !== p.id).map(x => `<option value="${x.id}"${m.plan === x.id ? " selected" : ""}>${esc(x.name)}</option>`).join("")}</select>${fx ? `<span class="fixno">不変</span>` : `<label class="chk delx"><input type="checkbox" data-k="del"> 消す</label>`}</div>`}
       ${fx ? `<div class="fixbox">この節目は不変(${esc(fx.council)}が決めた)なので、ここでは日付を変えたり消したりできない。<button class="linkx" data-fixdelprop="${m.id}">消す案を評議会に出す</button></div>` : ""}</div>`; };
-  const wkRow = (w, i) => `<div class="er wk-e" data-wk="${i}">${i === "new" ? '<button type="button" class="rowrm" data-rowrm aria-label="この行を消す(保存しなくてよい)">×</button>' : ""}<div class="er2" style="grid-template-columns:5.2rem 1fr"><select data-k="kind">${["作戦", "仕込み", "予備"].map(k => `<option${k === (w.kind || "作戦") ? " selected" : ""}>${k}</option>`).join("")}</select><input data-k="name" value="${esc(w.name || "")}" placeholder="${i === "new" ? "+ 作戦・仕込み・予備を足す(名前)" : "名前"}"></div>
+  const wkRow = (w, i) => `<div class="er wk-e" data-wk="${i}">${i === "new" ? '<button type="button" class="rowrm" data-rowrm aria-label="この行を消す(保存しなくてよい)">×</button>' : ""}<div class="er2" style="grid-template-columns:5.2rem 1fr">${w.kind === "技術" ? `<input type="hidden" data-k="kind" value="技術"><span class="tag" style="align-self:center;justify-self:start">技術</span><select data-k="tech">${techs.map(t => `<option value="${t.id}"${t.id === w.tech ? " selected" : ""}>${TL(t.lane) ? esc(TL(t.lane).name) + " › " : ""}${esc(t.name)}</option>`).join("")}</select>`
+      : `<select data-k="kind">${["作戦", "仕込み", "予備"].map(k => `<option${k === (w.kind || "作戦") ? " selected" : ""}>${k}</option>`).join("")}</select><input data-k="name" value="${esc(w.name || "")}" placeholder="${i === "new" ? "+ 作戦・仕込み・予備を足す(名前)" : "名前"}">`}</div>
     <div class="er2" style="grid-template-columns:1fr 1fr"><label class="mini">始まり<input data-k="start" type="date" value="${w.start || ""}"></label><label class="mini">終わり<input data-k="end" type="date" value="${w.end || ""}"></label></div>
     <div class="er2" style="grid-template-columns:1fr auto"><select data-k="lane" aria-label="道筋">${laneOpts(w.lane && lanesOf(p).some(l => l.id === w.lane) ? w.lane : lanesOf(p)[0].id)}</select>${i === "new" ? "" : '<label class="chk delx"><input type="checkbox" data-k="del"> 消す</label>'}</div></div>`;
 
@@ -2594,7 +2824,7 @@ function validateEdit(){
   document.querySelectorAll(".sheet [data-lper]").forEach(r => { if (del(r)) return; const n = val(r, "name"), a = val(r, "start"), e = val(r, "end");
     if ((n || a || e) && !(n && a && e)) { r.classList.add("bad"); bad.push("期間「" + (n || "名前なし") + "」の" + (!n ? "名前" : !a ? "始まり" : "終わり")); }
     else if (n && a > e) { r.classList.add("bad"); bad.push("期間「" + n + "」の始まりが終わりより後"); } });
-  document.querySelectorAll(".sheet [data-wk]").forEach(r => { if (del(r)) return; const n = val(r, "name"), a = val(r, "start"), e = val(r, "end");
+  document.querySelectorAll(".sheet [data-wk]").forEach(r => { if (del(r)) return; const isT = val(r, "kind") === "技術", n = isT ? (val(r, "tech") ? "技術" : "") : val(r, "name"), a = val(r, "start"), e = val(r, "end");
     if ((n || a || e) && !(n && a && e)) { r.classList.add("bad"); bad.push((n ? "「" + n + "」" : "作戦・仕込み・予備") + "の" + (!n ? "名前" : "日付")); } });
   const s0 = ($("ed-start") || {}).value, e0 = ($("ed-end") || {}).value; if (s0 && e0 && s0 > e0) bad.push("始まりが期日より後");
   if (bad.length) { const r = document.querySelector(".sheet .bad"); if (r) { const det = r.closest("details"); if (det) det.open = true; r.scrollIntoView({ block: "center" }); } }
@@ -2646,6 +2876,8 @@ function saveEdit(p){
   { const wBefore = (p.works || []).slice(), out = [];
     document.querySelectorAll('#ed-works [data-wk]').forEach(r => { const g = k => ((r.querySelector(`[data-k="${k}"]`) || {}).value || "").trim(), del = (r.querySelector('[data-k="del"]') || {}).checked, ix = r.dataset.wk, old = ix === "new" ? null : wBefore[+ix];
       if (del) { if (old) L(old.kind + "「" + old.name + "」", "あり", "消した", "小"); return; }
+      if (g("kind") === "技術") { const t = TK(g("tech")); if (!t || !g("start") || !g("end")) { if (old) out.push(old); return; } const w = { kind: "技術", tech: t.id, name: t.name, start: g("start"), end: g("end"), lane: p.lanes.some(l => l.id === g("lane")) ? g("lane") : firstLane };
+        if (old && (old.tech !== w.tech || old.start !== w.start || old.end !== w.end)) L("使う技術「" + old.name + "」", old.name + " " + md(old.start) + "〜" + md(old.end), w.name + " " + md(w.start) + "〜" + md(w.end), "小"); out.push(w); return; }
       if (!g("name") || !g("start") || !g("end")) { if (old) out.push(old); return; }
       const w = { kind: g("kind"), name: g("name"), start: g("start"), end: g("end"), lane: p.lanes.some(l => l.id === g("lane")) ? g("lane") : firstLane };
       if (!old) L(w.kind, "(なし)", w.name + " " + md(w.start) + "〜" + md(w.end), "小"); else L(old.kind + "「" + old.name + "」", old.name + " " + md(old.start) + "〜" + md(old.end) + (old.lane !== w.lane ? "" : ""), w.name + " " + md(w.start) + "〜" + md(w.end), "小");
@@ -2657,6 +2889,7 @@ function saveEdit(p){
     const m = p.milestones.find(x => x.id === id); if (!m) return;
     if (del) { dropMilestone(p, m); L("節目「" + m.name + "」", "あり", "消した", "小"); return; }
     L("節目の名前", m.name, g("name"), "小"); m.name = g("name") || m.name;
+    if (!m.parent && r.querySelector('[data-k="def"]')) { const dv = g("def") && glossary.some(x => x.id === g("def")) ? g("def") : ""; if (dv !== (m.def || "")) { L("節目「" + m.name + "」の数え方", m.def && GL(m.def) ? GL(m.def).term : "(なし)", dv ? GL(dv).term : "(なし)", "小"); if (dv) m.def = dv; else delete m.def; } }
     if (!m.parent) { const want = p.lanes.some(l => l.id === g("lane")) ? g("lane") : (gone.has(m.lane) || !p.lanes.some(l => l.id === m.lane) ? firstLane : m.lane);
       if (want !== m.lane) { const a = (before.find(l => l.id === m.lane) || {}).name || "", b = (p.lanes.find(l => l.id === want) || {}).name || ""; L("節目「" + m.name + "」の道筋", a, b, "小"); m.lane = want; } }
     if (!isFixed(p, "ms:" + m.id) && g("date")) { L("節目「" + m.name + "」の期日", md(m.date), md(g("date")), Math.abs(days(m.date, g("date"))) > 14 ? "大" : "小"); m.date = g("date"); }
@@ -2710,7 +2943,7 @@ function openGoals(){
 }
 
 /* ───────── 描画と操作 ───────── */
-const VIEWS = { overview: viewOverview, timeline: viewTimeline, plan: viewPlan, rel: viewRel, field: viewField, tech: viewTech, tests: viewTests, week: viewWeek, weekrec: viewWeekRec, sound: viewSound, sync: viewSync, more: viewMore, load: viewLoad, lessons: viewLessons, council: viewCouncil, notify: viewNotify, importv: viewImport };
+const VIEWS = { overview: viewOverview, timeline: viewTimeline, plan: viewPlan, rel: viewRel, field: viewField, tech: viewTech, glossary: viewGlossary, tests: viewTests, week: viewWeek, weekrec: viewWeekRec, sound: viewSound, sync: viewSync, more: viewMore, load: viewLoad, lessons: viewLessons, council: viewCouncil, notify: viewNotify, importv: viewImport };
 function current(){ const h = location.hash.slice(1); return VIEWS[h] ? h : "overview"; }
 function render(){
   clearRisk();
@@ -2721,7 +2954,7 @@ function render(){
     return `<button class="goal-c${d <= 30 ? " near" : ""}" data-goplan="${p.id}" data-ptab="図"><span class="gn">${esc(m.name)}</span><b>${d}<small>日</small></b><small>${esc(p.name)}</small></button>`; }).join("") + `<button class="goal-set" data-goalset>${headGoals.length ? "目標を選ぶ" : "+ どこからでも見える目標"}</button>`;
   $("goals").scrollLeft = 0;
   $("duebar").innerHTML = dueBar();
-  document.querySelectorAll("nav.tabs button").forEach(b => { if (["week", "weekrec", "more", "load", "lessons", "council", "notify", "importv", "sound", "sync"].includes(v)) b.setAttribute("aria-current", "false"); });
+  document.querySelectorAll("nav.tabs button").forEach(b => { if (["week", "weekrec", "more", "load", "lessons", "council", "notify", "importv", "sound", "sync", "glossary"].includes(v)) b.setAttribute("aria-current", "false"); });
   const tl = document.querySelector(".tl"), td = document.querySelector(".tl-today"); if (tl && td) tl.scrollLeft = Math.max(0, td.offsetLeft - tl.clientWidth * 0.35);
 }
 function goPlan(id, tab){ planId = id; remember(id); reqPath = []; if (tab) ptab = tab; if (location.hash !== "#plan") location.hash = "plan"; else render(); window.scrollTo(0, 0); }
@@ -3119,7 +3352,7 @@ document.addEventListener("focusout", () => { if (!renderPending) return; setTim
 /* 書いたそばから保存する欄(メモ)は、データが入れ替わったあとに今の中身を書き戻す */
 function flushLive(){ document.querySelectorAll("textarea.memo-t").forEach(t => { const p = P(planId); if (p && p.memo !== t.value) p.memo = t.value; }); }
 setInterval(() => { if (document.visibilityState === "visible" && conf && !syncing) runSync(); }, 120000);
-if (conf) runSync(); scheduleNotify();
+if (conf) runSync(); scheduleNotify(); loadTejun();
 if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("./sw.js").catch(() => {});
 </script>
 </body>
