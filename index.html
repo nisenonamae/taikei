@@ -889,6 +889,15 @@ body.o-wide .wrap{max-width:min(1500px,100%)}
 .ozoom{position:absolute;right:8px;bottom:8px;display:flex;gap:2px;background:#fff;border:1px solid #2a2620;border-radius:6px;padding:2px}
 .ozoom button{border:none;background:transparent;min-width:28px;height:26px;font-size:14px;border-radius:4px;padding:0 6px}.ozoom button:hover{background:#f0eadb}
 .omini{width:min(220px,36%)}#o-mini [data-omcorner]{cursor:nwse-resize}
+
+.ogrp{border-top:1px dashed var(--rule);padding-top:.3rem;margin-top:.35rem}.ogrp>b{font-size:.74rem;color:var(--sub)}
+.ofx{margin:.15rem 0 .25rem;font-size:.74rem}.ofx summary{cursor:pointer;color:var(--wave);font-size:.72rem}
+.ofx .ofxr{display:grid!important;grid-template-columns:4.2rem auto minmax(0,1fr) auto;gap:.25rem}.ofx .ofxl{font-size:.7rem;color:var(--ink);white-space:nowrap}
+.oside input[type=date]{font:inherit;padding:.2rem .35rem;border:1px solid var(--rule);border-radius:4px;background:#fff}
+
+.onum{display:inline-flex;align-items:center;gap:.2rem;font-size:.7rem;color:var(--sub);margin:.15rem 0 0 .2rem}
+.onum input{width:4.6rem;font:inherit;font-size:.74rem;padding:.12rem .3rem;border:1px solid var(--rule);border-radius:4px;background:#fff}
+.ofx .ofxr{grid-template-columns:4.2rem auto minmax(0,1fr) auto 3.6rem!important}.ofxn{width:3.6rem;font:inherit;font-size:.7rem;padding:.1rem .25rem;border:1px solid var(--rule);border-radius:4px;background:#fff}
 </style>
 </head>
 <body>
@@ -910,7 +919,7 @@ body.o-wide .wrap{max-width:min(1500px,100%)}
 <div id="sheet-root"></div>
 <script>
 /* ───────── 大計:データ ───────── */
-const APP_VERSION = "2026-11-06 r27";
+const APP_VERSION = "2026-11-06 r30";
 const SHO_APP = "https://nisenonamae.github.io/sho/";
 const GRADES = ["最重要", "重要", "通常", "軽易"];
 const COUNCIL = { 最重要: "最高評議会", 重要: "常任評議会" };
@@ -3244,7 +3253,7 @@ function openGoals(){
    円の x・y は、親の円の中での位置(親の半径=1)。同期は図ごと・円ごと・線ごとに名札(id)で見比べる */
 let orgs = [], orgTypes = [];
 // 見た目として型に残すもの
-const LOOK_KEYS = ["style", "shape", "aspect", "round", "rough", "color", "fill", "stroke", "sw", "lpos", "lsize", "lift"];
+const LOOK_KEYS = ["style", "shape", "aspect", "round", "rough", "color", "fill", "stroke", "sw", "lpos", "lsize", "lift", "fx"];
 const ORG = { id: null, root: null, sel: null, selLink: null, undo: [], drag: null, tool: "select", linkFrom: null, cam: null, pen: null, tween: null, shock: null, unlocked: {}, prevLocked: {}, mini: true, cmp: null };
 const OW = 1000, OH = 650, ORG_COLORS = ["#c0392b", "#e67e5c", "#c9a227", "#3d7a55", "#2e5ea8", "#5b82b5", "#7d5ba6", "#8a8577", "#2b241c"];
 const ORG_SIZE = { "大": 1.6, "中": 1, "小": 0.62 };
@@ -3297,7 +3306,12 @@ function oState(o, n){ let a = oAuto(n); if (!oPlan(n) && n.agg) { const g = oAg
   const fz = n.frozen || "auto"; s.frozen = fz === "on" || (fz === "auto" && a.frozen && !n.sleep);
   const gl = n.glowM || "auto"; s.glow = gl === "on" || (gl === "auto" && (a.glow || !!ORG.unlocked[n.id]));
   s.locked = o.links.some(l => l.kind === "prereq" && l.b === n.id && !oDone(o, l.a));
+  if (n.progM !== undefined && n.progM !== "" && n.progM !== null) s.prog = clamp(+n.progM, 0, 100);
+  if (n.fadeM !== undefined && n.fadeM !== "" && n.fadeM !== null) s.fade = clamp(+n.fadeM / 100, 0, 1);
+  if (n.due) { const left = days(TODAY, n.due), span = Math.max(1, days(n.dueSet || TODAY, n.due)); s.clock = { left, frac: clamp(left / span, 0, 1), name: n.dueName || "期限" }; }
   return s; }
+// 状態の見た目(円ごとに自由に)。決めていなければ標準
+const oFx = (n, k, d) => { const v = n.fx && n.fx[k]; return v === undefined || v === null || v === "" ? d : (typeof d === "number" ? +v : v); };
 function oDone(o, id){ const n = oNode(o, id); if (!n) return true; if (n.done) return true; const p = oPlan(n); return p ? (p.status === "完了" || prog(p) >= 100) : false; }
 /* ── 大きさ(抽象の単位)。中身のある円は、中身が入るだけの大きさ ── */
 function oLeafW(o, n, mode){
@@ -3313,14 +3327,14 @@ function oNat(o, n, memo){ memo = memo || {}; const key = "n:" + n.id; if (memo[
   memo[key] = s; return s; }
 // 描く大きさ = 元の大きさ × 自分で決めた倍率
 function oSize(o, n, memo){ memo = memo || {}; if (memo[n.id]) return memo[n.id]; const s = oNat(o, n, memo) * oScale(n); memo[n.id] = s; return s; }
-const oScale = n => n.scale ? clamp(+n.scale, 0.25, 4) : (n.size && ORG_SIZE[n.size]) || 1;
+const oScale = n => n.scale ? Math.max(0.001, +n.scale) : (n.size && ORG_SIZE[n.size]) || 1;
 // 自動で整える:止めていない円を、親の中で重ならないように並べる(親の半径=1の世界で)
 // 並べ直す。ふだんは重なりだけを直す(置いた場所は動かさない)。opt.compact のとき(「自動で整える」)だけ、真ん中へまとめる。opt.fix の円は動かさない
 function oArrange(o, pid, deep, opt){ opt = opt || {}; const kids = oKids(o, pid).filter(k => !k.done); if (!kids.length) return; const fixIds = new Set(opt.fix || []);
   const memo = {}, sp = pid ? oNat(o, oNode(o, pid), memo) : oTopSpan(o, memo);
   const P = kids.map((k, i) => { const a = i * 2.39996, d = kids.length > 1 ? 0.45 * Math.sqrt((i + 0.5) / kids.length) : 0;
     const [erx, ery] = oRad(k, 1), wide = Math.max(erx, ery) * (oShp(k) === "rect" ? 1.12 : 1);
-    return { k, r: Math.min(oSize(o, k, memo) / sp, 0.95) * wide * (oShp(k) === "blob" ? 1.08 : 1), x: k.x != null ? k.x : Math.cos(a) * d, y: k.y != null ? k.y : Math.sin(a) * d, fix: !!k.pinned || fixIds.has(k.id) }; });
+    return { k, r: oSize(o, k, memo) / sp * wide * (oShp(k) === "blob" ? 1.08 : 1), x: k.x != null ? k.x : Math.cos(a) * d, y: k.y != null ? k.y : Math.sin(a) * d, fix: !!k.pinned || fixIds.has(k.id) }; });
   const share = new Set(o.links.filter(l => l.kind === "share").flatMap(l => [l.a + "|" + l.b, l.b + "|" + l.a]));
   for (let it = 0; it < 420; it++) {
     for (let i = 0; i < P.length; i++) for (let j = i + 1; j < P.length; j++) { const a = P[i], b = P[j]; let dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy) || 1e-6;
@@ -3335,7 +3349,7 @@ const oTopSpan = () => 2.2;   // いちばん外の縮尺はいつも同じ(1つ
 /* ── 位置:描くときと同じ計算で、中心と半径を出す(今見ている所の世界で) ── */
 function oGeo(o, root){ const memo = {}, out = {}; root = root === undefined ? ORG.root : root;
   const walk = (n, cx, cy, R, dep) => { out[n.id] = { cx, cy, R, dep }; const sn = oNat(o, n, memo), [rx, ry] = oRad(n, R), rm = Math.min(rx, ry);
-    oKids(o, n.id).filter(k => !k.done).forEach(k => walk(k, cx + (k.x || 0) * rx, cy + (k.y || 0) * ry, Math.min(rm * oSize(o, k, memo) / sn, rm * 0.95), dep + 1)); };
+    oKids(o, n.id).filter(k => !k.done).forEach(k => walk(k, cx + (k.x || 0) * rx, cy + (k.y || 0) * ry, rm * oSize(o, k, memo) / sn, dep + 1)); };
   const rn = root ? oNode(o, root) : null;
   if (rn) walk(rn, OW / 2, OH / 2, Math.min(OW, OH) / 2 - 16, 0);
   else { const sp = oTopSpan(o, memo), R = Math.min(OW, OH) / 2 - 14; oKids(o, null).filter(k => !k.done).forEach(k => walk(k, OW / 2 + (k.x || 0) * R, OH / 2 + (k.y || 0) * R, R * oSize(o, k, memo) / sp, 0)); }
@@ -3345,7 +3359,7 @@ function oGeo(o, root){ const memo = {}, out = {}; root = root === undefined ? O
 const FIELD_KID_COLORS = ["#c0392b", "#2e5ea8", "#c9a227", "#3d7a55", "#7d5ba6", "#e67e5c", "#5b82b5", "#8a8577"];
 const oIsField = n => !!n && (n.style === "field" || (!n.style && !n.parent));
 const oShp = n => n.shape || (oIsField(n) ? "rect" : "circle");
-function oRad(n, r){ const sh = oShp(n), asp = clamp(+n.aspect || (sh === "ellipse" ? 1.5 : oIsField(n) && !n.shape ? 1.55 : 1), 0.4, 2.5); return [r * Math.sqrt(asp), r / Math.sqrt(asp)]; }
+function oRad(n, r){ const sh = oShp(n), asp = Math.max(0.01, +n.aspect || (sh === "ellipse" ? 1.5 : oIsField(n) && !n.shape ? 1.55 : 1)); return [r * Math.sqrt(asp), r / Math.sqrt(asp)]; }
 function oShape(n, cx, cy, r){ const [rx, ry] = oRad(n, r), sh = oShp(n);
   if (sh === "rect") { const rr = clamp(n.round ?? (oIsField(n) && !n.shape ? 0.22 : 0.35), 0, 1) * Math.min(rx, ry);
     return `M${cx - rx + rr} ${cy - ry}H${cx + rx - rr}A${rr} ${rr} 0 0 1 ${cx + rx} ${cy - ry + rr}V${cy + ry - rr}A${rr} ${rr} 0 0 1 ${cx + rx - rr} ${cy + ry}H${cx - rx + rr}A${rr} ${rr} 0 0 1 ${cx - rx} ${cy + ry - rr}V${cy - ry + rr}A${rr} ${rr} 0 0 1 ${cx - rx + rr} ${cy - ry}Z`; }
@@ -3383,7 +3397,7 @@ function oDrawNodes(o, geo, out, defs, opt){
     const [rx, ry] = oRad(n, g.R), kids = oKids(o, n.id), live0 = kids.filter(k => !k.done), live = live0.filter(k => geo[k.id]), doneK = kids.filter(k => k.done), cid = "oc" + n.id;
     const fa = opt.lod ? opt.lod.fade[n.id] : 1, hiddenKids = opt.lod ? oKids(o, n.id).filter(k => !k.done && !geo[k.id]).length : 0;
     out.push(`<g class="onode${sel ? " sel" : ""}${shake.has(n.id) ? " o-shake" : ""}" data-onode="${n.id}"${fa < 0.99 ? ` opacity="${fa.toFixed(2)}"` : ""}>`);
-    if (oShow(o, "state") && s.mom && s.mom.dir === "grow") out.push(oArrows(g.cx, g.cy, rx, ry, col, true, s.mom.lv));
+    if (oShow(o, "state") && s.mom && s.mom.dir === "grow") out.push(oArrows(g.cx, g.cy, rx, ry, oFx(n, "arColor", "") || col, true, s.mom.lv, n));
     const lift = +n.lift || 0, op = s.locked && oShow(o, "prereq") ? 0.5 : 1, dash = n.site ? ' stroke-dasharray="7 5"' : s.mom && s.mom.dir === "shrink" && oShow(o, "state") ? ' stroke-dasharray="6 4"' : "";
     const field = oIsField(n);
     const fillC = n.fill || (field ? (n.color ? oTint(n.color, 0.1) : "#f6f1e4") : n.site ? "rgba(255,255,255,.55)" : harmer.has(n.id) ? col : oTint(col, 0.14 + Math.min(0.12, g.dep * 0.03)));
@@ -3391,10 +3405,10 @@ function oDrawNodes(o, geo, out, defs, opt){
     out.push(`<g opacity="${op}"${s.locked ? ' class="o-dim"' : ""}><path d="${d}" fill="${fillC}" stroke="${strokeC}" stroke-width="${sel ? swd + 1.2 : swd}"${dash}${lift ? ` filter="url(#olift${lift})"` : ""}/>`);
     defs.push(`<clipPath id="${cid}"><path d="${d}"/></clipPath>`);
     if (oShow(o, "state")) {
-      if (s.prog != null) { const y = g.cy + ry - 2 * ry * s.prog / 100; out.push(`<g clip-path="url(#${cid})"><rect class="o-wave" x="${g.cx - rx * 2}" y="${y}" width="${rx * 4}" height="${ry * 2.2}" fill="${oTint(col, s.agg ? 0.12 : 0.28)}"/></g>`); }
+      if (s.prog != null) { const y = g.cy + ry - 2 * ry * s.prog / 100; out.push(`<g clip-path="url(#${cid})"><rect class="o-wave" x="${g.cx - rx * 2}" y="${y}" width="${rx * 4}" height="${ry * 2.2}" fill="${oTint(col, (s.agg ? 0.12 : 0.28) * oFx(n, "wvA", 1))}"/></g>`); }
       if (s.layers && g.R > 30 && !live.length) { const L = s.layers; for (let i = L.n; i >= 1; i--) { const rr = g.R * 0.8 * i / L.n; out.push(`<circle cx="${g.cx}" cy="${g.cy}" r="${rr}" fill="${i <= L.done ? oTint(col, 0.22) : "none"}" stroke="${col}" stroke-opacity=".45" stroke-dasharray="${i <= L.done ? "0" : "3 3"}" pointer-events="none"/>`); } }
       if (n.fog) out.push(`<g clip-path="url(#${cid})" pointer-events="none"><g class="o-drift" fill="#fff" opacity=".85">${[[-.4, -.1, .5, .16], [.3, .15, .6, .14], [.05, .38, .55, .12], [.9, -.2, .5, .15], [-1, .3, .45, .12]].map(([x, y, w, h]) => `<ellipse cx="${g.cx + x * rx}" cy="${g.cy + y * ry}" rx="${w * rx}" ry="${h * ry}"/>`).join("")}</g></g>`);
-      if (s.frozen) out.push(`<path d="${d}" fill="none" stroke="#cfe6f4" stroke-width="${Math.max(6, g.R * 0.12)}" opacity=".9" pointer-events="none"/><path d="${d}" fill="none" stroke="#9fcbe4" stroke-width="1.2" pointer-events="none"/>`);
+      if (s.frozen) out.push(`<path d="${d}" fill="none" stroke="#cfe6f4" stroke-width="${Math.max(6, g.R * 0.12) * oFx(n, "fzW", 1)}" opacity=".9" pointer-events="none"/><path d="${d}" fill="none" stroke="#9fcbe4" stroke-width="1.2" pointer-events="none"/>`);
     }
     (harmOn[n.id] || []).forEach(l => out.push(oErosion(o, l, geo, n, cid, defs)));
     out.push("</g>");
@@ -3406,24 +3420,25 @@ function oDrawNodes(o, geo, out, defs, opt){
       out.push(`<circle cx="${g.cx}" cy="${cy2}" r="${cr * 0.28}" fill="${oGray(col, .25)}" pointer-events="none"/>`);
       if (ORG.shock === n.id && !opt.still) out.push(`<circle class="o-shock" cx="${g.cx}" cy="${cy2}" r="${cr}" fill="none" stroke="${col}" stroke-width="3"/>`); }
     // 名前
-    const lk = ({ "小": 0.72, "大": 1.4, "特大": 1.9 })[n.lsize] || 1, top = n.lpos === "上" || (n.lpos !== "真ん中" && (live.length || field));
-    const fs = Math.min((field ? Math.max(10, ry * 0.075) : Math.max(9, g.R / 4.2)) * lk, rx * 1.75 / Math.max(2, [...String(n.name || "")].length)), ty = top ? g.cy - ry + fs + (field ? fs * 0.6 : 6) : g.cy + fs / 3 - (s.prog != null && g.R > 26 ? 4 : 0);
+    const lkN = n.lsizeN ? Math.max(0.01, +n.lsizeN) : 0, lk = lkN || ({ "小": 0.72, "大": 1.4, "特大": 1.9 })[n.lsize] || 1, top = n.lpos === "上" || (n.lpos !== "真ん中" && (live.length || field));
+    const fs0 = (field ? Math.max(10, ry * 0.075) : Math.max(9, g.R / 4.2)) * lk, fs = lkN ? fs0 : Math.min(fs0, rx * 1.75 / Math.max(2, [...String(n.name || "")].length)), ty = top ? g.cy - ry + fs + (field ? fs * 0.6 : 6) : g.cy + fs / 3 - (s.prog != null && g.R > 26 ? 4 : 0);
     if (hiddenKids) out.push(`<text x="${g.cx}" y="${g.cy + fs * 1.4}" font-size="${Math.min(fs * 0.55, rx * 1.8 / 14)}" text-anchor="middle" fill="${col}" opacity=".75" pointer-events="none">中に ${live0.length} つ ・ 寄ると見える</text>`);
     out.push(`<text x="${g.cx}" y="${ty}" font-size="${fs}" font-weight="800" text-anchor="middle" fill="${harmer.has(n.id) ? "#fff" : n.stroke && (field || live.length) ? n.stroke : field ? (n.color || "#2a2620") : live.length ? col : "#2a2620"}" pointer-events="none" opacity="${op}">${esc(n.name || "(名前なし)")}</text>`);
     if (oShow(o, "state")) {
       const sub = [s.prog != null && g.R > 24 ? s.prog + "%" : "", s.frozen && g.R > 30 ? "❄" : "", n.sleep && g.R > 30 ? "休眠" : "", n.fog && g.R > 30 && !live.length ? "中身はまだ" : "", s.fade > 0.15 && g.R > 34 ? Math.round(s.gapDays || 0) ? "" : "" : ""].filter(Boolean).join(" ");
       if (sub) out.push(`<text x="${g.cx}" y="${ty + fs}" font-size="${Math.max(8, fs - 4)}" text-anchor="middle" fill="${col}" pointer-events="none">${esc(sub)}</text>`);
-      if (n.site) out.push(oSiteIcon(g.cx, g.cy + (live.length ? 0 : fs * 0.9), Math.min(16, g.R * 0.35)));
-      if (n.sleep) out.push(`<path d="M${g.cx + rx * 0.55} ${g.cy - ry * 0.85} a${g.R * 0.2} ${g.R * 0.2} 0 1 0 ${g.R * 0.17} ${g.R * 0.28} a${g.R * 0.15} ${g.R * 0.15} 0 1 1 -${g.R * 0.17} -${g.R * 0.28}z" fill="#c9c3e0" pointer-events="none"/><text class="o-zz" x="${g.cx + rx * 0.78}" y="${g.cy - ry * 0.85}" font-size="11" fill="#8c86a8" font-weight="700" pointer-events="none">z</text>`);
-      if (s.clock) { const rr = Math.max(rx, ry) + 6, L = 2 * Math.PI * rr; out.push(`<circle cx="${g.cx}" cy="${g.cy}" r="${rr}" fill="none" stroke="#e6e0d4" stroke-width="4" pointer-events="none"/><circle cx="${g.cx}" cy="${g.cy}" r="${rr}" fill="none" stroke="#b5432f" stroke-width="4" stroke-linecap="round" stroke-dasharray="${(L * s.clock.frac).toFixed(1)} ${L.toFixed(1)}" transform="rotate(-90 ${g.cx} ${g.cy})"><title>${esc("次の節目「" + (s.clock.name || "") + "」まで " + s.clock.left + "日")}</title></circle>`); }
-      if (n.focus) { const rr = Math.max(rx, ry) + 16; out.push(`<g class="o-rot" pointer-events="none"><circle cx="${g.cx}" cy="${g.cy}" r="${rr}" fill="none" stroke="#b5432f" stroke-width="2.2" stroke-dasharray="${rr * 0.5} ${rr * 0.28}"/>${[0, 1, 2, 3].map(i => { const a = i * Math.PI / 2; return `<line x1="${g.cx + Math.cos(a) * (rr - 8)}" y1="${g.cy + Math.sin(a) * (rr - 8)}" x2="${g.cx + Math.cos(a) * (rr + 8)}" y2="${g.cy + Math.sin(a) * (rr + 8)}" stroke="#b5432f" stroke-width="3"/>`; }).join("")}</g>`); }
-      if (s.glow) out.push([[-0.85, -0.8, 1], [0.9, -0.55, 0.8], [0.75, 0.85, 0.9]].map(([x, y, k], i) => `<path class="o-tw" style="animation-delay:${i * 0.6}s" d="${oStar(g.cx + x * rx, g.cy + y * ry, 7 * k)}" fill="#f2c46b" pointer-events="none"/>`).join(""));
-      if (s.locked && oShow(o, "prereq")) { const lx = g.cx, ly = g.cy - ry - 4; out.push(`<g class="o-lock" data-olock="${n.id}" transform="translate(${lx},${ly})"><path d="M-7 0v-6a7 7 0 0 1 14 0v6" fill="none" stroke="#6f6a60" stroke-width="3"/><rect x="-10" y="-1" width="20" height="15" rx="3" fill="#6f6a60"/><circle cx="0" cy="6" r="2" fill="#fff"/></g>`); }
+      if (n.site) out.push(oSiteIcon(g.cx, g.cy + (live.length ? 0 : fs * 0.9), Math.min(16, g.R * 0.35) * oFx(n, "siteSize", 1)));
+      if (n.sleep) { const sl = oFx(n, "slSize", 1), mR = g.R * sl; out.push(`<path d="M${g.cx + rx * 0.55} ${g.cy - ry * 0.85} a${mR * 0.2} ${mR * 0.2} 0 1 0 ${mR * 0.17} ${mR * 0.28} a${mR * 0.15} ${mR * 0.15} 0 1 1 -${mR * 0.17} -${mR * 0.28}z" fill="#c9c3e0" pointer-events="none"/><text class="o-zz" x="${g.cx + rx * 0.55 + mR * 0.25}" y="${g.cy - ry * 0.85}" font-size="${11 * sl}" fill="#8c86a8" font-weight="700" pointer-events="none">z</text>`); }
+      if (s.clock) { const cw = 4 * oFx(n, "ckW", 1), rr = Math.max(rx, ry) + 2 + cw, L = 2 * Math.PI * rr; out.push(`<circle cx="${g.cx}" cy="${g.cy}" r="${rr}" fill="none" stroke="#e6e0d4" stroke-width="${cw}" pointer-events="none"/><circle cx="${g.cx}" cy="${g.cy}" r="${rr}" fill="none" stroke="#b5432f" stroke-width="${cw}" stroke-linecap="round" stroke-dasharray="${(L * s.clock.frac).toFixed(1)} ${L.toFixed(1)}" transform="rotate(-90 ${g.cx} ${g.cy})"><title>${esc((n.due ? "期限" : "次の節目「" + (s.clock.name || "") + "」") + "まで " + s.clock.left + "日")}</title></circle>`); }
+      if (n.focus) { const fz = oFx(n, "fcSize", 1), rr = Math.max(rx, ry) * (0.85 + 0.15 * fz) + 16 * fz; out.push(`<g class="o-rot" style="animation-duration:${(9 / oFx(n, "fcSpeed", 1)).toFixed(2)}s" pointer-events="none"><circle cx="${g.cx}" cy="${g.cy}" r="${rr}" fill="none" stroke="#b5432f" stroke-width="2.2" stroke-dasharray="${rr * 0.5} ${rr * 0.28}"/>${[0, 1, 2, 3].map(i => { const a = i * Math.PI / 2; return `<line x1="${g.cx + Math.cos(a) * (rr - 8)}" y1="${g.cy + Math.sin(a) * (rr - 8)}" x2="${g.cx + Math.cos(a) * (rr + 8)}" y2="${g.cy + Math.sin(a) * (rr + 8)}" stroke="#b5432f" stroke-width="3"/>`; }).join("")}</g>`); }
+      if (s.glow) { const gn = Math.round(oFx(n, "glN", 3)), gs = oFx(n, "glSize", 1); out.push(Array.from({ length: gn }, (_, i) => { const a = -2.3 + i * 2.39996, k = 0.8 + ((i * 37) % 5) * 0.06;
+        return `<path class="o-tw" style="animation-delay:${(i * 0.6) % 1.8}s" d="${oStar(g.cx + Math.cos(a) * rx * 1.02, g.cy + Math.sin(a) * ry * 1.02, 7 * k * gs)}" fill="#f2c46b" pointer-events="none"/>`; }).join("")); }
+      if (s.locked && oShow(o, "prereq")) { const lk2 = oFx(n, "lkSize", 1), lx = g.cx, ly = g.cy - ry - 4 * lk2; out.push(`<g class="o-lock" data-olock="${n.id}" transform="translate(${lx},${ly}) scale(${lk2})"><path d="M-7 0v-6a7 7 0 0 1 14 0v6" fill="none" stroke="#6f6a60" stroke-width="3"/><rect x="-10" y="-1" width="20" height="15" rx="3" fill="#6f6a60"/><circle cx="0" cy="6" r="2" fill="#fff"/></g>`); }
       else if (ORG.unlocked[n.id] && Date.now() - ORG.unlocked[n.id] < 8000 && oShow(o, "prereq") && !opt.still) { const lx = g.cx, ly = g.cy - ry - 4; out.push(`<g class="o-unlock" transform="translate(${lx},${ly})"><g class="o-shackle"><path d="M-7 0v-6a7 7 0 0 1 14 0v6" fill="none" stroke="#6f6a60" stroke-width="3"/></g><rect x="-10" y="-1" width="20" height="15" rx="3" fill="#6f6a60"/></g>`); }
       if (n.cloud) out.push(oCloud(n, g, rx));
-      if (s.mom && s.mom.dir === "shrink") out.push(oArrows(g.cx, g.cy, rx, ry, col, false, s.mom.lv));
+      if (s.mom && s.mom.dir === "shrink") out.push(oArrows(g.cx, g.cy, rx, ry, oFx(n, "arColor", "") || col, false, s.mom.lv, n));
     }
-    if (n.ann && oShow(o, "note")) { const ax = g.cx + rx * 0.55, ay = g.cy - ry * 0.55, bx = ax + 50, by = ay - 40; out.push(`<g pointer-events="none"><circle cx="${ax}" cy="${ay}" r="2.6" fill="#2a2620"/><path d="M${ax} ${ay}L${bx} ${by}H${bx + 12}" stroke="#2a2620" stroke-width="1" fill="none"/><text x="${bx + 15}" y="${by + 4}" font-size="12" font-style="italic" fill="#2a2620">${esc(n.ann)}</text></g>`); }
+    if (n.ann && oShow(o, "note")) { const al = oFx(n, "anLen", 1), af = 12 * oFx(n, "anSize", 1), ax = g.cx + rx * 0.55, ay = g.cy - ry * 0.55, bx = ax + 50 * al, by = ay - 40 * al; out.push(`<g pointer-events="none"><circle cx="${ax}" cy="${ay}" r="2.6" fill="#2a2620"/><path d="M${ax} ${ay}L${bx} ${by}H${bx + 12}" stroke="#2a2620" stroke-width="1" fill="none"/><text x="${bx + 15}" y="${by + af / 3}" font-size="${af}" font-style="italic" fill="#2a2620">${esc(n.ann)}</text></g>`); }
     if (n.pinned && g.R > 20) out.push(`<text x="${g.cx + rx * 0.72}" y="${g.cy - ry * 0.72}" font-size="11" pointer-events="none">📌</text>`);
     if (sel && !opt.still && ORG.tool === "select") { const hx = g.cx + rx * 0.707, hy = g.cy + ry * 0.707; out.push(`<g class="o-handle" data-oresize="${n.id}"><circle cx="${hx}" cy="${hy}" r="${Math.max(7, ORG.cam ? ORG.cam.w / 90 : 9)}" fill="#fff" stroke="#2a2620" stroke-width="2"/><path d="M${hx - 3} ${hy + 3}L${hx + 3} ${hy - 3}M${hx} ${hy - 3}h3v3M${hx - 3} ${hy}v3h3" stroke="#2a2620" stroke-width="1.4" fill="none"/></g>`); }
     if (ORG.linkFrom === n.id) out.push(`<path d="${d}" fill="none" stroke="#f2b84b" stroke-width="5" opacity=".8" pointer-events="none"/>`);
@@ -3431,12 +3446,12 @@ function oDrawNodes(o, geo, out, defs, opt){
   }
   return st; }
 const oStar = (x, y, r) => `M${x} ${y - r}L${x + r * 0.3} ${y - r * 0.3}L${x + r} ${y}L${x + r * 0.3} ${y + r * 0.3}L${x} ${y + r}L${x - r * 0.3} ${y + r * 0.3}L${x - r} ${y}L${x - r * 0.3} ${y - r * 0.3}Z`;
-function oArrows(cx, cy, rx, ry, col, out, lv){ const n = [0, 10, 14, 18][lv || 2], dur = [0, 2.4, 1.8, 1.2][lv || 2], parts = [];
-  for (let k = 0; k < n; k++) { const a = k / n * Math.PI * 2, x = cx + Math.cos(a) * (rx + 12), y = cy + Math.sin(a) * (ry + 12), d = 16, deg = a * 180 / Math.PI + (out ? 0 : 180);
-    parts.push(`<g class="${out ? "o-out" : "o-in"}" style="--dx:${(Math.cos(a) * d).toFixed(1)}px;--dy:${(Math.sin(a) * d).toFixed(1)}px;animation-duration:${dur}s;animation-delay:${(k % 2) * dur / 2}s"><path d="M-5 -6L3 0L-5 6" transform="translate(${x.toFixed(1)},${y.toFixed(1)}) rotate(${deg.toFixed(1)})" fill="none" stroke="${col}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></g>`); }
+function oArrows(cx, cy, rx, ry, col, out, lv, nd){ nd = nd || {}; const n = Math.round(oFx(nd, "arN", [0, 10, 14, 18][lv || 2])), dur = [0, 2.4, 1.8, 1.2][lv || 2] / oFx(nd, "arSpeed", 1), sz = oFx(nd, "arSize", 1), parts = [];
+  for (let k = 0; k < n; k++) { const a = k / n * Math.PI * 2, x = cx + Math.cos(a) * (rx + 12 * sz), y = cy + Math.sin(a) * (ry + 12 * sz), d = 16 * oFx(nd, "arDist", 1), deg = a * 180 / Math.PI + (out ? 0 : 180);
+    parts.push(`<g class="${out ? "o-out" : "o-in"}" style="--dx:${(Math.cos(a) * d).toFixed(1)}px;--dy:${(Math.sin(a) * d).toFixed(1)}px;animation-duration:${dur}s;animation-delay:${(k % 2) * dur / 2}s"><path d="M-5 -6L3 0L-5 6" transform="translate(${x.toFixed(1)},${y.toFixed(1)}) rotate(${deg.toFixed(1)}) scale(${sz})" fill="none" stroke="${col}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></g>`); }
   return `<g pointer-events="none">${parts.join("")}</g>`; }
 function oSiteIcon(x, y, s){ return `<g pointer-events="none" transform="translate(${x},${y})"><path d="M${-s * 0.75} ${s * 0.55}H${s * 0.75}" stroke="#8a7a5c" stroke-width="2"/><path d="M${-s * 0.5} ${s * 0.55}V${-s * 0.25}L0 ${-s * 0.65}L${s * 0.5} ${-s * 0.25}V${s * 0.55}" fill="none" stroke="#8a7a5c" stroke-width="2"/></g>`; }
-function oCloud(n, g, rx){ const x = g.cx + rx + 18, y = g.cy, s = Math.max(0.55, Math.min(1.2, g.R / 60)), opts = (n.cloud.opts || []).slice(0, 3);
+function oCloud(n, g, rx){ const x = g.cx + rx + 18, y = g.cy, s = Math.max(0.55, Math.min(1.2, g.R / 60)) * oFx(n, "clSize", 1), opts = (n.cloud.opts || []).slice(0, 3);
   return `<g pointer-events="none"><path d="M${g.cx + rx} ${y}H${x}" stroke="#9aa3b5" stroke-width="2.5" stroke-dasharray="5 4"/>
     ${opts.map((t, i) => { const py = y + (i - (opts.length - 1) / 2) * 44 * s; return `<g class="o-peek" style="animation-delay:${i * 1.6}s"><circle cx="${x + 165 * s}" cy="${py}" r="${17 * s}" fill="none" stroke="#7d8aa3" stroke-dasharray="3 3"/><text x="${x + 165 * s}" y="${py + 4}" font-size="${9 * s + 1}" text-anchor="middle" fill="#5f6b80">${esc(t)}</text></g>`; }).join("")}
     <g transform="translate(${x},${y - 30 * s}) scale(${s})"><g class="o-breathe"><path d="M10 55C-10 55 -18 34 0 26C-4 2 22 -10 40 0C48 -20 80 -24 94 -8C112 -22 142 -14 144 8C166 10 172 34 156 46C162 64 140 76 124 68C112 82 86 82 76 70C60 82 34 80 26 66C18 66 12 62 10 55Z" fill="#fff" stroke="#c9cfdb" stroke-width="2"/><text x="72" y="40" font-size="22" font-weight="800" fill="#9aa3b5" text-anchor="middle">?</text></g></g></g>`; }
@@ -3560,6 +3575,9 @@ function oSide(o, when){
   if (!n) return `<div class="oside"><p class="note" style="margin:0">円を押すと、名前・形・色・状態・つなぐ計画を変えられる。円をつかんで動かし、ほかの円の上に落とすと、その中へ入る。2回押すとその円の中に入る。</p>
       ${oTypeList().length ? `<div class="f"><label>型から足す(今見ている所に)</label><select data-otypeadd><option value="">選ぶ</option>${oTypeList().map(t => `<option value="${t.id}">${esc(t.name)}</option>`).join("")}</select></div>` : ""}</div>${settings}`;
   const s = oState(o, n), linked = !!oPlan(n);
+  const fxr = (k, min, max, step, d, lb, a, z) => { const v = oFx(n, k, d); return `<label class="orng ofxr"><span class="ofxl">${lb}</span><span>${a}</span><input type="range" min="${Math.min(min, v)}" max="${Math.max(max, v * 2)}" step="any" value="${v}" data-ofx="${k}"><span>${z}</span><input type="number" class="ofxn" step="any" min="0" value="${+(+v).toFixed(3)}" data-ofx="${k}"></label>`; };
+  const fxBox = (title, rows) => `<details class="ofx"${ORG.fxOpen === title ? " open" : ""} data-ofxbox="${title}"><summary>見た目</summary>${rows.join("")}<button class="linkx" data-ofxreset="${title}">標準に戻す</button></details>`;
+  const FXK = { "矢印": ["arN", "arSize", "arSpeed", "arDist", "arColor"], "凍結": ["fzW"], "輝き": ["glN", "glSize"], "照準": ["fcSize", "fcSpeed"], "雲": ["clSize"], "休眠": ["slSize"], "予定地": ["siteSize"], "期限": ["ckW"], "水位": ["wvA"], "注釈": ["anSize", "anLen"], "錠前": ["lkSize"] }; ORG.fxKeys = FXK;
   const TABS = ["基本", "見た目", "状態", "型"]; if (!TABS.includes(ORG.tab)) ORG.tab = "基本";
   return `<div class="oside"><div class="otabs">${TABS.map(t => `<button data-otab="${t}" aria-pressed="${ORG.tab === t}">${t}</button>`).join("")}</div>
       <div class="otabp" data-otabp="基本"${ORG.tab === "基本" ? "" : " hidden"}>
@@ -3574,15 +3592,15 @@ function oSide(o, when){
       <div class="f"><label>省</label><select data-oin="min"><option value="">なし</option>${MINS().filter(Boolean).map(m => `<option${n.min === m ? " selected" : ""}>${esc(m)}</option>`).join("")}</select></div>
       <div class="f"><label title="分野の枠=角の丸い生成り色の枠に、名前が上に載る形">種類</label>${seg("style", [["", n.parent ? "自動(ふつうの円)" : "自動(分野の枠)"], ["field", "分野の枠"], ["plain", "ふつうの円"]], n.style || "")}</div>
       <div class="f"><label>形</label>${seg("shape", [["circle", "円"], ["ellipse", "楕円"], ["rect", "角丸の四角"], ["blob", "いびつ"]], oShp(n))}</div>
-      ${oShp(n) !== "circle" ? rng("aspect", 0.4, 2.5, 0.05, oRad(n, 1)[0] * oRad(n, 1)[0], "縦長", "横長") : ""}
+      ${oShp(n) !== "circle" ? `<div>${rng("aspect", Math.min(0.4, oRad(n, 1)[0] ** 2 / 2), Math.max(2.5, oRad(n, 1)[0] ** 2 * 2), "any", oRad(n, 1)[0] * oRad(n, 1)[0], "縦長", "横長")}<span class="onum">比 <input type="number" step="any" min="0" data-orng="aspect" value="${+(oRad(n, 1)[0] ** 2).toFixed(3)}"></span></div>` : ""}
       ${oShp(n) === "rect" ? rng("round", 0, 1, 0.05, n.round ?? (oIsField(n) && !n.shape ? 0.22 : 0.35), "角ばる", "まるい") : ""}
       ${oShp(n) === "blob" ? rng("rough", 0, 1, 0.05, n.rough ?? 0.35, "なめらか", "ごつごつ") : ""}
       <div class="f"><label>地の色</label><div class="osw"><button data-ofill="" title="自動" aria-pressed="${!n.fill}">自</button>${["#f6f1e4", "#ffffff", "#efe9f6", "#e8f0ea", "#e6eef7", "#fbeee9", "#2a2620"].map(c => `<button data-ofill="${c}" style="background:${c}" aria-pressed="${n.fill === c}"></button>`).join("")}<input type="color" data-oin="fill" value="${esc(n.fill || "#f6f1e4")}"></div></div>
       <div class="f"><label>縁の色</label><div class="osw"><button data-ostroke="" title="自動" aria-pressed="${!n.stroke}">自</button>${ORG_COLORS.concat(["#bdb39c"]).map(c => `<button data-ostroke="${c}" style="background:${c}" aria-pressed="${n.stroke === c}"></button>`).join("")}<input type="color" data-oin="stroke" value="${esc(n.stroke || "#bdb39c")}"></div></div>
       <div class="f"><label>縁の太さ</label>${seg("sw", [["", "自動"], ["細", "細い"], ["太", "太い"], ["極太", "とても太い"]], n.sw || "")}</div>
       <div class="f"><label>名前の位置</label>${seg("lpos", [["", "自動"], ["上", "上"], ["真ん中", "真ん中"]], n.lpos || "")}</div>
-      <div class="f"><label>名前の大きさ</label>${seg("lsize", [["", "ふつう"], ["小", "小"], ["大", "大"], ["特大", "特大"]], n.lsize || "")}</div>
-      <div class="f"><label title="円の右下のつまみでも変えられる">大きさ <b>${oScale(n).toFixed(2)}倍</b></label>${rng("scale", 0.25, 4, 0.05, oScale(n), "小さく", "大きく")}<span class="seg oseg">${[["1", "元の大きさ"], ["0.62", "小"], ["1.6", "大"], ["2.4", "特大"]].map(([v, lb]) => `<button data-oscale="${v}" aria-pressed="${Math.abs(oScale(n) - +v) < 0.01}">${lb}</button>`).join("")}</span></div>
+      <div class="f"><label>名前の大きさ</label><div>${seg("lsize", [["", "ふつう"], ["小", "小"], ["大", "大"], ["特大", "特大"]], n.lsizeN ? "_" : n.lsize || "")}<span class="onum">倍率 <input type="number" step="any" min="0" data-onum="lsizeN" value="${esc(n.lsizeN || "")}" placeholder="自由に"></span></div></div>
+      <div class="f"><label title="円の右下のつまみでも変えられる">大きさ <b>${+oScale(n).toFixed(3)}倍</b></label><div>${rng("scale", Math.min(0.25, oScale(n) / 2), Math.max(4, oScale(n) * 2), "any", oScale(n), "小さく", "大きく")}<span class="onum">倍率 <input type="number" step="any" min="0" data-orng="scale" value="${+oScale(n).toFixed(3)}"></span></div><span class="seg oseg">${[["1", "元の大きさ"], ["0.62", "小"], ["1.6", "大"], ["2.4", "特大"]].map(([v, lb]) => `<button data-oscale="${v}" aria-pressed="${Math.abs(oScale(n) - +v) < 0.01}">${lb}</button>`).join("")}</span></div>
       <div class="f"><label title="大きさの意味が「重要度」のとき">重要度</label>${seg("imp", [["", "計画から"], ["1", "低"], ["2", "中"], ["3", "高"]], n.imp || "")}</div>
       <div class="f"><label title="大事なほど浮いて影が長くなる">高さ</label>${seg("lift", [["", "なし"], ["1", "少し"], ["2", "中"], ["3", "高い"]], n.lift || "")}</div>
       <label class="chk"><input type="checkbox" data-oflag="pinned" ${n.pinned ? "checked" : ""}> その場に止める(自動で整えても動かさない)</label></div>
@@ -3593,13 +3611,26 @@ function oSide(o, when){
       <div class="otabp" data-otabp="状態"${ORG.tab === "状態" ? "" : " hidden"}>
       ${!linked && oKids(o, n.id).length ? `<label class="chk"><input type="checkbox" data-oflag="agg" ${n.agg ? "checked" : ""}> 中の計画から、進み具合と勢いをまとめて出す</label>` : ""}
       ${!linked && s.agg ? `<div class="note" style="margin:.2rem 0 .4rem">中の計画をまとめて、進み具合 ${s.prog}%${s.mom ? (s.mom.dir === "grow" ? "・勢力を増している" : "・勢いが落ちている") : ""}${s.fade > 0.15 ? "・遅れぎみ" : ""}</div>` : ""}
+      <div class="ogrp"><b>中身</b>
+      <div class="f"><label>水位(進み具合)${linked || s.agg ? "・空なら自動" : ""} <b>${s.prog != null ? Math.round(s.prog) + "%" : "なし"}</b></label><label class="orng"><input type="range" min="0" max="100" step="1" value="${s.prog != null ? Math.round(s.prog) : 0}" data-oman="progM"></label><button class="linkx" data-omanclr="progM">${linked || s.agg ? "自動に戻す" : "水位を消す"}</button>
+        ${s.prog != null ? fxBox("水位", [fxr("wvA", 0.2, 3, 0.1, 1, "濃さ", "薄く", "濃く")]) : ""}</div>
+      <div class="f"><label>遅れの色あせ <b>${Math.round((s.fade || 0) * 100)}%</b></label><label class="orng"><input type="range" min="0" max="100" step="5" value="${Math.round((s.fade || 0) * 100)}" data-oman="fadeM"></label>${n.fadeM !== undefined && n.fadeM !== "" ? `<button class="linkx" data-omanclr="fadeM">${linked ? "自動に戻す" : "色あせを消す"}</button>` : ""}</div>
+      <div class="f"><label>期限(期限の時計が出る)</label><input type="date" data-odue value="${esc(n.due || "")}">${n.due ? ` <button class="linkx" data-omanclr="due">期限を消す</button>` : ""}${s.clock ? fxBox("期限", [fxr("ckW", 0.3, 4, 0.1, 1, "太さ", "細く", "太く")]) : ""}</div></div>
+      <div class="ogrp"><b>勢い</b>
       <div class="f"><label>伸び縮み${linked ? "(自動=計画の進み方)" : s.agg ? "(自動=中の計画をまとめて)" : ""}</label>${seg("mom", [["auto", "自動"], ["grow", "伸びている"], ["shrink", "縮んでいる"], ["none", "なし"]], n.mom || "auto")}</div>
       ${n.mom === "grow" || n.mom === "shrink" ? `<div class="f"><label>強さ</label>${seg("momLv", [["1", "弱"], ["2", "中"], ["3", "強"]], n.momLv || 2)}</div>` : ""}
-      <div class="f"><label>凍結${linked ? "(自動=2週間進みなし)" : ""}</label>${seg("frozen", [["auto", "自動"], ["on", "凍結"], ["off", "しない"]], n.frozen || "auto")}</div>
-      <div class="f"><label>伸びしろの輝き${linked ? "(自動=残り10%以下・前提がそろった)" : ""}</label>${seg("glowM", [["auto", "自動"], ["on", "輝く"], ["off", "しない"]], n.glowM || "auto")}</div>
+      ${s.mom ? fxBox("矢印", [fxr("arN", 3, 40, 1, [0, 10, 14, 18][s.mom.lv || 2], "数", "少なく", "多く"), fxr("arSize", 0.3, 4, 0.1, 1, "大きさ", "小さく", "大きく"), fxr("arSpeed", 0.2, 4, 0.1, 1, "速さ", "ゆっくり", "速く"), fxr("arDist", 0.2, 5, 0.1, 1, "飛ぶ距離", "短く", "遠く"),
+        `<div class="osw" style="margin:.2rem 0"><span class="ofxl">色</span><button data-ofxcol="" aria-pressed="${!oFx(n, "arColor", "")}" title="円の色">自</button>${ORG_COLORS.map(c => `<button data-ofxcol="${c}" style="background:${c}" aria-pressed="${oFx(n, "arColor", "") === c}"></button>`).join("")}</div>`]) : ""}</div>
+      <div class="ogrp"><b>印</b>
+      <div class="f"><label>凍結${linked ? "(自動=2週間進みなし)" : ""}</label>${seg("frozen", [["auto", "自動"], ["on", "凍結"], ["off", "しない"]], n.frozen || "auto")}${s.frozen ? fxBox("凍結", [fxr("fzW", 0.2, 4, 0.1, 1, "氷の厚さ", "薄く", "厚く")]) : ""}</div>
+      <div class="f"><label>伸びしろの輝き${linked ? "(自動=残り10%以下・前提がそろった)" : ""}</label>${seg("glowM", [["auto", "自動"], ["on", "輝く"], ["off", "しない"]], n.glowM || "auto")}${s.glow ? fxBox("輝き", [fxr("glN", 1, 12, 1, 3, "数", "少なく", "多く"), fxr("glSize", 0.3, 4, 0.1, 1, "大きさ", "小さく", "大きく")]) : ""}</div>
       <div class="ochks">${[["focus", "🎯 今日の照準"], ["sleep", "🌙 休眠"], ["fog", "🌫 中身未定"], ["site", "🏗 予定地"]].map(([k, lb]) => `<label class="chk"><input type="checkbox" data-oflag="${k}" ${n[k] ? "checked" : ""}> ${lb}</label>`).join("")}</div>
-      <div class="f"><label>先が分からない(雲):候補を「、」で区切って</label><input data-ocloud value="${esc(n.cloud ? (n.cloud.opts || []).join("、") : "")}" placeholder="例:青チャ続行、過去問へ"><div class="note">入れると雲が出る。決めたら空にすると晴れる</div></div>
-      <div class="f"><label>注釈(引き出し線のひと言)</label><input data-oin="ann" value="${esc(n.ann || "")}" placeholder="例:1日80語を守る"></div>
+      ${n.focus ? fxBox("照準", [fxr("fcSize", 0.3, 4, 0.1, 1, "照準の大きさ", "小さく", "大きく"), fxr("fcSpeed", 0.1, 5, 0.1, 1, "回る速さ", "ゆっくり", "速く")]) : ""}
+      ${n.sleep ? fxBox("休眠", [fxr("slSize", 0.3, 4, 0.1, 1, "月の大きさ", "小さく", "大きく")]) : ""}
+      ${n.site ? fxBox("予定地", [fxr("siteSize", 0.3, 4, 0.1, 1, "印の大きさ", "小さく", "大きく")]) : ""}
+      ${s.locked ? `<div class="f"><label>錠前(前提が済んでいない)</label>${fxBox("錠前", [fxr("lkSize", 0.3, 4, 0.1, 1, "錠前の大きさ", "小さく", "大きく")])}</div>` : ""}</div>
+      <div class="f"><label>先が分からない(雲):候補を「、」で区切って</label><input data-ocloud value="${esc(n.cloud ? (n.cloud.opts || []).join("、") : "")}" placeholder="例:青チャ続行、過去問へ"><div class="note">入れると雲が出る。決めたら空にすると晴れる</div>${n.cloud ? fxBox("雲", [fxr("clSize", 0.3, 4, 0.1, 1, "雲の大きさ", "小さく", "大きく")]) : ""}</div>
+      <div class="f"><label>注釈(引き出し線のひと言)</label><input data-oin="ann" value="${esc(n.ann || "")}" placeholder="例:1日80語を守る">${n.ann ? fxBox("注釈", [fxr("anSize", 0.4, 4, 0.1, 1, "文字の大きさ", "小さく", "大きく"), fxr("anLen", 0.3, 4, 0.1, 1, "線の長さ", "短く", "長く")]) : ""}</div>
       </div></div>`; }
 /* 小さな全体図 */
 function oMini(o, cam){ const geo = oGeo(o, null), parts = [], hi = null;
@@ -3634,6 +3665,14 @@ function oCompare(o){ const s = o.shots.find(x => x.id === ORG.cmp); if (!s) { O
   return `<div class="ocmp"><div class="ocmp-in"><div class="fbar" style="justify-content:space-between"><b>${esc(s.name)}(${md(s.at.slice(0, 10))})と今</b><button class="btn ghost sm" data-ocmpx>閉じる</button></div>
     <div class="ocmp-g"><div><div class="note">${esc(s.name)}</div><svg viewBox="0 0 ${OW} ${OH}" class="still">${a.svg}</svg></div><div><div class="note">今</div><svg viewBox="0 0 ${OW} ${OH}" class="still">${b.svg}</svg></div></div></div></div>`; }
 /* ── 操作 ── */
+// 新しい円を、同じ親の中で、ほかの円と重ならない場所に置く(ほかの円は動かさない)
+function oFreeSpot(o, n){ const parent = n.parent || null, sib = oKids(o, parent).filter(k => k !== n && !k.done), memo = {};
+  const sp = parent ? oNat(o, oNode(o, parent), memo) : oTopSpan(o, memo), r = oSize(o, n, memo) / sp;
+  const rad = k => { const [ex, ey] = oRad(k, 1); return oSize(o, k, memo) / sp * Math.max(ex, ey); };
+  const free = (x, y) => sib.every(k => Math.hypot(x - (k.x || 0), y - (k.y || 0)) >= r + rad(k) + 0.02);
+  for (let i = 0; i < 600; i++) { const a = i * 2.39996, d = Math.sqrt(i) * 0.06 * (parent ? 1 : 2), x = Math.cos(a) * d, y = Math.sin(a) * d;
+    if (parent && Math.hypot(x, y) + r > 0.95 && i > 0) continue; if (free(x, y)) { n.x = Math.round(x * 1000) / 1000; n.y = Math.round(y * 1000) / 1000; return; } }
+  const a = sib.length * 2.39996; n.x = Math.cos(a) * 0.5; n.y = Math.sin(a) * 0.5; }
 // 型:分野の枠(標準)とふつうの円は、いつも使える
 const BUILTIN_TYPES = [{ id: "_field", name: "分野の枠(標準)", kind: "look", look: { style: "field" } }, { id: "_plain", name: "ふつうの円", kind: "look", look: { style: "plain" } }];
 const oTypeList = () => BUILTIN_TYPES.concat(orgTypes);
@@ -3651,15 +3690,15 @@ function oSaveType(o, n, kind){ const nm = prompt(kind === "tree" ? "中身ご�
 // 中身ごとの型を、parent の中に足す(名札は新しく振り直す)
 function oAddTree(o, t, parent){ const map = {}; (t.tree || []).forEach(x => map[x.id] = "N" + uid());
   const root = (t.tree || []).find(x => !x.parent || !map[x.parent]); if (!root) return null;
-  (t.tree || []).forEach(x => { const c = Object.assign({}, x, { id: map[x.id], parent: x === root ? parent : map[x.parent], updated: orgNow() }); if (x === root) { const sib = oKids(o, parent), a = sib.length * 2.39996; c.x = Math.cos(a) * 0.5; c.y = Math.sin(a) * 0.5; } o.nodes.push(c); });
+  let rootNode = null; (t.tree || []).forEach(x => { const c = Object.assign({}, x, { id: map[x.id], parent: x === root ? parent : map[x.parent], updated: orgNow() }); if (x === root) rootNode = c; o.nodes.push(c); });
   (t.links || []).forEach(l => o.links.push(Object.assign({}, l, { id: "L" + uid(), a: map[l.a], b: map[l.b] })));
-  oArrange(o, parent, false); return map[root.id]; }
+  if (rootNode) oFreeSpot(o, rootNode); return map[root.id]; }
 // 円を新しい円で囲む(ids をまとめて、その親の中に新しい円を作る)
 function oWrap(o, ids, name){ const ns = ids.map(id => oNode(o, id)).filter(Boolean); if (!ns.length) return null; oSnap();
   const parent = ns[0].parent || null, w = { id: "N" + uid(), parent, name: name || "まとまり", shape: "circle", updated: orgNow() };
   const cx = ns.reduce((a, n) => a + (n.x || 0), 0) / ns.length, cy = ns.reduce((a, n) => a + (n.y || 0), 0) / ns.length; w.x = cx; w.y = cy;
   ns.forEach(n => { n.parent = w.id; n.x = (n.x || 0) - cx; n.y = (n.y || 0) - cy; });
-  o.nodes.push(w); oArrange(o, w.id, true); oArrange(o, parent, false); ORG.cam = null; ORG.sel = w.id; oTouch(o, w); return w; }
+  o.nodes.push(w); oArrange(o, w.id, false); ORG.cam = null; ORG.sel = w.id; oTouch(o, w); return w; }
 // ほかの図を、その図の名前の大きな円として、この図に移す
 function oMergeOrg(o, other){ oSnap(); const w = { id: "N" + uid(), parent: null, name: other.name, shape: "circle", updated: orgNow(), x: 0.6, y: 0 };
   o.nodes.push(w); other.nodes.forEach(n => o.nodes.push(Object.assign({}, n, { parent: n.parent || w.id })));
@@ -3671,8 +3710,7 @@ function oAdd(where){ const o = curOrg(); if (!o) return; oSnap();
   const sel = ORG.sel ? oNode(o, ORG.sel) : null, parent = where === "next" && sel ? (sel.parent || null) : (sel ? sel.id : oWhere(o) || null);
   const n = { id: "N" + uid(), parent, name: "新しい円", updated: orgNow() };
   if (!parent) { const tt = o.topType === "plain" ? { look: { style: "plain" } } : orgTypes.find(t => t.id === o.topType); if (tt && tt.look) Object.assign(n, tt.look); }
-  const sib = oKids(o, parent), a = sib.length * 2.39996, d = sib.length ? 0.5 : 0; n.x = Math.cos(a) * d; n.y = Math.sin(a) * d;
-  o.nodes.push(n); oArrange(o, parent, false, { fix: oKids(o, parent).filter(k => k !== n).map(k => k.id) }); ORG.sel = n.id; ORG.selLink = null; oTouch(o, n); oCommit();
+  o.nodes.push(n); oFreeSpot(o, n); ORG.sel = n.id; ORG.selLink = null; oTouch(o, n); oCommit();
   setTimeout(() => { const i = document.querySelector('[data-oin="name"]'); if (i) { i.focus(); i.select(); } }, 30); }
 function oPt(e){ const svg = $("org-svg"), pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; return pt.matrixTransform(svg.getScreenCTM().inverse()); }
 function oHit(o, sx, sy, exclude){ const els = document.elementsFromPoint(sx, sy);
@@ -3698,7 +3736,7 @@ function oWhere(o){ const geo = oGeo(o, null), c = oCam(), cx = c.x + c.w / 2, c
   Object.keys(geo).forEach(id => { const n = oNode(o, id), g = geo[id]; if (!n || n.done) return; const [rx, ry] = oRad(n, g.R);
     if (Math.hypot((cx - g.cx) / rx, (cy - g.cy) / ry) <= 1 && rx * 2 > c.w * 0.45 && (!best || g.dep > best.dep)) best = { id, dep: g.dep }; });
   return best ? best.id : null; }
-function oSetCam(c){ const k = clamp(c.w, 40, OW * 12); const h = k * OH / OW; ORG.cam = { x: c.x + (c.w - k) / 2 * (c.keep ? 0 : 0), y: c.y, w: k, h }; if (c.cx != null) { ORG.cam.x = c.cx - k / 2; ORG.cam.y = c.cy - h / 2; } const svg = $("org-svg"); if (svg) svg.setAttribute("viewBox", `${ORG.cam.x} ${ORG.cam.y} ${ORG.cam.w} ${ORG.cam.h}`); }
+function oSetCam(c){ const k = clamp(c.w, 0.5, 1e7); const h = k * OH / OW; ORG.cam = { x: c.x + (c.w - k) / 2 * (c.keep ? 0 : 0), y: c.y, w: k, h }; if (c.cx != null) { ORG.cam.x = c.cx - k / 2; ORG.cam.y = c.cy - h / 2; } const svg = $("org-svg"); if (svg) svg.setAttribute("viewBox", `${ORG.cam.x} ${ORG.cam.y} ${ORG.cam.w} ${ORG.cam.h}`); }
 const oPointers = new Map();
 document.addEventListener("pointerdown", e => {
   const mini = e.target.closest && e.target.closest("#o-mini");
@@ -3722,13 +3760,13 @@ document.addEventListener("pointerdown", e => {
 document.addEventListener("pointermove", e => {
   if (ORG.miniDrag || ORG.miniCorner || ORG.miniBoxSel) { const pt = oMiniPt(e); if (!pt) return;
     if (ORG.miniDrag) oSetCam({ w: oCam().w, cx: pt.x - ORG.miniDrag.dx, cy: pt.y - ORG.miniDrag.dy });
-    if (ORG.miniCorner) { const A = ORG.miniCorner, w = clamp(Math.max(pt.x - A.ax, (pt.y - A.ay) * OW / OH), 40, OW * 12); ORG.cam = { x: A.ax, y: A.ay, w, h: w * OH / OW }; const sv = $("org-svg"); if (sv) sv.setAttribute("viewBox", `${ORG.cam.x} ${ORG.cam.y} ${ORG.cam.w} ${ORG.cam.h}`); }
+    if (ORG.miniCorner) { const A = ORG.miniCorner, w = clamp(Math.max(pt.x - A.ax, (pt.y - A.ay) * OW / OH), 0.5, 1e7); ORG.cam = { x: A.ax, y: A.ay, w, h: w * OH / OW }; const sv = $("org-svg"); if (sv) sv.setAttribute("viewBox", `${ORG.cam.x} ${ORG.cam.y} ${ORG.cam.w} ${ORG.cam.h}`); }
     if (ORG.miniBoxSel) { const B = ORG.miniBoxSel; B.x1 = pt.x; B.y1 = pt.y; const r = $("o-mini-sel"); if (r) { r.setAttribute("x", Math.min(B.x0, B.x1)); r.setAttribute("y", Math.min(B.y0, B.y1)); r.setAttribute("width", Math.abs(B.x1 - B.x0)); r.setAttribute("height", Math.abs(B.y1 - B.y0)); r.setAttribute("visibility", "visible"); } }
     oMiniFrame(); return; }
   if (oPointers.has(e.pointerId)) oPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
   if (ORG.pinch && oPointers.size === 2) { const [a, b] = [...oPointers.values()], d = Math.hypot(a.x - b.x, a.y - b.y), c = ORG.pinch.cam, k = c.w * ORG.pinch.d / Math.max(20, d);
     oSetCam({ w: k, cx: c.x + c.w / 2, cy: c.y + c.h / 2 }); return; }
-  if (ORG.resize) { const R = ORG.resize, p = oPt(e), k = clamp(Math.hypot(p.x - R.cx, p.y - R.cy) / R.d0, 0.25 / R.s0, 4 / R.s0); R.k = k;
+  if (ORG.resize) { const R = ORG.resize, p = oPt(e), k = Math.max(0.001 / R.s0, Math.hypot(p.x - R.cx, p.y - R.cy) / R.d0); R.k = k;
     (R.gs || []).forEach(el => el.setAttribute("transform", `translate(${R.cx} ${R.cy}) scale(${k}) translate(${-R.cx} ${-R.cy})`)); const lb = document.querySelector(".oside label b"); if (lb) lb.textContent = (R.s0 * k).toFixed(2) + "倍"; return; }
   if (ORG.pen) { const p = oPt(e); ORG.pen.pts.push([p.x, p.y]); const pg = $("o-pending"); if (pg) pg.innerHTML = `<path d="M${ORG.pen.pts.map(q => q[0].toFixed(1) + " " + q[1].toFixed(1)).join("L")}" stroke="#2a2620" stroke-width="2.2" fill="none" stroke-linecap="round"/>`; return; }
   if (ORG.pan) { const svg = $("org-svg"); if (!svg) return; const r = svg.getBoundingClientRect(), c = ORG.pan.cam, sx = c.w / r.width;
@@ -3748,10 +3786,10 @@ document.addEventListener("pointerup", e => {
   if (ORG.miniDrag || ORG.miniCorner) { ORG.miniDrag = null; ORG.miniCorner = null; render(); return; }
   if (ORG.miniBoxSel) { const B = ORG.miniBoxSel, F = ORG.miniBox || { w: OW }; ORG.miniBoxSel = null; const bw = Math.abs(B.x1 - B.x0), bh = Math.abs(B.y1 - B.y0);
     if (Math.max(bw, bh) < F.w * 0.03) { const c = oCam(); oFly({ x: B.x0 - c.w / 2, y: B.y0 - c.h / 2, w: c.w, h: c.h }); return; }
-    const w = clamp(Math.max(bw, bh * OW / OH), 40, OW * 12), cx = (B.x0 + B.x1) / 2, cy = (B.y0 + B.y1) / 2; oFly({ x: cx - w / 2, y: cy - w * OH / OW / 2, w, h: w * OH / OW }); return; }
+    const w = clamp(Math.max(bw, bh * OW / OH), 0.5, 1e7), cx = (B.x0 + B.x1) / 2, cy = (B.y0 + B.y1) / 2; oFly({ x: cx - w / 2, y: cy - w * OH / OW / 2, w, h: w * OH / OW }); return; }
   const o = curOrg(); if (!o) return;
   if (ORG.resize) { const R = ORG.resize; ORG.resize = null; const n = oNode(o, R.id); if (!n || !R.k || Math.abs(R.k - 1) < 0.01) { render(); return; }
-    oSnap(); n.scale = Math.round(clamp(R.s0 * R.k, 0.25, 4) * 100) / 100; delete n.size; oArrange(o, n.parent || null, false, { fix: [n.id] }); oTouch(o, n); oCommit(); return; }
+    oSnap(); n.scale = Math.max(0.001, Math.round(R.s0 * R.k * 1000) / 1000); delete n.size; oTouch(o, n); oCommit(); return; }
   if (ORG.pen) { const pts = ORG.pen.pts; ORG.pen = null; if (pts.length > 2) { oSnap(); o.pens.push({ id: "W" + uid(), root: ORG.root || null, d: "M" + pts.map(q => q[0].toFixed(1) + " " + q[1].toFixed(1)).join("L"), color: "#2a2620" }); oTouch(o); oCommit(); } else render(); return; }
   if (ORG.pan) { const moved = ORG.pan.moved; ORG.pan = null; if (moved) { render(); return; } if (ORG.sel || ORG.selLink || ORG.selBand) { ORG.sel = null; ORG.selLink = null; ORG.selBand = null; ORG.path = null; render(); } return; }
   const D = ORG.drag; if (!D) return; ORG.drag = null;
@@ -3766,17 +3804,17 @@ document.addEventListener("pointerup", e => {
   const sp = newParent ? 1 : 1; n.parent = newParent;
   const pn = newParent ? oNode(o, newParent) : null, [prx, pry] = pn ? oRad(pn, pg.R) : [pg.R, pg.R];
   n.x = Math.round((p.x - pg.cx) / prx * sp * 1000) / 1000; n.y = Math.round((p.y - pg.cy) / pry * sp * 1000) / 1000;
-  oArrange(o, newParent, false, { fix: [n.id] }); oTouch(o, n); ORG.sel = n.id; oCommit(); });
+  oTouch(o, n); ORG.sel = n.id; oCommit(); });
 // 円を押したとき(つながり・帯の道具)
 document.addEventListener("click", e => { const g = e.target.closest && e.target.closest("#org-svg [data-onode]"); if (!g) return; const o = curOrg(); if (!o) return; const id = g.dataset.onode;
   if (ORG.tool === "link") { if (!ORG.linkFrom) { ORG.linkFrom = id; render(); return; } if (ORG.linkFrom === id) { ORG.linkFrom = null; render(); return; }
     oSnap(); const l = { id: "L" + uid(), a: ORG.linkFrom, b: id, kind: "support", level: 2, updated: orgNow() }; o.links.push(l); ORG.linkFrom = null; ORG.selLink = l.id; ORG.sel = null; ORG.tool = "select"; oTouch(o); oCommit(); return; }
   if (ORG.tool === "band") { ORG.bandPick = ORG.bandPick || []; ORG.bandPick = ORG.bandPick.includes(id) ? ORG.bandPick.filter(x => x !== id) : ORG.bandPick.concat([id]); render(); return; } }, true);
 document.addEventListener("wheel", e => { const mini = e.target.closest && e.target.closest("#o-mini");
-  if (mini) { e.preventDefault(); const c = oCam(), w = clamp(c.w * Math.exp(e.deltaY * 0.0015), 40, OW * 12); ORG.cam = { x: c.x + c.w / 2 - w / 2, y: c.y + c.h / 2 - w * OH / OW / 2, w, h: w * OH / OW };
+  if (mini) { e.preventDefault(); const c = oCam(), w = clamp(c.w * Math.exp(e.deltaY * 0.0015), 0.5, 1e7); ORG.cam = { x: c.x + c.w / 2 - w / 2, y: c.y + c.h / 2 - w * OH / OW / 2, w, h: w * OH / OW };
     const sv = $("org-svg"); if (sv) sv.setAttribute("viewBox", `${ORG.cam.x} ${ORG.cam.y} ${ORG.cam.w} ${ORG.cam.h}`); oMiniFrame(); clearTimeout(ORG.wt); ORG.wt = setTimeout(render, 220); return; }
   const svg = e.target.closest && e.target.closest("#org-svg"); if (!svg) return; e.preventDefault();
-  const p = oPt(e), c = oCam(), f = Math.exp(e.deltaY * 0.0015), w = clamp(c.w * f, 40, OW * 12), k = w / c.w;
+  const p = oPt(e), c = oCam(), f = Math.exp(e.deltaY * 0.0015), w = clamp(c.w * f, 0.5, 1e7), k = w / c.w;
   ORG.cam = { x: p.x - (p.x - c.x) * k, y: p.y - (p.y - c.y) * k, w, h: w * OH / OW }; svg.setAttribute("viewBox", `${ORG.cam.x} ${ORG.cam.y} ${ORG.cam.w} ${ORG.cam.h}`);
   clearTimeout(ORG.wt); ORG.wt = setTimeout(render, 220); }, { passive: false });
 function oPathTo(o, id){ const set = new Set(), seen = new Set(); const walk = x => { if (seen.has(x)) return; seen.add(x); o.links.filter(l => l.kind === "prereq" && l.b === x && !oDone(o, l.a)).forEach(l => { set.add(l.id); walk(l.a); }); }; walk(id); return set; }
@@ -3784,13 +3822,13 @@ function oTweenSize(o, to){ const from = o.sizeMode; if (from === to) return; o.
   const step = t => { const k = clamp((t - t0) / 450, 0, 1); ORG.tween = { from, to, t: k < 1 ? 0.5 - Math.cos(k * Math.PI) / 2 : 1 }; render(); if (k < 1) requestAnimationFrame(step); else { ORG.tween = null; oTouch(o); persist(); render(); } };
   requestAnimationFrame(step); }
 document.addEventListener("click", e => {
-  const b = e.target.closest("[data-onew],[data-osel],[data-orename],[data-oadd],[data-oarr],[data-oundo],[data-oroot],[data-oenter],[data-odel],[data-oset],[data-ocolor],[data-otool],[data-olink],[data-olset],[data-olswap],[data-oldel],[data-oband],[data-obandmake],[data-obcol],[data-obdel],[data-open],[data-osize],[data-oshot],[data-ocmp],[data-ocmpx],[data-oshotdel],[data-odone],[data-opath],[data-ominitog],[data-odelorg],[data-owrapall],[data-owrap],[data-ofill],[data-ostroke],[data-otypesave],[data-otypedel],[data-otyperen],[data-oscale],[data-otab],[data-ozoom]"); if (!b) return;
+  const b = e.target.closest("[data-onew],[data-osel],[data-orename],[data-oadd],[data-oarr],[data-oundo],[data-oroot],[data-oenter],[data-odel],[data-oset],[data-ocolor],[data-otool],[data-olink],[data-olset],[data-olswap],[data-oldel],[data-oband],[data-obandmake],[data-obcol],[data-obdel],[data-open],[data-osize],[data-oshot],[data-ocmp],[data-ocmpx],[data-oshotdel],[data-odone],[data-opath],[data-ominitog],[data-odelorg],[data-owrapall],[data-owrap],[data-ofill],[data-ostroke],[data-otypesave],[data-otypedel],[data-otyperen],[data-oscale],[data-otab],[data-ozoom],[data-omanclr],[data-ofxcol],[data-ofxreset]"); if (!b) return;
   const o = curOrg();
   if (b.matches("[data-onew]")) { if (orgs.length) return; oNew("全体"); oCommit(); return; }
   if (!o) return; oFix(o);
   if (b.matches("[data-ominitog]")) { ORG.mini = b.closest(".omini") ? false : "keep"; render(); return; }
   if (b.matches("[data-ozoom]")) { const z = b.dataset.ozoom, c = oCam(); if (z === "all") { oFlyTo(o, null); return; }
-    const k = z === "in" ? 0.6 : 1 / 0.6, w = clamp(c.w * k, 40, OW * 12); oFly({ x: c.x + c.w / 2 - w / 2, y: c.y + c.h / 2 - w * OH / OW / 2, w, h: w * OH / OW }); return; }
+    const k = z === "in" ? 0.6 : 1 / 0.6, w = clamp(c.w * k, 0.5, 1e7); oFly({ x: c.x + c.w / 2 - w / 2, y: c.y + c.h / 2 - w * OH / OW / 2, w, h: w * OH / OW }); return; }
   if (b.matches("[data-otab]")) { ORG.tab = b.dataset.otab; const side = b.closest(".oside"); if (side) { side.querySelectorAll("[data-otab]").forEach(x => x.setAttribute("aria-pressed", String(x === b))); side.querySelectorAll(".otabp").forEach(pnl => pnl.hidden = pnl.dataset.otabp !== ORG.tab); } return; }
   if (b.matches("[data-otool]")) { ORG.tool = b.dataset.otool; ORG.linkFrom = null; ORG.bandPick = []; render(); return; }
   if (b.matches("[data-orename]")) { const nm = prompt("図の名前", o.name); if (nm == null) return; oSnap(); o.name = nm.trim() || o.name; oTouch(o); oCommit(); return; }
@@ -3825,20 +3863,24 @@ document.addEventListener("click", e => {
     oSnap(); const gone = new Set([n.id].concat(kids.map(k => k.id))); o.nodes = o.nodes.filter(x => !gone.has(x.id)); o.links = o.links.filter(x => !gone.has(x.a) && !gone.has(x.b)); o.bands.forEach(bd => bd.nodes = (bd.nodes || []).filter(x => !gone.has(x))); ORG.sel = null; oTouch(o); oCommit(); return; }
   if (b.matches("[data-owrap]")) { const nm = prompt("囲む円の名前", "まとまり"); if (nm == null) return; oWrap(o, [n.id], nm.trim() || "まとまり"); oCommit(); return; }
   if (b.matches("[data-odone]")) { oSnap(); n.done = !n.done; n.doneAt = n.done ? orgNow() : null; if (n.done) { ORG.shock = n.parent || null; ORG.sel = n.parent || null; setTimeout(() => { ORG.shock = null; }, 2200); } oTouch(o, n); oCommit(); return; }
-  if (b.matches("[data-oset]")) { oSnap(); const k = b.dataset.oset, v = b.dataset.val; n[k] = ["imp", "lift", "momLv"].includes(k) ? (v ? +v : "") : v; if (k === "shape" && v === "ellipse" && !n.aspect) n.aspect = 1.5;
-    if (k === "size" || k === "imp") oArrange(o, n.parent || null, false); oTouch(o, n); oCommit(); return; }
+  if (b.matches("[data-oset]")) { oSnap(); const k = b.dataset.oset, v = b.dataset.val; if (k === "lsize") delete n.lsizeN; n[k] = ["imp", "lift", "momLv"].includes(k) ? (v ? +v : "") : v; if (k === "shape" && v === "ellipse" && !n.aspect) n.aspect = 1.5;
+    oTouch(o, n); oCommit(); return; }
   if (b.matches("[data-ocolor]")) { oSnap(); n.color = b.dataset.ocolor; oTouch(o, n); oCommit(); return; }
-  if (b.matches("[data-oscale]")) { oSnap(); n.scale = +b.dataset.oscale; delete n.size; oArrange(o, n.parent || null, false, { fix: [n.id] }); oTouch(o, n); oCommit(); return; }
+  if (b.matches("[data-oscale]")) { oSnap(); n.scale = +b.dataset.oscale; delete n.size; oTouch(o, n); oCommit(); return; }
+  if (b.matches("[data-omanclr]")) { oSnap(); const k = b.dataset.omanclr; delete n[k]; if (k === "due") delete n.dueSet; oTouch(o, n); oCommit(); return; }
+  if (b.matches("[data-ofxcol]")) { oSnap(); n.fx = n.fx || {}; if (b.dataset.ofxcol) n.fx.arColor = b.dataset.ofxcol; else delete n.fx.arColor; oTouch(o, n); oCommit(); return; }
+  if (b.matches("[data-ofxreset]")) { oSnap(); const ks = (ORG.fxKeys || {})[b.dataset.ofxreset] || []; if (n.fx) ks.forEach(k => delete n.fx[k]); oTouch(o, n); oCommit(); return; }
   if (b.matches("[data-ofill]")) { oSnap(); n.fill = b.dataset.ofill; oTouch(o, n); oCommit(); return; }
   if (b.matches("[data-ostroke]")) { oSnap(); n.stroke = b.dataset.ostroke; oTouch(o, n); oCommit(); return; }
   if (b.matches("[data-otypesave]")) { const t = oSaveType(o, n, b.dataset.otypesave); if (t) { oTouch(o); oCommit(); toast("型「" + t.name + "」を登録しました"); } return; }
 });
+document.addEventListener("toggle", e => { const d = e.target; if (d && d.matches && d.matches("details[data-ofxbox]")) { if (d.open) ORG.fxOpen = d.dataset.ofxbox; else if (ORG.fxOpen === d.dataset.ofxbox) ORG.fxOpen = null; } }, true);
 document.addEventListener("change", e => { const t = e.target, o = curOrg(); if (!o || !t.matches) return; oFix(o);
   if (t.matches("[data-osel]")) { ORG.id = t.value; ORG.root = null; ORG.sel = null; ORG.selLink = null; ORG.undo = []; ORG.cam = null; render(); return; }
   if (t.matches("[data-omerge]") && t.value) { const other = orgs.find(x => x.id === t.value); if (!other || !confirm("「" + other.name + "」をこの図に移す?(「" + other.name + "」の図はなくなり、この図の中の大きな円になる)")) { t.value = ""; return; } oMergeOrg(o, oFix(other)); oCommit(); return; }
   if (t.matches("[data-otoptype]")) { o.topType = t.value; oTouch(o); oCommit(); return; }
   if (t.matches("[data-otypeadd]") && t.value) { const ty = oTypeList().find(x => x.id === t.value); if (!ty) return; oSnap(); const parent = oWhere(o) || null;
-    let id; if (ty.kind === "tree") id = oAddTree(o, ty, parent); else { const n = { id: "N" + uid(), parent, name: ty.name, updated: orgNow() }; Object.assign(n, ty.look || {}); const sib = oKids(o, parent), a = sib.length * 2.39996; n.x = Math.cos(a) * 0.5; n.y = Math.sin(a) * 0.5; o.nodes.push(n); oArrange(o, parent, false); id = n.id; }
+    let id; if (ty.kind === "tree") id = oAddTree(o, ty, parent); else { const n = { id: "N" + uid(), parent, name: ty.name, updated: orgNow() }; Object.assign(n, ty.look || {}); o.nodes.push(n); oFreeSpot(o, n); id = n.id; }
     ORG.sel = id; oTouch(o); oCommit(); return; }
   if (t.matches("[data-oshow]")) { o.show[t.dataset.oshow] = t.checked; oTouch(o); oCommit(); return; }
   if (t.matches("[data-omincol]")) { o.minColors[t.dataset.omincol] = t.value; oTouch(o); oCommit(); return; }
@@ -3849,8 +3891,16 @@ document.addEventListener("change", e => { const t = e.target, o = curOrg(); if 
   if (t.matches("[data-otypeapply]") && t.value) { const ty = oTypeList().find(x => x.id === t.value); if (!ty) return; oSnap();
     if (ty.kind === "tree") { ORG.sel = oAddTree(o, ty, n.id) || n.id; } else { oApplyLook(n, ty.look); if (oShp(n) === "ellipse" && !n.aspect) n.aspect = 1.5; }
     oTouch(o, n); oCommit(); return; }
+  if (t.matches("[data-onum]")) { oSnap(); const v = t.value.trim(); if (v === "" || !(+v > 0)) delete n[t.dataset.onum]; else n[t.dataset.onum] = +v; if (t.dataset.onum === "lsizeN" && n.lsizeN) delete n.lsize; oTouch(o, n); oCommit(); return; }
+  if (t.matches("[data-ofx],[data-oman]")) { oSnap(); if (t.dataset.oman === "fadeM" && !t.value) delete n.fadeM; oTouch(o, n); oCommit(); return; }
+  if (t.matches("[data-odue]")) { oSnap(); if (t.value) { if (t.value !== n.due) n.dueSet = TODAY; n.due = t.value; } else { delete n.due; delete n.dueSet; } oTouch(o, n); oCommit(); return; }
   if (t.matches("[data-ocloud]")) { oSnap(); const opts = t.value.split(/[、,，]/).map(x => x.trim()).filter(Boolean); n.cloud = opts.length ? { opts } : null; oTouch(o, n); oCommit(); return; }
-  if (t.matches("[data-orng]")) { oSnap(); n[t.dataset.orng] = +t.value; if (t.dataset.orng === "scale") { delete n.size; oArrange(o, n.parent || null, false, { fix: [n.id] }); } oTouch(o, n); oCommit(); return; } });
+  if (t.matches("[data-orng]")) { if (!(+t.value > 0) && t.dataset.orng !== "round" && t.dataset.orng !== "rough") return render(); oSnap(); n[t.dataset.orng] = +t.value; if (t.dataset.orng === "scale") { delete n.size; } oTouch(o, n); oCommit(); return; } });
+// 状態の見た目・中身のつまみ:動かしている間もその場で描き直す
+document.addEventListener("input", e => { const t = e.target; if (!t.matches || !t.matches("[data-ofx],[data-oman]")) return; const o = curOrg(), n = o && oNode(o, ORG.sel); if (!n) return;
+  if (t.dataset.ofx) { n.fx = n.fx || {}; n.fx[t.dataset.ofx] = +t.value; } else n[t.dataset.oman] = +t.value;
+  const lb = t.closest(".f") && t.closest(".f").querySelector("label b"); if (lb && t.dataset.oman) lb.textContent = t.value + "%";
+  cancelAnimationFrame(ORG.fxRaf); ORG.fxRaf = requestAnimationFrame(() => { const sv = $("org-svg"); if (!sv) return; const sc = oScene(o); sv.innerHTML = `<rect x="-4000" y="-4000" width="9000" height="9000" fill="#fbfaf6" data-obg/>${sc.svg}<g id="o-pending"></g>`; }); });
 document.addEventListener("input", e => { const t = e.target; if (!t.matches || !t.matches("[data-orng]")) return; const o = curOrg(), n = o && oNode(o, ORG.sel); if (!n) return;
   if (t.dataset.orng === "scale") { const geo = oGeo(o, null)[n.id], k = +t.value / oScale(n); if (geo) oGroupEls(o, n.id).forEach(el => el.setAttribute("transform", `translate(${geo.cx} ${geo.cy}) scale(${k}) translate(${-geo.cx} ${-geo.cy})`)); const lb = t.closest(".f").querySelector("label b"); if (lb) lb.textContent = (+t.value).toFixed(2) + "倍"; return; }
   n[t.dataset.orng] = +t.value; const g = document.querySelector(`#org-svg [data-onode="${n.id}"] path`), geo = oGeo(o)[n.id]; if (g && geo) g.setAttribute("d", oShape(n, geo.cx, geo.cy, geo.R)); });
