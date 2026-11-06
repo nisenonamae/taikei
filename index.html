@@ -910,7 +910,7 @@ body.o-wide .wrap{max-width:min(1500px,100%)}
 <div id="sheet-root"></div>
 <script>
 /* ───────── 大計:データ ───────── */
-const APP_VERSION = "2026-11-06 r24";
+const APP_VERSION = "2026-11-06 r25";
 const SHO_APP = "https://nisenonamae.github.io/sho/";
 const GRADES = ["最重要", "重要", "通常", "軽易"];
 const COUNCIL = { 最重要: "最高評議会", 重要: "常任評議会" };
@@ -3305,19 +3305,21 @@ function oLeafW(o, n, mode){
   if (mode === "残") { const p = oPlan(n); const pr = p ? prog(p) : (n.done ? 100 : 50); return 0.25 + 1.75 * (100 - pr) / 100; }
   if (mode === "週") { const r = oAuto(n).week; return r == null ? 0.5 : 0.35 + clamp(r, 0, 2) * 1.2; }
   return 1; }
-function oSize(o, n, memo){ memo = memo || {}; if (memo[n.id]) return memo[n.id];
+// 元の大きさ:中の円の「元の大きさ」から決まる(中の円を自分で大きくしても、外の円は変わらない)
+function oNat(o, n, memo){ memo = memo || {}; const key = "n:" + n.id; if (memo[key]) return memo[key];
   const kids = oKids(o, n.id).filter(k => !k.done); let s;
   if (!kids.length) { const tw = ORG.tween; const w = tw ? oLeafW(o, n, tw.from) * (1 - tw.t) + oLeafW(o, n, tw.to) * tw.t : oLeafW(o, n, o.sizeMode); s = Math.sqrt(w); }
-  else { const area = kids.reduce((a, k) => a + Math.pow(oSize(o, k, memo), 2), 0); s = Math.sqrt(area) * 1.55 + 0.25; }
-  s *= oScale(n);
-  memo[n.id] = s; return s; }
+  else { const area = kids.reduce((a, k) => a + Math.pow(oNat(o, k, memo), 2), 0); s = Math.sqrt(area) * 1.55 + 0.25; }
+  memo[key] = s; return s; }
+// 描く大きさ = 元の大きさ × 自分で決めた倍率
+function oSize(o, n, memo){ memo = memo || {}; if (memo[n.id]) return memo[n.id]; const s = oNat(o, n, memo) * oScale(n); memo[n.id] = s; return s; }
 const oScale = n => n.scale ? clamp(+n.scale, 0.25, 4) : (n.size && ORG_SIZE[n.size]) || 1;
 // 自動で整える:止めていない円を、親の中で重ならないように並べる(親の半径=1の世界で)
 function oArrange(o, pid, deep){ const kids = oKids(o, pid).filter(k => !k.done); if (!kids.length) return;
-  const memo = {}, sp = pid ? oSize(o, oNode(o, pid), memo) : oTopSpan(o, memo);
+  const memo = {}, sp = pid ? oNat(o, oNode(o, pid), memo) : oTopSpan(o, memo);
   const P = kids.map((k, i) => { const a = i * 2.39996, d = kids.length > 1 ? 0.45 * Math.sqrt((i + 0.5) / kids.length) : 0;
     const [erx, ery] = oRad(k, 1), wide = Math.max(erx, ery) * (oShp(k) === "rect" ? 1.12 : 1);
-    return { k, r: oSize(o, k, memo) / sp * wide * (oShp(k) === "blob" ? 1.08 : 1), x: k.x != null ? k.x : Math.cos(a) * d, y: k.y != null ? k.y : Math.sin(a) * d, fix: !!k.pinned }; });
+    return { k, r: Math.min(oSize(o, k, memo) / sp, 0.95) * wide * (oShp(k) === "blob" ? 1.08 : 1), x: k.x != null ? k.x : Math.cos(a) * d, y: k.y != null ? k.y : Math.sin(a) * d, fix: !!k.pinned }; });
   const share = new Set(o.links.filter(l => l.kind === "share").flatMap(l => [l.a + "|" + l.b, l.b + "|" + l.a]));
   for (let it = 0; it < 420; it++) {
     for (let i = 0; i < P.length; i++) for (let j = i + 1; j < P.length; j++) { const a = P[i], b = P[j]; let dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy) || 1e-6;
@@ -3331,8 +3333,8 @@ function oArrange(o, pid, deep){ const kids = oKids(o, pid).filter(k => !k.done)
 const oTopSpan = () => 2.2;   // いちばん外の縮尺はいつも同じ(1つを大きくしても、ほかは小さくならない)
 /* ── 位置:描くときと同じ計算で、中心と半径を出す(今見ている所の世界で) ── */
 function oGeo(o, root){ const memo = {}, out = {}; root = root === undefined ? ORG.root : root;
-  const walk = (n, cx, cy, R, dep) => { out[n.id] = { cx, cy, R, dep }; const sn = oSize(o, n, memo), [rx, ry] = oRad(n, R), rm = Math.min(rx, ry);
-    oKids(o, n.id).filter(k => !k.done).forEach(k => walk(k, cx + (k.x || 0) * rx, cy + (k.y || 0) * ry, rm * oSize(o, k, memo) / sn, dep + 1)); };
+  const walk = (n, cx, cy, R, dep) => { out[n.id] = { cx, cy, R, dep }; const sn = oNat(o, n, memo), [rx, ry] = oRad(n, R), rm = Math.min(rx, ry);
+    oKids(o, n.id).filter(k => !k.done).forEach(k => walk(k, cx + (k.x || 0) * rx, cy + (k.y || 0) * ry, Math.min(rm * oSize(o, k, memo) / sn, rm * 0.95), dep + 1)); };
   const rn = root ? oNode(o, root) : null;
   if (rn) walk(rn, OW / 2, OH / 2, Math.min(OW, OH) / 2 - 16, 0);
   else { const sp = oTopSpan(o, memo), R = Math.min(OW, OH) / 2 - 14; oKids(o, null).filter(k => !k.done).forEach(k => walk(k, OW / 2 + (k.x || 0) * R, OH / 2 + (k.y || 0) * R, R * oSize(o, k, memo) / sp, 0)); }
