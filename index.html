@@ -910,7 +910,7 @@ body.o-wide .wrap{max-width:min(1500px,100%)}
 <div id="sheet-root"></div>
 <script>
 /* ───────── 大計:データ ───────── */
-const APP_VERSION = "2026-11-06 r25";
+const APP_VERSION = "2026-11-06 r26";
 const SHO_APP = "https://nisenonamae.github.io/sho/";
 const GRADES = ["最重要", "重要", "通常", "軽易"];
 const COUNCIL = { 最重要: "最高評議会", 重要: "常任評議会" };
@@ -3315,21 +3315,22 @@ function oNat(o, n, memo){ memo = memo || {}; const key = "n:" + n.id; if (memo[
 function oSize(o, n, memo){ memo = memo || {}; if (memo[n.id]) return memo[n.id]; const s = oNat(o, n, memo) * oScale(n); memo[n.id] = s; return s; }
 const oScale = n => n.scale ? clamp(+n.scale, 0.25, 4) : (n.size && ORG_SIZE[n.size]) || 1;
 // 自動で整える:止めていない円を、親の中で重ならないように並べる(親の半径=1の世界で)
-function oArrange(o, pid, deep){ const kids = oKids(o, pid).filter(k => !k.done); if (!kids.length) return;
+// 並べ直す。ふだんは重なりだけを直す(置いた場所は動かさない)。opt.compact のとき(「自動で整える」)だけ、真ん中へまとめる。opt.fix の円は動かさない
+function oArrange(o, pid, deep, opt){ opt = opt || {}; const kids = oKids(o, pid).filter(k => !k.done); if (!kids.length) return; const fixIds = new Set(opt.fix || []);
   const memo = {}, sp = pid ? oNat(o, oNode(o, pid), memo) : oTopSpan(o, memo);
   const P = kids.map((k, i) => { const a = i * 2.39996, d = kids.length > 1 ? 0.45 * Math.sqrt((i + 0.5) / kids.length) : 0;
     const [erx, ery] = oRad(k, 1), wide = Math.max(erx, ery) * (oShp(k) === "rect" ? 1.12 : 1);
-    return { k, r: Math.min(oSize(o, k, memo) / sp, 0.95) * wide * (oShp(k) === "blob" ? 1.08 : 1), x: k.x != null ? k.x : Math.cos(a) * d, y: k.y != null ? k.y : Math.sin(a) * d, fix: !!k.pinned }; });
+    return { k, r: Math.min(oSize(o, k, memo) / sp, 0.95) * wide * (oShp(k) === "blob" ? 1.08 : 1), x: k.x != null ? k.x : Math.cos(a) * d, y: k.y != null ? k.y : Math.sin(a) * d, fix: !!k.pinned || fixIds.has(k.id) }; });
   const share = new Set(o.links.filter(l => l.kind === "share").flatMap(l => [l.a + "|" + l.b, l.b + "|" + l.a]));
   for (let it = 0; it < 420; it++) {
     for (let i = 0; i < P.length; i++) for (let j = i + 1; j < P.length; j++) { const a = P[i], b = P[j]; let dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy) || 1e-6;
       const min = share.has(a.k.id + "|" + b.k.id) ? (a.r + b.r) * 0.72 : a.r + b.r + 0.03;
       if (d < min) { const f = (min - d) / 2; dx /= d; dy /= d; if (!a.fix) { a.x -= dx * f * (b.fix ? 2 : 1); a.y -= dy * f * (b.fix ? 2 : 1); } if (!b.fix) { b.x += dx * f * (a.fix ? 2 : 1); b.y += dy * f * (a.fix ? 2 : 1); } } }
-    for (const p of P) { if (p.fix) continue; p.x *= 0.995; p.y *= 0.995;
+    for (const p of P) { if (p.fix) continue; if (opt.compact) { p.x *= 0.995; p.y *= 0.995; }
       if (!pid) continue;   // いちばん外は、親の枠がないので自由に広がる(映す範囲のほうが合わせる)
       const d = Math.hypot(p.x, p.y), lim = 0.9 - p.r; if (d > lim) { const s = Math.max(0, lim) / (d || 1); p.x *= s; p.y *= s; } } }
   P.forEach(p => { p.k.x = Math.round(p.x * 1000) / 1000; p.k.y = Math.round(p.y * 1000) / 1000; });
-  if (deep) kids.forEach(k => oArrange(o, k.id, true)); }
+  if (deep) kids.forEach(k => oArrange(o, k.id, true, opt)); }
 const oTopSpan = () => 2.2;   // いちばん外の縮尺はいつも同じ(1つを大きくしても、ほかは小さくならない)
 /* ── 位置:描くときと同じ計算で、中心と半径を出す(今見ている所の世界で) ── */
 function oGeo(o, root){ const memo = {}, out = {}; root = root === undefined ? ORG.root : root;
@@ -3671,7 +3672,7 @@ function oAdd(where){ const o = curOrg(); if (!o) return; oSnap();
   const n = { id: "N" + uid(), parent, name: "新しい円", updated: orgNow() };
   if (!parent) { const tt = o.topType === "plain" ? { look: { style: "plain" } } : orgTypes.find(t => t.id === o.topType); if (tt && tt.look) Object.assign(n, tt.look); }
   const sib = oKids(o, parent), a = sib.length * 2.39996, d = sib.length ? 0.5 : 0; n.x = Math.cos(a) * d; n.y = Math.sin(a) * d;
-  o.nodes.push(n); oArrange(o, parent, false); ORG.sel = n.id; ORG.selLink = null; oTouch(o, n); oCommit();
+  o.nodes.push(n); oArrange(o, parent, false, { fix: oKids(o, parent).filter(k => k !== n).map(k => k.id) }); ORG.sel = n.id; ORG.selLink = null; oTouch(o, n); oCommit();
   setTimeout(() => { const i = document.querySelector('[data-oin="name"]'); if (i) { i.focus(); i.select(); } }, 30); }
 function oPt(e){ const svg = $("org-svg"), pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; return pt.matrixTransform(svg.getScreenCTM().inverse()); }
 function oHit(o, sx, sy, exclude){ const els = document.elementsFromPoint(sx, sy);
@@ -3746,7 +3747,7 @@ document.addEventListener("pointerup", e => {
     const w = clamp(Math.max(bw, bh * OW / OH), 40, OW * 12), cx = (B.x0 + B.x1) / 2, cy = (B.y0 + B.y1) / 2; oFly({ x: cx - w / 2, y: cy - w * OH / OW / 2, w, h: w * OH / OW }); return; }
   const o = curOrg(); if (!o) return;
   if (ORG.resize) { const R = ORG.resize; ORG.resize = null; const n = oNode(o, R.id); if (!n || !R.k || Math.abs(R.k - 1) < 0.01) { render(); return; }
-    oSnap(); n.scale = Math.round(clamp(R.s0 * R.k, 0.25, 4) * 100) / 100; delete n.size; oArrange(o, n.parent || null, false); oTouch(o, n); oCommit(); return; }
+    oSnap(); n.scale = Math.round(clamp(R.s0 * R.k, 0.25, 4) * 100) / 100; delete n.size; oArrange(o, n.parent || null, false, { fix: [n.id] }); oTouch(o, n); oCommit(); return; }
   if (ORG.pen) { const pts = ORG.pen.pts; ORG.pen = null; if (pts.length > 2) { oSnap(); o.pens.push({ id: "W" + uid(), root: ORG.root || null, d: "M" + pts.map(q => q[0].toFixed(1) + " " + q[1].toFixed(1)).join("L"), color: "#2a2620" }); oTouch(o); oCommit(); } else render(); return; }
   if (ORG.pan) { const moved = ORG.pan.moved; ORG.pan = null; if (moved) { render(); return; } if (ORG.sel || ORG.selLink || ORG.selBand) { ORG.sel = null; ORG.selLink = null; ORG.selBand = null; ORG.path = null; render(); } return; }
   const D = ORG.drag; if (!D) return; ORG.drag = null;
@@ -3754,12 +3755,14 @@ document.addEventListener("pointerup", e => {
   if (!D.moved) { const now = Date.now();
     if (ORG.lastTap && ORG.lastTap.id === n.id && now - ORG.lastTap.t < 380 && oKids(o, n.id).length) { ORG.lastTap = null; oFlyTo(o, n.id); return; }
     ORG.lastTap = { id: n.id, t: now }; ORG.sel = n.id; ORG.selLink = null; ORG.selBand = null; ORG.path = null; render(); return; }
-  oSnap(); const p = oPt(e), target = D.target || null, newParent = target || null;
+  oSnap(); const p0 = oPt(e), target = D.target || null, newParent = target || null, g0 = oGeo(o, null)[n.id];
+  // つかんだ所と円の位置関係を保つ(指の位置に円の真ん中を合わせない)
+  const p = g0 ? { x: g0.cx + (p0.x - D.x0), y: g0.cy + (p0.y - D.y0) } : p0;
   const geo = oGeo(o), pg = newParent && geo[newParent] ? geo[newParent] : { cx: OW / 2, cy: OH / 2, R: (Math.min(OW, OH) / 2 - 14) / oTopSpan(o, {}) * oTopSpan(o, {}) };
   const sp = newParent ? 1 : 1; n.parent = newParent;
   const pn = newParent ? oNode(o, newParent) : null, [prx, pry] = pn ? oRad(pn, pg.R) : [pg.R, pg.R];
   n.x = Math.round((p.x - pg.cx) / prx * sp * 1000) / 1000; n.y = Math.round((p.y - pg.cy) / pry * sp * 1000) / 1000;
-  oArrange(o, newParent, false); oTouch(o, n); ORG.sel = n.id; oCommit(); });
+  oArrange(o, newParent, false, { fix: [n.id] }); oTouch(o, n); ORG.sel = n.id; oCommit(); });
 // 円を押したとき(つながり・帯の道具)
 document.addEventListener("click", e => { const g = e.target.closest && e.target.closest("#org-svg [data-onode]"); if (!g) return; const o = curOrg(); if (!o) return; const id = g.dataset.onode;
   if (ORG.tool === "link") { if (!ORG.linkFrom) { ORG.linkFrom = id; render(); return; } if (ORG.linkFrom === id) { ORG.linkFrom = null; render(); return; }
@@ -3790,7 +3793,7 @@ document.addEventListener("click", e => {
   if (b.matches("[data-owrapall]")) { const nm = prompt("囲む円の名前", "受験"); if (nm == null) return; oWrap(o, oKids(o, null).map(n => n.id), nm.trim() || "受験"); oCommit(); return; }
   if (b.matches("[data-odelorg]")) { if (!confirm("「" + o.name + "」を消す?")) return; orgs = orgs.filter(x => x.id !== o.id); ORG.id = orgs[0] ? orgs[0].id : null; ORG.sel = null; ORG.root = null; oCommit(); return; }
   if (b.matches("[data-oadd]")) return oAdd(b.dataset.oadd);
-  if (b.matches("[data-oarr]")) { oSnap(); oArrange(o, ORG.root, true); ORG.cam = null; oTouch(o); oCommit(); return; }
+  if (b.matches("[data-oarr]")) { oSnap(); oArrange(o, null, true, { compact: true }); ORG.cam = null; oTouch(o); oCommit(); return; }
   if (b.matches("[data-oundo]")) { const s = ORG.undo.pop(); if (!s) return; const i = orgs.findIndex(x => x.id === o.id); orgs[i] = JSON.parse(s); oTouch(orgs[i]); oCommit(); return; }
   if (b.matches("[data-oroot]")) { oFlyTo(o, null); return; }
   if (b.matches("[data-oenter]")) { oFlyTo(o, b.dataset.oenter); return; }
@@ -3821,7 +3824,7 @@ document.addEventListener("click", e => {
   if (b.matches("[data-oset]")) { oSnap(); const k = b.dataset.oset, v = b.dataset.val; n[k] = ["imp", "lift", "momLv"].includes(k) ? (v ? +v : "") : v; if (k === "shape" && v === "ellipse" && !n.aspect) n.aspect = 1.5;
     if (k === "size" || k === "imp") oArrange(o, n.parent || null, false); oTouch(o, n); oCommit(); return; }
   if (b.matches("[data-ocolor]")) { oSnap(); n.color = b.dataset.ocolor; oTouch(o, n); oCommit(); return; }
-  if (b.matches("[data-oscale]")) { oSnap(); n.scale = +b.dataset.oscale; delete n.size; oArrange(o, n.parent || null, false); oTouch(o, n); oCommit(); return; }
+  if (b.matches("[data-oscale]")) { oSnap(); n.scale = +b.dataset.oscale; delete n.size; oArrange(o, n.parent || null, false, { fix: [n.id] }); oTouch(o, n); oCommit(); return; }
   if (b.matches("[data-ofill]")) { oSnap(); n.fill = b.dataset.ofill; oTouch(o, n); oCommit(); return; }
   if (b.matches("[data-ostroke]")) { oSnap(); n.stroke = b.dataset.ostroke; oTouch(o, n); oCommit(); return; }
   if (b.matches("[data-otypesave]")) { const t = oSaveType(o, n, b.dataset.otypesave); if (t) { oTouch(o); oCommit(); toast("型「" + t.name + "」を登録しました"); } return; }
@@ -3843,7 +3846,7 @@ document.addEventListener("change", e => { const t = e.target, o = curOrg(); if 
     if (ty.kind === "tree") { ORG.sel = oAddTree(o, ty, n.id) || n.id; } else { oApplyLook(n, ty.look); if (oShp(n) === "ellipse" && !n.aspect) n.aspect = 1.5; }
     oTouch(o, n); oCommit(); return; }
   if (t.matches("[data-ocloud]")) { oSnap(); const opts = t.value.split(/[、,，]/).map(x => x.trim()).filter(Boolean); n.cloud = opts.length ? { opts } : null; oTouch(o, n); oCommit(); return; }
-  if (t.matches("[data-orng]")) { oSnap(); n[t.dataset.orng] = +t.value; if (t.dataset.orng === "scale") { delete n.size; oArrange(o, n.parent || null, false); } oTouch(o, n); oCommit(); return; } });
+  if (t.matches("[data-orng]")) { oSnap(); n[t.dataset.orng] = +t.value; if (t.dataset.orng === "scale") { delete n.size; oArrange(o, n.parent || null, false, { fix: [n.id] }); } oTouch(o, n); oCommit(); return; } });
 document.addEventListener("input", e => { const t = e.target; if (!t.matches || !t.matches("[data-orng]")) return; const o = curOrg(), n = o && oNode(o, ORG.sel); if (!n) return;
   if (t.dataset.orng === "scale") { const g = document.querySelector(`#org-svg [data-onode="${n.id}"]`), geo = oGeo(o, null)[n.id], k = +t.value / oScale(n); if (g && geo) g.setAttribute("transform", `translate(${geo.cx} ${geo.cy}) scale(${k}) translate(${-geo.cx} ${-geo.cy})`); const lb = t.closest(".f").querySelector("label b"); if (lb) lb.textContent = (+t.value).toFixed(2) + "倍"; return; }
   n[t.dataset.orng] = +t.value; const g = document.querySelector(`#org-svg [data-onode="${n.id}"] path`), geo = oGeo(o)[n.id]; if (g && geo) g.setAttribute("d", oShape(n, geo.cx, geo.cy, geo.R)); });
