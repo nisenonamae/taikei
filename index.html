@@ -885,6 +885,10 @@ body.o-wide .wrap{max-width:min(1500px,100%)}
 
 .oside .orng{display:flex!important;align-items:center;gap:.35rem}.oside .orng span{white-space:nowrap;font-size:.7rem}
 .otabp[data-otabp="見た目"] .f>.orng{grid-column:2}
+
+.ozoom{position:absolute;right:8px;bottom:8px;display:flex;gap:2px;background:#fff;border:1px solid #2a2620;border-radius:6px;padding:2px}
+.ozoom button{border:none;background:transparent;min-width:28px;height:26px;font-size:14px;border-radius:4px;padding:0 6px}.ozoom button:hover{background:#f0eadb}
+.omini{width:min(220px,36%)}#o-mini [data-omcorner]{cursor:nwse-resize}
 </style>
 </head>
 <body>
@@ -906,7 +910,7 @@ body.o-wide .wrap{max-width:min(1500px,100%)}
 <div id="sheet-root"></div>
 <script>
 /* ───────── 大計:データ ───────── */
-const APP_VERSION = "2026-11-06 r23";
+const APP_VERSION = "2026-11-06 r24";
 const SHO_APP = "https://nisenonamae.github.io/sho/";
 const GRADES = ["最重要", "重要", "通常", "軽易"];
 const COUNCIL = { 最重要: "最高評議会", 重要: "常任評議会" };
@@ -3522,7 +3526,8 @@ function viewOrg(){
     <div class="ocrumb"><button class="linkx" data-oroot>${esc(o.name)}</button>${crumbs.map(c => ` › <button class="linkx" data-oenter="${c.id}">${esc(c.name || "(名前なし)")}</button>`).join("")}
       <span class="note">${ORG.tool === "link" ? (ORG.linkFrom ? "つなぐ先の円を押す" : "つなぐ元の円を押す") : ORG.tool === "pen" ? "図の上をなぞって書く(線を押すと消せる)" : ORG.tool === "band" ? "束ねる円を順に押し、「帯にする」" : "円を押すと選ぶ。2回押すと中に入る。何もない所をつかむと動かせ、ホイール・2本指で拡大"}</span></div>
     <div class="owrap"><div class="ostage${oShow(o, "motion") ? "" : " still"}"><svg id="org-svg" viewBox="${cam.x} ${cam.y} ${cam.w} ${cam.h}" preserveAspectRatio="xMidYMid meet"><rect x="-4000" y="-4000" width="9000" height="9000" fill="#fbfaf6" data-obg/>${sc.svg}<g id="o-pending"></g></svg>
-      ${oEdgeArrows(o, sc, cam)}${zoomed && ORG.mini ? oMini(o, cam) : `<button class="omini-btn" data-ominitog title="小さな全体図">▭</button>`}</div><div class="ocol">${oSide(o, when)}</div></div>
+      ${oEdgeArrows(o, sc, cam)}${(zoomed && ORG.mini !== false) || ORG.mini === "keep" ? oMini(o, cam) : `<button class="omini-btn" data-ominitog title="小さな全体図">▭</button>`}
+      <div class="ozoom"><button data-ozoom="in" title="寄る">＋</button><button data-ozoom="out" title="引く">−</button><button data-ozoom="all" title="全体を見る">全体</button></div></div><div class="ocol">${oSide(o, when)}</div></div>
     ${ORG.cmp ? oCompare(o) : ""}`;
 }
 function oSide(o, when){
@@ -3604,10 +3609,14 @@ function oMini(o, cam){ const geo = oGeo(o, null), parts = [], hi = null;
   const marks = []; const st = {}; Object.keys(geo).forEach(id => { const n = oNode(o, id); if (n) st[id] = oState(o, n); });
   Object.keys(geo).forEach(id => { const n = oNode(o, id), g = geo[id], s = st[id]; if (!n) return; const k = n.focus ? "🎯" : s.frozen ? "❄" : s.glow ? "✦" : ""; if (k) marks.push(`<text x="${g.cx}" y="${g.cy - g.R * 0.4}" font-size="44" text-anchor="middle">${k}</text>`); });
   o.links.forEach(l => { const ga = geo[l.a], gb = geo[l.b]; if (!ga || !gb) return; if ((l.kind === "compete" && (+l.level || 2) >= 3) || (l.kind === "harm" && (+l.level || 2) >= 3)) marks.push(`<text x="${(ga.cx + gb.cx) / 2}" y="${(ga.cy + gb.cy) / 2}" font-size="48" text-anchor="middle">${l.kind === "compete" ? "⚡" : "●"}</text>`); });
-  const F = oFit(o); ORG.miniBox = F;
+  const F0 = oFit(o), ux = Math.min(F0.x, cam.x), uy = Math.min(F0.y, cam.y), uw = Math.max(F0.x + F0.w, cam.x + cam.w) - ux, uh = Math.max(F0.y + F0.h, cam.y + cam.h) - uy, fw = Math.max(uw, uh * OW / OH) * 1.04;
+  const F = { x: ux + uw / 2 - fw / 2, y: uy + uh / 2 - fw * OH / OW / 2, w: fw, h: fw * OH / OW }; ORG.miniBox = F;
   return `<div class="omini" data-omini><svg viewBox="${F.x} ${F.y} ${F.w} ${F.h}" id="o-mini"><rect x="${F.x}" y="${F.y}" width="${F.w}" height="${F.h}" fill="#f6f1e4"/>${parts.join("")}${marks.join("")}
     <path d="M${F.x - 50} ${F.y - 50}H${F.x + F.w + 50}V${F.y + F.h + 50}H${F.x - 50}Z M${r.x} ${r.y}V${r.y + r.h}H${r.x + r.w}V${r.y}Z" fill="#2a2620" fill-opacity=".16" fill-rule="evenodd"/>
-    <rect id="o-mini-frame" x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}" fill="none" stroke="#f2a23a" stroke-width="10"/></svg><button class="omini-x" data-ominitog title="たたむ">×</button></div>`; }
+    <rect id="o-mini-frame" x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}" fill="none" stroke="#f2a23a" stroke-width="${F.w * 0.008}"/>
+    <rect id="o-mini-corner" data-omcorner x="${r.x + r.w - F.w * 0.035}" y="${r.y + r.h - F.w * 0.035}" width="${F.w * 0.05}" height="${F.w * 0.05}" fill="#f2a23a" stroke="#fff" stroke-width="${F.w * 0.004}"/>
+    <rect id="o-mini-sel" x="0" y="0" width="0" height="0" fill="rgba(242,162,58,.18)" stroke="#f2a23a" stroke-width="${F.w * 0.005}" stroke-dasharray="${F.w * 0.015} ${F.w * 0.01}" visibility="hidden"/></svg>
+    <button class="omini-x" data-ominitog title="たたむ">×</button></div>`; }
 function oEdgeArrows(o, sc, cam){ const out = [];
   const add = (x, y, label, col) => { if (x >= cam.x && x <= cam.x + cam.w && y >= cam.y && y <= cam.y + cam.h) return;
     const cx = cam.x + cam.w / 2, cy = cam.y + cam.h / 2, a = Math.atan2(y - cy, x - cx), px = 50 + 46 * Math.cos(a) / Math.max(Math.abs(Math.cos(a)), Math.abs(Math.sin(a))), py = 50 + 46 * Math.sin(a) / Math.max(Math.abs(Math.cos(a)), Math.abs(Math.sin(a)));
@@ -3665,6 +3674,11 @@ function oAdd(where){ const o = curOrg(); if (!o) return; oSnap();
 function oPt(e){ const svg = $("org-svg"), pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; return pt.matrixTransform(svg.getScreenCTM().inverse()); }
 function oHit(o, sx, sy, exclude){ const els = document.elementsFromPoint(sx, sy);
   for (const el of els) { const g = el.closest && el.closest("#org-svg [data-onode]"); if (!g) continue; const id = g.dataset.onode; if (exclude && (id === exclude || oIsDesc(o, exclude, id))) continue; return id; } return null; }
+// 小さな全体図の上の位置(地図の座標で)と、枠の描き直し
+function oMiniPt(e){ const m = $("o-mini"); if (!m) return null; const r = m.getBoundingClientRect(), F = ORG.miniBox || { x: 0, y: 0, w: OW, h: OH }, k = Math.max(F.w / r.width, F.h / r.height), ox = (r.width * k - F.w) / 2, oy = (r.height * k - F.h) / 2;
+  return { x: F.x - ox + (e.clientX - r.left) * k, y: F.y - oy + (e.clientY - r.top) * k }; }
+function oMiniFrame(){ const c = oCam(), F = ORG.miniBox || { w: OW }, f = $("o-mini-frame"), k = $("o-mini-corner"); if (f) { f.setAttribute("x", c.x); f.setAttribute("y", c.y); f.setAttribute("width", c.w); f.setAttribute("height", c.h); }
+  if (k) { k.setAttribute("x", c.x + c.w - F.w * 0.035); k.setAttribute("y", c.y + c.h - F.w * 0.035); } }
 // 円へ寄る・引く(なめらかに)
 function oFly(to){ const from = Object.assign({}, oCam()), t0 = performance.now();
   const step = t => { const k = clamp((t - t0) / 420, 0, 1), e = 0.5 - Math.cos(k * Math.PI) / 2, lw = Math.exp(Math.log(from.w) * (1 - e) + Math.log(to.w) * e);
@@ -3682,8 +3696,11 @@ function oSetCam(c){ const k = clamp(c.w, 40, OW * 12); const h = k * OH / OW; O
 const oPointers = new Map();
 document.addEventListener("pointerdown", e => {
   const mini = e.target.closest && e.target.closest("#o-mini");
-  if (mini) { e.preventDefault(); const r = mini.getBoundingClientRect(), F = ORG.miniBox || { x: 0, y: 0, w: OW, h: OH }, x = F.x + (e.clientX - r.left) / r.width * F.w, y = F.y + (e.clientY - r.top) / r.height * F.h;
-    ORG.miniDrag = true; oSetCam({ w: oCam().w, cx: x, cy: y }); return; }
+  if (mini) { e.preventDefault(); const pt = oMiniPt(e); if (!pt) return; const c = oCam();
+    if (e.target.closest("[data-omcorner]")) { ORG.miniCorner = { ax: c.x, ay: c.y }; return; }
+    const F = ORG.miniBox || { w: OW, h: OH }, big = c.w * c.h > F.w * F.h * 0.55;   // 枠が全体図の大半なら、中を押しても四角を描く
+    if (!big && pt.x >= c.x && pt.x <= c.x + c.w && pt.y >= c.y && pt.y <= c.y + c.h) { ORG.miniDrag = { dx: pt.x - (c.x + c.w / 2), dy: pt.y - (c.y + c.h / 2) }; return; }
+    ORG.miniBoxSel = { x0: pt.x, y0: pt.y, x1: pt.x, y1: pt.y }; return; }
   const svg = e.target.closest && e.target.closest("#org-svg"); if (!svg) return;
   oPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
   if (oPointers.size === 2) { const [a, b] = [...oPointers.values()]; ORG.pinch = { d: Math.hypot(a.x - b.x, a.y - b.y), cam: Object.assign({}, oCam()) }; ORG.drag = null; ORG.pan = null; return; }
@@ -3697,7 +3714,11 @@ document.addEventListener("pointerdown", e => {
   if (!g && (e.target.matches("[data-obg]") || e.target === svg)) { ORG.pan = { sx: e.clientX, sy: e.clientY, cam: Object.assign({}, oCam()), moved: false }; }
 });
 document.addEventListener("pointermove", e => {
-  if (ORG.miniDrag) { const m = $("o-mini"); if (!m) return; const r = m.getBoundingClientRect(), F = ORG.miniBox || { x: 0, y: 0, w: OW, h: OH }; oSetCam({ w: oCam().w, cx: F.x + (e.clientX - r.left) / r.width * F.w, cy: F.y + (e.clientY - r.top) / r.height * F.h }); const f = $("o-mini-frame"); if (f) { const c = oCam(); f.setAttribute("x", c.x); f.setAttribute("y", c.y); } return; }
+  if (ORG.miniDrag || ORG.miniCorner || ORG.miniBoxSel) { const pt = oMiniPt(e); if (!pt) return;
+    if (ORG.miniDrag) oSetCam({ w: oCam().w, cx: pt.x - ORG.miniDrag.dx, cy: pt.y - ORG.miniDrag.dy });
+    if (ORG.miniCorner) { const A = ORG.miniCorner, w = clamp(Math.max(pt.x - A.ax, (pt.y - A.ay) * OW / OH), 40, OW * 12); ORG.cam = { x: A.ax, y: A.ay, w, h: w * OH / OW }; const sv = $("org-svg"); if (sv) sv.setAttribute("viewBox", `${ORG.cam.x} ${ORG.cam.y} ${ORG.cam.w} ${ORG.cam.h}`); }
+    if (ORG.miniBoxSel) { const B = ORG.miniBoxSel; B.x1 = pt.x; B.y1 = pt.y; const r = $("o-mini-sel"); if (r) { r.setAttribute("x", Math.min(B.x0, B.x1)); r.setAttribute("y", Math.min(B.y0, B.y1)); r.setAttribute("width", Math.abs(B.x1 - B.x0)); r.setAttribute("height", Math.abs(B.y1 - B.y0)); r.setAttribute("visibility", "visible"); } }
+    oMiniFrame(); return; }
   if (oPointers.has(e.pointerId)) oPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
   if (ORG.pinch && oPointers.size === 2) { const [a, b] = [...oPointers.values()], d = Math.hypot(a.x - b.x, a.y - b.y), c = ORG.pinch.cam, k = c.w * ORG.pinch.d / Math.max(20, d);
     oSetCam({ w: k, cx: c.x + c.w / 2, cy: c.y + c.h / 2 }); return; }
@@ -3717,7 +3738,10 @@ document.addEventListener("pointercancel", e => { oPointers.delete(e.pointerId);
 document.addEventListener("pointerup", e => {
   const wasPinch = !!ORG.pinch; oPointers.delete(e.pointerId); if (oPointers.size < 2) ORG.pinch = null;
   if (wasPinch && !ORG.pinch) { render(); return; }
-  if (ORG.miniDrag) { ORG.miniDrag = false; render(); return; }
+  if (ORG.miniDrag || ORG.miniCorner) { ORG.miniDrag = null; ORG.miniCorner = null; render(); return; }
+  if (ORG.miniBoxSel) { const B = ORG.miniBoxSel, F = ORG.miniBox || { w: OW }; ORG.miniBoxSel = null; const bw = Math.abs(B.x1 - B.x0), bh = Math.abs(B.y1 - B.y0);
+    if (Math.max(bw, bh) < F.w * 0.03) { const c = oCam(); oFly({ x: B.x0 - c.w / 2, y: B.y0 - c.h / 2, w: c.w, h: c.h }); return; }
+    const w = clamp(Math.max(bw, bh * OW / OH), 40, OW * 12), cx = (B.x0 + B.x1) / 2, cy = (B.y0 + B.y1) / 2; oFly({ x: cx - w / 2, y: cy - w * OH / OW / 2, w, h: w * OH / OW }); return; }
   const o = curOrg(); if (!o) return;
   if (ORG.resize) { const R = ORG.resize; ORG.resize = null; const n = oNode(o, R.id); if (!n || !R.k || Math.abs(R.k - 1) < 0.01) { render(); return; }
     oSnap(); n.scale = Math.round(clamp(R.s0 * R.k, 0.25, 4) * 100) / 100; delete n.size; oArrange(o, n.parent || null, false); oTouch(o, n); oCommit(); return; }
@@ -3739,7 +3763,10 @@ document.addEventListener("click", e => { const g = e.target.closest && e.target
   if (ORG.tool === "link") { if (!ORG.linkFrom) { ORG.linkFrom = id; render(); return; } if (ORG.linkFrom === id) { ORG.linkFrom = null; render(); return; }
     oSnap(); const l = { id: "L" + uid(), a: ORG.linkFrom, b: id, kind: "support", level: 2, updated: orgNow() }; o.links.push(l); ORG.linkFrom = null; ORG.selLink = l.id; ORG.sel = null; ORG.tool = "select"; oTouch(o); oCommit(); return; }
   if (ORG.tool === "band") { ORG.bandPick = ORG.bandPick || []; ORG.bandPick = ORG.bandPick.includes(id) ? ORG.bandPick.filter(x => x !== id) : ORG.bandPick.concat([id]); render(); return; } }, true);
-document.addEventListener("wheel", e => { const svg = e.target.closest && e.target.closest("#org-svg"); if (!svg) return; e.preventDefault();
+document.addEventListener("wheel", e => { const mini = e.target.closest && e.target.closest("#o-mini");
+  if (mini) { e.preventDefault(); const c = oCam(), w = clamp(c.w * Math.exp(e.deltaY * 0.0015), 40, OW * 12); ORG.cam = { x: c.x + c.w / 2 - w / 2, y: c.y + c.h / 2 - w * OH / OW / 2, w, h: w * OH / OW };
+    const sv = $("org-svg"); if (sv) sv.setAttribute("viewBox", `${ORG.cam.x} ${ORG.cam.y} ${ORG.cam.w} ${ORG.cam.h}`); oMiniFrame(); clearTimeout(ORG.wt); ORG.wt = setTimeout(render, 220); return; }
+  const svg = e.target.closest && e.target.closest("#org-svg"); if (!svg) return; e.preventDefault();
   const p = oPt(e), c = oCam(), f = Math.exp(e.deltaY * 0.0015), w = clamp(c.w * f, 40, OW * 12), k = w / c.w;
   ORG.cam = { x: p.x - (p.x - c.x) * k, y: p.y - (p.y - c.y) * k, w, h: w * OH / OW }; svg.setAttribute("viewBox", `${ORG.cam.x} ${ORG.cam.y} ${ORG.cam.w} ${ORG.cam.h}`);
   clearTimeout(ORG.wt); ORG.wt = setTimeout(render, 220); }, { passive: false });
@@ -3748,11 +3775,13 @@ function oTweenSize(o, to){ const from = o.sizeMode; if (from === to) return; o.
   const step = t => { const k = clamp((t - t0) / 450, 0, 1); ORG.tween = { from, to, t: k < 1 ? 0.5 - Math.cos(k * Math.PI) / 2 : 1 }; render(); if (k < 1) requestAnimationFrame(step); else { ORG.tween = null; oTouch(o); persist(); render(); } };
   requestAnimationFrame(step); }
 document.addEventListener("click", e => {
-  const b = e.target.closest("[data-onew],[data-osel],[data-orename],[data-oadd],[data-oarr],[data-oundo],[data-oroot],[data-oenter],[data-odel],[data-oset],[data-ocolor],[data-otool],[data-olink],[data-olset],[data-olswap],[data-oldel],[data-oband],[data-obandmake],[data-obcol],[data-obdel],[data-open],[data-osize],[data-oshot],[data-ocmp],[data-ocmpx],[data-oshotdel],[data-odone],[data-opath],[data-ominitog],[data-odelorg],[data-owrapall],[data-owrap],[data-ofill],[data-ostroke],[data-otypesave],[data-otypedel],[data-otyperen],[data-oscale],[data-otab]"); if (!b) return;
+  const b = e.target.closest("[data-onew],[data-osel],[data-orename],[data-oadd],[data-oarr],[data-oundo],[data-oroot],[data-oenter],[data-odel],[data-oset],[data-ocolor],[data-otool],[data-olink],[data-olset],[data-olswap],[data-oldel],[data-oband],[data-obandmake],[data-obcol],[data-obdel],[data-open],[data-osize],[data-oshot],[data-ocmp],[data-ocmpx],[data-oshotdel],[data-odone],[data-opath],[data-ominitog],[data-odelorg],[data-owrapall],[data-owrap],[data-ofill],[data-ostroke],[data-otypesave],[data-otypedel],[data-otyperen],[data-oscale],[data-otab],[data-ozoom]"); if (!b) return;
   const o = curOrg();
   if (b.matches("[data-onew]")) { if (orgs.length) return; oNew("全体"); oCommit(); return; }
   if (!o) return; oFix(o);
-  if (b.matches("[data-ominitog]")) { ORG.mini = !b.closest(".omini"); if (!ORG.mini) {} else if (!(oCam().w < OW * 0.97 || ORG.root)) oSetCam({ w: OW * 0.6, cx: OW / 2, cy: OH / 2 }); render(); return; }
+  if (b.matches("[data-ominitog]")) { ORG.mini = b.closest(".omini") ? false : "keep"; render(); return; }
+  if (b.matches("[data-ozoom]")) { const z = b.dataset.ozoom, c = oCam(); if (z === "all") { oFlyTo(o, null); return; }
+    const k = z === "in" ? 0.6 : 1 / 0.6, w = clamp(c.w * k, 40, OW * 12); oFly({ x: c.x + c.w / 2 - w / 2, y: c.y + c.h / 2 - w * OH / OW / 2, w, h: w * OH / OW }); return; }
   if (b.matches("[data-otab]")) { ORG.tab = b.dataset.otab; const side = b.closest(".oside"); if (side) { side.querySelectorAll("[data-otab]").forEach(x => x.setAttribute("aria-pressed", String(x === b))); side.querySelectorAll(".otabp").forEach(pnl => pnl.hidden = pnl.dataset.otabp !== ORG.tab); } return; }
   if (b.matches("[data-otool]")) { ORG.tool = b.dataset.otool; ORG.linkFrom = null; ORG.bandPick = []; render(); return; }
   if (b.matches("[data-orename]")) { const nm = prompt("図の名前", o.name); if (nm == null) return; oSnap(); o.name = nm.trim() || o.name; oTouch(o); oCommit(); return; }
