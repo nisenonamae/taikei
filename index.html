@@ -886,7 +886,7 @@ body.o-wide .wrap{max-width:min(1500px,100%)}
 <div id="sheet-root"></div>
 <script>
 /* ───────── 大計:データ ───────── */
-const APP_VERSION = "2026-11-06 r21";
+const APP_VERSION = "2026-11-06 r22";
 const SHO_APP = "https://nisenonamae.github.io/sho/";
 const GRADES = ["最重要", "重要", "通常", "軽易"];
 const COUNCIL = { 最重要: "最高評議会", 重要: "常任評議会" };
@@ -3480,16 +3480,18 @@ function oFit(o, only){ const geo = oGeo(o, null); let x0 = 1e9, y0 = 1e9, x1 = 
   if (x0 > x1) return { x: 0, y: 0, w: OW, h: OH };
   let w = Math.max(x1 - x0, (y1 - y0) * OW / OH, 260); const h = w * OH / OW; return { x: (x0 + x1) / 2 - w / 2, y: (y0 + y1) / 2 - h / 2, w, h, fit: true }; }
 const oCam = () => ORG.cam || (ORG.cam = oFit(curOrg()));
+function oOneMap(){ if (orgs.length < 2) return; const main = oFix(orgs[0]), others = orgs.slice(1);
+  others.forEach(x => oMergeOrg(main, oFix(x))); orgs = [main]; oTouch(main); persist(); setTimeout(() => toast("組織図を1枚にまとめました(ほかの図は、その名前の分野の円として入っています)"), 400); }
 function viewOrg(){
-  if (!orgs.length) return `<div class="empty"><b style="color:var(--ink);font-size:1rem">組織図</b><br>計画どうしの入れ子と関係を、自分で組み立てる図。<div class="fbar"><button class="btn sm" data-onew>+ 図を作る</button><button class="btn ghost sm" data-v="rel">前の関係図</button></div></div>`;
+  if (!orgs.length) return `<div class="empty"><b style="color:var(--ink);font-size:1rem">組織図</b><br>計画どうしの入れ子と関係を、自分で組み立てる1枚の地図。分野を並べ、寄ると中が見えてくる。<div class="fbar"><button class="btn sm" data-onew>始める</button><button class="btn ghost sm" data-v="rel">前の関係図</button></div></div>`;
+  oOneMap();
   const o = oFix(curOrg()); ORG.id = o.id; if (ORG.root && !oNode(o, ORG.root)) ORG.root = null; if (ORG.sel && !oNode(o, ORG.sel)) ORG.sel = null; if (ORG.selLink && !o.links.find(l => l.id === ORG.selLink)) ORG.selLink = null;
   const sc = oScene(o), cam = oCam();
   ORG.root = null; const here = oWhere(o), crumbs = []; { let x = here ? oNode(o, here) : null, g = 0; while (x && g++ < 99) { crumbs.unshift(x); x = oNode(o, x.parent); } }
   const when = t => t ? new Date(t).toLocaleString("ja-JP", { year: "numeric", month: "numeric", day: "numeric", weekday: "short", hour: "2-digit", minute: "2-digit" }) : "—";
   const tool = (k, l) => `<button class="btn ${ORG.tool === k ? "" : "ghost "}sm" data-otool="${k}">${l}</button>`;
   const fit = oFit(o), zoomed = cam.x > fit.x + 4 || cam.y > fit.y + 4 || cam.x + cam.w < fit.x + fit.w - 4 || cam.y + cam.h < fit.y + fit.h - 4;
-  return `<div class="ohead"><select data-osel>${orgs.map(x => `<option value="${x.id}"${x.id === o.id ? " selected" : ""}>${esc(x.name)}</option>`).join("")}</select>
-      <button class="btn ghost sm" data-onew>+ 図</button><button class="btn ghost sm" data-orename>名前</button><span class="note" style="margin-left:auto">最終更新 ${when(o.updated)}</span></div>
+  return `<div class="ohead"><b>組織図</b><span class="note" style="margin-left:auto">最終更新 ${when(o.updated)}</span></div>
     <div class="otb">${tool("select", "選ぶ・動かす")}${tool("link", "→ つながり")}${tool("pen", "✎ ペン")}${tool("band", "◯ 帯で束ねる")}
       <button class="btn ghost sm" data-oadd="in">+ 中に足す</button><button class="btn ghost sm" data-oadd="next"${ORG.sel ? "" : " disabled"}>+ となりに足す</button>
       <button class="btn ghost sm" data-oarr>自動で整える</button><button class="btn ghost sm" data-oundo${ORG.undo.length ? "" : " disabled"}>↶ 元に戻す</button><button class="btn ghost sm" data-oshot>📷 写真に残す</button>
@@ -3510,10 +3512,7 @@ function oSide(o, when){
     <details class="oset"><summary>型(${orgTypes.length})</summary>
       <div class="f"><label>いちばん外に足す円の型</label><select data-otoptype>${[["", "分野の枠(標準)"], ["plain", "ふつうの円"]].concat(orgTypes.filter(t => t.kind === "look").map(t => [t.id, t.name])).map(([v, l]) => `<option value="${v}"${(o.topType || "") === v ? " selected" : ""}>${esc(l)}</option>`).join("")}</select></div>
       ${orgTypes.map(t => `<div class="orow"><span>${oTypeSwatch(t)} ${esc(t.name)}<small> ${t.kind === "tree" ? "中身ごと(" + (t.tree || []).length + "つ)" : "見た目"}</small></span><span><button class="linkx" data-otyperen="${t.id}">名前</button> <button class="linkx" data-otypedel="${t.id}">消す</button></span></div>`).join("") || '<p class="note">円を選んで「見た目を型に登録」「中身ごと型に登録」で登録できる</p>'}</details>
-    <details class="oset"><summary>この図</summary>
-      ${oKids(o, null).length > 1 ? `<button class="btn ghost sm" data-owrapall>いちばん外の円を全部、ひとつの円で囲む</button>` : ""}
-      ${orgs.length > 1 ? `<div class="f"><label>ほかの図をこの図に入れる(その図の名前の大きな円になる)</label><select data-omerge><option value="">選ぶ</option>${orgs.filter(x => x.id !== o.id).map(x => `<option value="${x.id}">${esc(x.name)}</option>`).join("")}</select></div>` : ""}
-      <button class="btn ghost sm" data-odelorg style="color:var(--shu)">この図を消す</button></details>`;
+    ${oKids(o, null).length > 1 ? `<details class="oset"><summary>まとめる</summary><button class="btn ghost sm" data-owrapall>いちばん外の円を全部、ひとつの円で囲む</button></details>` : ""}`;
   if (l) { const A = oNode(o, l.a), B = oNode(o, l.b);
     return `<div class="oside"><h3 style="margin:0 0 .4rem">つながり</h3><p class="note" style="margin:0 0 .4rem">${esc(A ? A.name : "")} → ${esc(B ? B.name : "")}</p>
       <div class="f"><label>種類</label>${seg("kind", LINK_KINDS.concat([["share", "分け合う(重ねる)"]]), l.kind, "olset")}</div>
@@ -3718,7 +3717,7 @@ function oTweenSize(o, to){ const from = o.sizeMode; if (from === to) return; o.
 document.addEventListener("click", e => {
   const b = e.target.closest("[data-onew],[data-osel],[data-orename],[data-oadd],[data-oarr],[data-oundo],[data-oroot],[data-oenter],[data-odel],[data-oset],[data-ocolor],[data-otool],[data-olink],[data-olset],[data-olswap],[data-oldel],[data-oband],[data-obandmake],[data-obcol],[data-obdel],[data-open],[data-osize],[data-oshot],[data-ocmp],[data-ocmpx],[data-oshotdel],[data-odone],[data-opath],[data-ominitog],[data-odelorg],[data-owrapall],[data-owrap],[data-ofill],[data-ostroke],[data-otypesave],[data-otypedel],[data-otyperen]"); if (!b) return;
   const o = curOrg();
-  if (b.matches("[data-onew]")) { const nm = prompt("図の名前", "受験の全体"); if (nm == null) return; oNew(nm.trim() || "新しい図"); oCommit(); return; }
+  if (b.matches("[data-onew]")) { if (orgs.length) return; oNew("全体"); oCommit(); return; }
   if (!o) return; oFix(o);
   if (b.matches("[data-ominitog]")) { ORG.mini = !b.closest(".omini"); if (!ORG.mini) {} else if (!(oCam().w < OW * 0.97 || ORG.root)) oSetCam({ w: OW * 0.6, cx: OW / 2, cy: OH / 2 }); render(); return; }
   if (b.matches("[data-otool]")) { ORG.tool = b.dataset.otool; ORG.linkFrom = null; ORG.bandPick = []; render(); return; }
