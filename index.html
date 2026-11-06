@@ -910,7 +910,7 @@ body.o-wide .wrap{max-width:min(1500px,100%)}
 <div id="sheet-root"></div>
 <script>
 /* ───────── 大計:データ ───────── */
-const APP_VERSION = "2026-11-06 r26";
+const APP_VERSION = "2026-11-06 r27";
 const SHO_APP = "https://nisenonamae.github.io/sho/";
 const GRADES = ["最重要", "重要", "通常", "軽易"];
 const COUNCIL = { 最重要: "最高評議会", 重要: "常任評議会" };
@@ -3677,6 +3677,9 @@ function oAdd(where){ const o = curOrg(); if (!o) return; oSnap();
 function oPt(e){ const svg = $("org-svg"), pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; return pt.matrixTransform(svg.getScreenCTM().inverse()); }
 function oHit(o, sx, sy, exclude){ const els = document.elementsFromPoint(sx, sy);
   for (const el of els) { const g = el.closest && el.closest("#org-svg [data-onode]"); if (!g) continue; const id = g.dataset.onode; if (exclude && (id === exclude || oIsDesc(o, exclude, id))) continue; return id; } return null; }
+// その円と、中にある円すべての絵
+function oGroupEls(o, id){ const ids = [id].concat(o.nodes.filter(x => oIsDesc(o, id, x.id)).map(x => x.id));
+  return ids.map(i => document.querySelector(`#org-svg [data-onode="${i}"]`)).filter(Boolean); }
 // 小さな全体図の上の位置(地図の座標で)と、枠の描き直し
 function oMiniPt(e){ const m = $("o-mini"); if (!m) return null; const r = m.getBoundingClientRect(), F = ORG.miniBox || { x: 0, y: 0, w: OW, h: OH }, k = Math.max(F.w / r.width, F.h / r.height), ox = (r.width * k - F.w) / 2, oy = (r.height * k - F.h) / 2;
   return { x: F.x - ox + (e.clientX - r.left) * k, y: F.y - oy + (e.clientY - r.top) * k }; }
@@ -3711,7 +3714,7 @@ document.addEventListener("pointerdown", e => {
   if (ORG.tool === "pen") { const p = oPt(e); ORG.pen = { pts: [[p.x, p.y]] }; svg.setPointerCapture && svg.setPointerCapture(e.pointerId); return; }
   const hd = e.target.closest("[data-oresize]");
   if (hd) { const n = oNode(o, hd.dataset.oresize), geo = oGeo(o, null)[n.id], p0 = oPt(e); if (!n || !geo) return;
-    ORG.resize = { id: n.id, cx: geo.cx, cy: geo.cy, d0: Math.max(4, Math.hypot(p0.x - geo.cx, p0.y - geo.cy)), s0: oScale(n), g: document.querySelector(`#org-svg [data-onode="${n.id}"]`) }; e.stopPropagation(); return; }
+    ORG.resize = { id: n.id, cx: geo.cx, cy: geo.cy, d0: Math.max(4, Math.hypot(p0.x - geo.cx, p0.y - geo.cy)), s0: oScale(n), gs: oGroupEls(o, n.id) }; e.stopPropagation(); return; }
   const g = e.target.closest("[data-onode]");
   if (g && ORG.tool === "select") { const p0 = oPt(e); ORG.drag = { id: g.dataset.onode, g, x0: p0.x, y0: p0.y, cx: e.clientX, cy: e.clientY, moved: false }; return; }
   if (!g && (e.target.matches("[data-obg]") || e.target === svg)) { ORG.pan = { sx: e.clientX, sy: e.clientY, cam: Object.assign({}, oCam()), moved: false }; }
@@ -3726,14 +3729,15 @@ document.addEventListener("pointermove", e => {
   if (ORG.pinch && oPointers.size === 2) { const [a, b] = [...oPointers.values()], d = Math.hypot(a.x - b.x, a.y - b.y), c = ORG.pinch.cam, k = c.w * ORG.pinch.d / Math.max(20, d);
     oSetCam({ w: k, cx: c.x + c.w / 2, cy: c.y + c.h / 2 }); return; }
   if (ORG.resize) { const R = ORG.resize, p = oPt(e), k = clamp(Math.hypot(p.x - R.cx, p.y - R.cy) / R.d0, 0.25 / R.s0, 4 / R.s0); R.k = k;
-    if (R.g) R.g.setAttribute("transform", `translate(${R.cx} ${R.cy}) scale(${k}) translate(${-R.cx} ${-R.cy})`); const lb = document.querySelector(".oside label b"); if (lb) lb.textContent = (R.s0 * k).toFixed(2) + "倍"; return; }
+    (R.gs || []).forEach(el => el.setAttribute("transform", `translate(${R.cx} ${R.cy}) scale(${k}) translate(${-R.cx} ${-R.cy})`)); const lb = document.querySelector(".oside label b"); if (lb) lb.textContent = (R.s0 * k).toFixed(2) + "倍"; return; }
   if (ORG.pen) { const p = oPt(e); ORG.pen.pts.push([p.x, p.y]); const pg = $("o-pending"); if (pg) pg.innerHTML = `<path d="M${ORG.pen.pts.map(q => q[0].toFixed(1) + " " + q[1].toFixed(1)).join("L")}" stroke="#2a2620" stroke-width="2.2" fill="none" stroke-linecap="round"/>`; return; }
   if (ORG.pan) { const svg = $("org-svg"); if (!svg) return; const r = svg.getBoundingClientRect(), c = ORG.pan.cam, sx = c.w / r.width;
     if (Math.hypot(e.clientX - ORG.pan.sx, e.clientY - ORG.pan.sy) > 4) ORG.pan.moved = true;
     oSetCam({ w: c.w, cx: c.x + c.w / 2 - (e.clientX - ORG.pan.sx) * sx, cy: c.y + c.h / 2 - (e.clientY - ORG.pan.sy) * sx }); return; }
   const D = ORG.drag; if (!D) return;
   if (!D.moved && Math.hypot(e.clientX - D.cx, e.clientY - D.cy) < 5) return; D.moved = true;
-  const p = oPt(e); D.g.setAttribute("transform", `translate(${p.x - D.x0} ${p.y - D.y0})`); D.g.style.opacity = ".8"; D.g.style.pointerEvents = "none";
+  const p = oPt(e); if (!D.gs) D.gs = oGroupEls(curOrg(), D.id);
+  D.gs.forEach(el => { el.setAttribute("transform", `translate(${p.x - D.x0} ${p.y - D.y0})`); el.style.opacity = ".85"; el.style.pointerEvents = "none"; });
   document.querySelectorAll("#org-svg .odrop").forEach(x => x.classList.remove("odrop"));
   const o = curOrg(), t = oHit(o, e.clientX, e.clientY, D.id); D.target = t; if (t) { const tg = document.querySelector(`#org-svg [data-onode="${t}"]`); if (tg) tg.classList.add("odrop"); } });
 // 指がはなれずに取り消されたとき(通知が出た、など)は、残った指を消す
@@ -3848,7 +3852,7 @@ document.addEventListener("change", e => { const t = e.target, o = curOrg(); if 
   if (t.matches("[data-ocloud]")) { oSnap(); const opts = t.value.split(/[、,，]/).map(x => x.trim()).filter(Boolean); n.cloud = opts.length ? { opts } : null; oTouch(o, n); oCommit(); return; }
   if (t.matches("[data-orng]")) { oSnap(); n[t.dataset.orng] = +t.value; if (t.dataset.orng === "scale") { delete n.size; oArrange(o, n.parent || null, false, { fix: [n.id] }); } oTouch(o, n); oCommit(); return; } });
 document.addEventListener("input", e => { const t = e.target; if (!t.matches || !t.matches("[data-orng]")) return; const o = curOrg(), n = o && oNode(o, ORG.sel); if (!n) return;
-  if (t.dataset.orng === "scale") { const g = document.querySelector(`#org-svg [data-onode="${n.id}"]`), geo = oGeo(o, null)[n.id], k = +t.value / oScale(n); if (g && geo) g.setAttribute("transform", `translate(${geo.cx} ${geo.cy}) scale(${k}) translate(${-geo.cx} ${-geo.cy})`); const lb = t.closest(".f").querySelector("label b"); if (lb) lb.textContent = (+t.value).toFixed(2) + "倍"; return; }
+  if (t.dataset.orng === "scale") { const geo = oGeo(o, null)[n.id], k = +t.value / oScale(n); if (geo) oGroupEls(o, n.id).forEach(el => el.setAttribute("transform", `translate(${geo.cx} ${geo.cy}) scale(${k}) translate(${-geo.cx} ${-geo.cy})`)); const lb = t.closest(".f").querySelector("label b"); if (lb) lb.textContent = (+t.value).toFixed(2) + "倍"; return; }
   n[t.dataset.orng] = +t.value; const g = document.querySelector(`#org-svg [data-onode="${n.id}"] path`), geo = oGeo(o)[n.id]; if (g && geo) g.setAttribute("d", oShape(n, geo.cx, geo.cy, geo.R)); });
 
 const VIEWS = { org: viewOrg, overview: viewOverview, timeline: viewTimeline, plan: viewPlan, rel: viewRel, field: viewField, tech: viewTech, glossary: viewGlossary, koubou: viewKoubou, kbtypes: viewKbTypes, tests: viewTests, week: viewWeek, weekrec: viewWeekRec, sound: viewSound, sync: viewSync, more: viewMore, load: viewLoad, lessons: viewLessons, council: viewCouncil, notify: viewNotify, importv: viewImport };
