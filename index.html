@@ -837,7 +837,7 @@ label.mini{display:flex;flex-direction:column;gap:.1rem;font-size:.62rem;color:v
 /* 組織図の動き */
 @keyframes o-out{0%{transform:translate(0,0);opacity:0}25%{opacity:1}100%{transform:translate(var(--dx),var(--dy));opacity:0}}
 @keyframes o-in{0%{transform:translate(var(--dx),var(--dy));opacity:0}25%{opacity:1}100%{transform:translate(0,0);opacity:0}}
-@keyframes o-flow{from{stroke-dashoffset:0}to{stroke-dashoffset:-20}}@keyframes o-flowr{from{stroke-dashoffset:0}to{stroke-dashoffset:20}}
+@keyframes o-flow{from{stroke-dashoffset:0}to{stroke-dashoffset:-8}}@keyframes o-flowr{from{stroke-dashoffset:0}to{stroke-dashoffset:8}}
 @keyframes o-c{0%,100%{opacity:.15}40%{opacity:1}60%{opacity:.4}}@keyframes o-bolt{0%,100%{opacity:0}8%{opacity:1}14%{opacity:.2}20%{opacity:1}40%{opacity:0}}
 @keyframes o-glow{0%,100%{opacity:.15}50%{opacity:.5}}@keyframes o-shake{0%,100%{transform:translate(0,0)}25%{transform:translate(1.2px,-1px)}75%{transform:translate(-1px,1px)}}
 @keyframes o-seep{0%,100%{opacity:.6}50%{opacity:1}}@keyframes o-crumb{0%{transform:translate(0,0);opacity:1}100%{transform:translate(var(--dx),20px);opacity:0}}
@@ -849,7 +849,7 @@ label.mini{display:flex;flex-direction:column;gap:.1rem;font-size:.62rem;color:v
 @keyframes o-shackle{0%,20%{transform:translateY(0) rotate(0)}45%,100%{transform:translateY(-6px) rotate(-30deg)}}@keyframes o-wave{0%,100%{transform:translateX(0)}50%{transform:translateX(-6px)}}
 @keyframes o-path{from{stroke-dashoffset:0}to{stroke-dashoffset:-30}}@keyframes o-unlock{0%,70%{opacity:1}100%{opacity:0}}
 #org-svg .o-out{animation:o-out 1.8s ease-out infinite}#org-svg .o-in{animation:o-in 1.8s ease-in infinite}
-#org-svg .o-flow{stroke-dasharray:6 14;animation:o-flow 1s linear infinite}#org-svg .o-flowr{stroke-dasharray:6 14;animation:o-flowr 1s linear infinite}
+#org-svg .o-flow{stroke-dasharray:.01 8;stroke-linecap:round;animation:o-flow 1.2s linear infinite}#org-svg .o-flowr{stroke-dasharray:.01 8;stroke-linecap:round;animation:o-flowr 1.2s linear infinite}
 #org-svg .o-short{stroke-dasharray:none!important;animation:none!important;opacity:.75}
 #org-svg .o-c1{animation:o-c 1.4s infinite}#org-svg .o-c2{animation:o-c .9s infinite}#org-svg .o-bolt{animation:o-bolt 1.6s infinite}#org-svg .o-glowp{animation:o-glow 1.1s infinite}
 #org-svg .o-shake{animation:o-shake .25s infinite}#org-svg .o-seep{animation:o-seep 2.4s ease-in-out infinite}#org-svg .o-crumb{animation:o-crumb 1.6s ease-in infinite}
@@ -932,7 +932,7 @@ body.o-wide .wrap{max-width:min(1500px,100%)}
 <div id="sheet-root"></div>
 <script>
 /* ───────── 大計:データ ───────── */
-const APP_VERSION = "2026-11-07 r35";
+const APP_VERSION = "2026-11-07 r36";
 const SHO_APP = "https://nisenonamae.github.io/sho/";
 const GRADES = ["最重要", "重要", "通常", "軽易"];
 const COUNCIL = { 最重要: "最高評議会", 重要: "常任評議会" };
@@ -3478,12 +3478,17 @@ function oErosion(o, l, geo, n, cid, defs){ const ga = geo[l.a], gb = geo[l.b], 
   const crumbs = []; for (let i = 0; i < lv + 1; i++) { const a = ang + (i - lv / 2) * 0.22, [rx, ry] = oRad(n, R), x = gb.cx + Math.cos(a) * rx * 0.96, y = gb.cy + Math.sin(a) * ry * 0.96;
     crumbs.push(`<path class="o-crumb" style="--dx:${(Math.cos(ang) * 8).toFixed(1)}px;animation-delay:${i * 0.45}s" d="M${x} ${y}l6 2l-3 5z" fill="${oColor(o, n, 0)}"/>`); }
   return `<g pointer-events="none" class="o-gnaw"><rect class="o-seep" x="${gb.cx - R * 2}" y="${gb.cy - R * 2}" width="${R * 4}" height="${R * 4}" fill="url(#${gid})" clip-path="url(#${cid})"/>${bites.join("")}${crumbs.join("")}</g>`; }
-function oDrawLinks(o, geo, st, out){
-  const up = id => { let x = oNode(o, id), g = 0; while (x && !geo[x.id] && g++ < 60) x = oNode(o, x.parent); return x && geo[x.id] ? x.id : null; };
-  const seen = new Set();
-  const vis = o.links.map(l => { const a = up(l.a), b = up(l.b); if (!a || !b || a === b) return null; if (a === l.a && b === l.b) return l;
-      const key = a + ">" + b + ">" + l.kind; if (seen.has(key)) return null; seen.add(key); return Object.assign({}, l, { a, b, id: l.id, lifted: true }); })
-    .filter(l => l && oShow(o, l.kind === "share" ? "band" : l.kind));
+function oDrawLinks(o, geo, st, out, opt){
+  opt = opt || {}; const full = opt.fullGeo || geo;
+  // 端の円:見えていればそのまま。中が省かれていて、外の円が見えているなら「影」(影絵の位置)。それより奥なら出さない
+  const res = id => { if (geo[id]) return { id, ghost: false }; const n = oNode(o, id); if (n && n.parent && geo[n.parent] && full[id] && !n.done) return { id, ghost: true }; return null; };
+  const ghosts = [], vis = [];
+  o.links.forEach(l => { if (!oShow(o, l.kind === "share" ? "band" : l.kind)) return; const a = res(l.a), b = res(l.b); if (!a || !b || a.id === b.id) return;
+    if (a.ghost || b.ghost) ghosts.push(l); else vis.push(l); });
+  // 影どうし・影と円を結ぶ線:細く薄く、流れない
+  ghosts.forEach(l => { const A = oNode(o, l.a), B = oNode(o, l.b), ga = full[l.a], gb = full[l.b]; if (!A || !B || !ga || !gb) return;
+    const [ax, ay] = oEdge(A, ga, gb.cx, gb.cy), [bx, by] = oEdge(B, gb, ga.cx, ga.cy);
+    out.push(`<path d="M${ax} ${ay}L${bx} ${by}" stroke="${oColor(o, A, 0)}" stroke-opacity=".3" stroke-width="1.6" vector-effect="non-scaling-stroke" fill="none" stroke-linecap="round" pointer-events="none"/>`); });
   // 合流:同じ相手への「支える」が2本以上なら、途中で合わさって太くなる
   const sup = {}; vis.filter(l => l.kind === "support").forEach(l => (sup[l.b] = sup[l.b] || []).push(l));
   for (const l of vis) { const A = oNode(o, l.a), B = oNode(o, l.b), ga = geo[l.a], gb = geo[l.b], sel = ORG.selLink === l.id;
@@ -3492,11 +3497,11 @@ function oDrawLinks(o, geo, st, out){
     if (l.kind === "support") { const grp = sup[l.b]; let d;
       if (grp.length >= 2) { const cx = grp.reduce((a, x) => a + geo[x.a].cx, 0) / grp.length, cy = grp.reduce((a, x) => a + geo[x.a].cy, 0) / grp.length, [tx, ty] = oEdge(B, gb, cx, cy), jx = tx + (cx - tx) * 0.35, jy = ty + (cy - ty) * 0.35;
         d = `M${ax} ${ay}Q${(ax + jx) / 2} ${(ay + jy) / 2 + 10} ${jx} ${jy}`;
-        if (grp[0] === l) out.push(`<path class="o-flow" vector-effect="non-scaling-stroke" d="M${jx} ${jy}L${tx} ${ty}" stroke="${oColor(o, A, 0)}" stroke-width="${3 + grp.length * 2.2}" fill="none" stroke-linecap="round" pointer-events="none"/>`); }
+        if (grp[0] === l) out.push(`<path class="o-flow" pathLength="100" vector-effect="non-scaling-stroke" d="M${jx} ${jy}L${tx} ${ty}" stroke="${oColor(o, A, 0)}" stroke-width="${3 + grp.length * 2.2}" fill="none" stroke-linecap="round" pointer-events="none"/>`); }
       else d = `M${ax} ${ay}Q${mx + (by - ay) * 0.08} ${my - (bx - ax) * 0.08} ${bx} ${by}`;
-      out.push(`<path class="o-flow" vector-effect="non-scaling-stroke" d="${d}" stroke="${sel ? "#f2b84b" : oColor(o, A, 0)}" stroke-width="${2 + lv * 1.2}" fill="none" stroke-linecap="round" pointer-events="none"/>` + hit(d)); }
+      out.push(`<path class="o-flow" pathLength="100" vector-effect="non-scaling-stroke" d="${d}" stroke="${sel ? "#f2b84b" : oColor(o, A, 0)}" stroke-width="${2 + lv * 1.2}" fill="none" stroke-linecap="round" pointer-events="none"/>` + hit(d)); }
     else if (l.kind === "mutual") { const nx = -(by - ay), ny = bx - ax, nl = Math.hypot(nx, ny) || 1, ox = nx / nl * 5, oy = ny / nl * 5;
-      out.push(`<path class="o-flow" vector-effect="non-scaling-stroke" d="M${ax + ox} ${ay + oy}L${bx + ox} ${by + oy}" stroke="${sel ? "#f2b84b" : oColor(o, A, 0)}" stroke-width="${2 + lv}" fill="none" pointer-events="none"/><path class="o-flowr" vector-effect="non-scaling-stroke" d="M${ax - ox} ${ay - oy}L${bx - ox} ${by - oy}" stroke="${sel ? "#f2b84b" : oColor(o, B, 0)}" stroke-width="${2 + lv}" fill="none" pointer-events="none"/>` + hit(`M${ax} ${ay}L${bx} ${by}`)); }
+      out.push(`<path class="o-flow" pathLength="100" vector-effect="non-scaling-stroke" d="M${ax + ox} ${ay + oy}L${bx + ox} ${by + oy}" stroke="${sel ? "#f2b84b" : oColor(o, A, 0)}" stroke-width="${2 + lv}" fill="none" pointer-events="none"/><path class="o-flowr" pathLength="100" vector-effect="non-scaling-stroke" d="M${ax - ox} ${ay - oy}L${bx - ox} ${by - oy}" stroke="${sel ? "#f2b84b" : oColor(o, B, 0)}" stroke-width="${2 + lv}" fill="none" pointer-events="none"/>` + hit(`M${ax} ${ay}L${bx} ${by}`)); }
     else if (l.kind === "prereq") { const len = Math.hypot(bx - ax, by - ay), ang = Math.atan2(by - ay, bx - ax) * 180 / Math.PI, done = oDone(o, l.a), path = ORG.path && ORG.path.has(l.id);
       out.push(`<g transform="translate(${ax},${ay}) rotate(${ang})" pointer-events="none" opacity="${done ? 0.35 : 1}"><rect x="0" y="-4" width="${len}" height="8" fill="url(#ochain)"/></g>` + (path ? `<path class="o-path" d="M${ax} ${ay}L${bx} ${by}" stroke="#f2b84b" stroke-width="6" fill="none" stroke-linecap="round" pointer-events="none"/>` : "") + (sel ? `<path d="M${ax} ${ay}L${bx} ${by}" stroke="#f2b84b" stroke-width="3" fill="none" pointer-events="none"/>` : "") + hit(`M${ax} ${ay}L${bx} ${by}`)); }
     else if (l.kind === "compete") { const ang = Math.atan2(by - ay, bx - ax), px = -Math.sin(ang), py = Math.cos(ang), h = 26 + lv * 10;
@@ -3533,8 +3538,9 @@ function oScene(o, opt){ opt = opt || {}; ORG.aggMemo = {}; const geo = oGeo(o, 
   opt.fullGeo = Object.assign({}, geo);
   if (lod) Object.keys(geo).forEach(id => { if (!lod.vis[id]) delete geo[id]; });
   opt.lod = lod;
-  oDrawBands(o, geo, under); const st = oDrawNodes(o, geo, out, defs, opt); const lk = []; oDrawLinks(o, geo, st, lk); const pens = []; oDrawPens(o, pens);
-  return { geo, st, svg: `<defs>${defs.join("")}<filter id="olift1"><feDropShadow dx="0" dy="5" stdDeviation="4" flood-opacity=".2"/></filter><filter id="olift2"><feDropShadow dx="0" dy="9" stdDeviation="7" flood-opacity=".26"/></filter><filter id="olift3"><feDropShadow dx="0" dy="14" stdDeviation="10" flood-opacity=".3"/></filter><pattern id="ochain" width="16" height="8" patternUnits="userSpaceOnUse"><ellipse cx="5" cy="4" rx="5" ry="3" fill="none" stroke="#6f6a60" stroke-width="2"/><ellipse cx="13" cy="4" rx="5" ry="3" fill="none" stroke="#6f6a60" stroke-width="2"/></pattern></defs>${under.join("")}${out.join("")}${lk.join("")}${pens.join("")}` }; }
+  oDrawBands(o, geo, under); const st = oDrawNodes(o, geo, out, defs, opt); const lk = []; oDrawLinks(o, geo, st, lk, opt); const pens = []; oDrawPens(o, pens);
+  if (!opt.still) ORG.scene = { geo, st, full: opt.fullGeo, lod };
+  return { geo, st, svg: `<defs>${defs.join("")}<filter id="olift1"><feDropShadow dx="0" dy="5" stdDeviation="4" flood-opacity=".2"/></filter><filter id="olift2"><feDropShadow dx="0" dy="9" stdDeviation="7" flood-opacity=".26"/></filter><filter id="olift3"><feDropShadow dx="0" dy="14" stdDeviation="10" flood-opacity=".3"/></filter><pattern id="ochain" width="16" height="8" patternUnits="userSpaceOnUse"><ellipse cx="5" cy="4" rx="5" ry="3" fill="none" stroke="#6f6a60" stroke-width="2"/><ellipse cx="13" cy="4" rx="5" ry="3" fill="none" stroke="#6f6a60" stroke-width="2"/></pattern></defs>${under.join("")}${out.join("")}<g id="o-links">${lk.join("")}</g>${pens.join("")}` }; }
 /* ── 画面 ── */
 function oFit(o, only){ const geo = oGeo(o, null); let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
   Object.keys(geo).forEach(id => { const n = oNode(o, id), g = geo[id]; if (!n || (only ? id !== only : g.dep)) return; const [rx, ry] = oRad(n, g.R), extra = n.cloud ? 220 * Math.max(0.55, Math.min(1.2, g.R / 60)) : 0; x0 = Math.min(x0, g.cx - rx - 30); x1 = Math.max(x1, g.cx + rx + 30 + extra); y0 = Math.min(y0, g.cy - ry - 40); y1 = Math.max(y1, g.cy + ry + 30); });
@@ -3742,6 +3748,12 @@ function oHit(o, sx, sy, exclude){ const els = document.elementsFromPoint(sx, sy
 // その円と、中にある円すべての絵
 function oGroupEls(o, id){ const ids = [id].concat(o.nodes.filter(x => oIsDesc(o, id, x.id)).map(x => x.id));
   return ids.map(i => document.querySelector(`#org-svg [data-onode="${i}"]`)).filter(Boolean); }
+// 動かしている円(とその中の円)の位置を変えた見立てで、つながりの層だけを描き直す
+function oLiveLinks(ids, f){ const S = ORG.scene, o = curOrg(), el = document.getElementById("o-links"); if (!S || !o || !el) return;
+  const mv = g => g && Object.assign({}, g, f(g)), geo = Object.assign({}, S.geo), full = Object.assign({}, S.full || S.geo);
+  ids.forEach(id => { if (geo[id]) geo[id] = mv(geo[id]); if (full[id]) full[id] = mv(full[id]); });
+  const lk = []; oDrawLinks(o, geo, S.st, lk, { fullGeo: full, lod: S.lod }); el.innerHTML = lk.join(""); }
+const oGroupIds = (o, id) => [id].concat(o.nodes.filter(x => oIsDesc(o, id, x.id)).map(x => x.id));
 // 端末の「動きを減らす」設定。この端末で「それでも動かす」を選んだかは、端末に覚える(同期しない)
 const oReduce = () => { try { return matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) { return false; } };
 const oMotionForced = () => { try { return localStorage.getItem("taikei-org-motion") === "on"; } catch (e) { return false; } };
@@ -3751,7 +3763,7 @@ function oReduceNote(){ if (!oReduce()) return "";
 // 画面上でとても短いつながりは、点の流れをやめて細い実線に(点が1〜2個だけの切れた線にならないように)
 function oShortFlows(svg){ if (!svg || !ORG.cam) return; const r = svg.getBoundingClientRect(), k = Math.max(ORG.cam.w / (r.width || 1), ORG.cam.h / (r.height || 1));
   svg.querySelectorAll(".o-flow,.o-flowr").forEach(el => { let L = 0; try { L = el.getTotalLength() / k; } catch (e) {} el.classList.toggle("o-short", L < 40); }); }
-function oOU(svg){ if (!svg || !ORG.cam) return; clearTimeout(ORG.shortT); ORG.shortT = setTimeout(() => oShortFlows(svg), 120); const r = svg.getBoundingClientRect(), px = r.width || ORG.px || 900; svg.style.setProperty("--ou", (Math.max(ORG.cam.w / px, ORG.cam.h / (r.height || px * OH / OW))).toFixed(5)); }
+function oOU(svg){ if (!svg || !ORG.cam) return; const r = svg.getBoundingClientRect(), px = r.width || ORG.px || 900; svg.style.setProperty("--ou", (Math.max(ORG.cam.w / px, ORG.cam.h / (r.height || px * OH / OW))).toFixed(5)); }
 // 固定の印:いつも出す。画面の上で同じ小ささ(拡大・縮小しても大きくならない)。つかむと一瞬はっきりする
 function oLockMark(o, n, g, rx, ry, d, col){
   const style = o.lockMark || "錠", px = (ORG.cam ? ORG.cam.w : OW) / (ORG.px || 900), u = px;   // u = 画面の1ピクセル
@@ -3828,15 +3840,17 @@ document.addEventListener("pointermove", e => {
   if (ORG.pinch && oPointers.size === 2) { const [a, b] = [...oPointers.values()], d = Math.hypot(a.x - b.x, a.y - b.y), c = ORG.pinch.cam, k = c.w * ORG.pinch.d / Math.max(20, d);
     oSetCam({ w: k, cx: c.x + c.w / 2, cy: c.y + c.h / 2 }); return; }
   if (ORG.resize) { const R = ORG.resize, p = oPt(e), k = Math.max(0.001 / R.s0, Math.hypot(p.x - R.cx, p.y - R.cy) / R.d0); R.k = k;
-    (R.gs || []).forEach(el => el.setAttribute("transform", `translate(${R.cx} ${R.cy}) scale(${k}) translate(${-R.cx} ${-R.cy})`)); const lb = document.querySelector(".oside label b"); if (lb) lb.textContent = (R.s0 * k).toFixed(2) + "倍"; return; }
+    (R.gs || []).forEach(el => el.setAttribute("transform", `translate(${R.cx} ${R.cy}) scale(${k}) translate(${-R.cx} ${-R.cy})`));
+    if (!R.ids) R.ids = oGroupIds(curOrg(), R.id); oLiveLinks(R.ids, g => ({ cx: R.cx + (g.cx - R.cx) * k, cy: R.cy + (g.cy - R.cy) * k, R: g.R * k })); const lb = document.querySelector(".oside label b"); if (lb) lb.textContent = (R.s0 * k).toFixed(2) + "倍"; return; }
   if (ORG.pen) { const p = oPt(e); ORG.pen.pts.push([p.x, p.y]); const pg = $("o-pending"); if (pg) pg.innerHTML = `<path d="M${ORG.pen.pts.map(q => q[0].toFixed(1) + " " + q[1].toFixed(1)).join("L")}" stroke="#2a2620" stroke-width="2.2" fill="none" stroke-linecap="round"/>`; return; }
   if (ORG.pan) { const svg = $("org-svg"); if (!svg) return; const r = svg.getBoundingClientRect(), c = ORG.pan.cam, sx = c.w / r.width;
     if (Math.hypot(e.clientX - ORG.pan.sx, e.clientY - ORG.pan.sy) > 4) ORG.pan.moved = true;
     oSetCam({ w: c.w, cx: c.x + c.w / 2 - (e.clientX - ORG.pan.sx) * sx, cy: c.y + c.h / 2 - (e.clientY - ORG.pan.sy) * sx }); return; }
   const D = ORG.drag; if (!D) return;
   if (!D.moved && Math.hypot(e.clientX - D.cx, e.clientY - D.cy) < 5) return; D.moved = true;
-  const p = oPt(e); if (!D.gs) D.gs = oGroupEls(curOrg(), D.id);
+  const p = oPt(e); if (!D.gs) { D.gs = oGroupEls(curOrg(), D.id); D.ids = oGroupIds(curOrg(), D.id); }
   D.gs.forEach(el => { el.setAttribute("transform", `translate(${p.x - D.x0} ${p.y - D.y0})`); el.style.opacity = ".85"; el.style.pointerEvents = "none"; });
+  const dx = p.x - D.x0, dy = p.y - D.y0; oLiveLinks(D.ids, g => ({ cx: g.cx + dx, cy: g.cy + dy }));
   document.querySelectorAll("#org-svg .odrop").forEach(x => x.classList.remove("odrop"));
   const o = curOrg(), t = oHit(o, e.clientX, e.clientY, D.id); D.target = t; if (t) { const tg = document.querySelector(`#org-svg [data-onode="${t}"]`); if (tg) tg.classList.add("odrop"); } });
 // 指がはなれずに取り消されたとき(通知が出た、など)は、残った指を消す
