@@ -837,7 +837,7 @@ label.mini{display:flex;flex-direction:column;gap:.1rem;font-size:.62rem;color:v
 /* 組織図の動き */
 @keyframes o-out{0%{transform:translate(0,0);opacity:0}25%{opacity:1}100%{transform:translate(var(--dx),var(--dy));opacity:0}}
 @keyframes o-in{0%{transform:translate(var(--dx),var(--dy));opacity:0}25%{opacity:1}100%{transform:translate(0,0);opacity:0}}
-@keyframes o-flow{from{stroke-dashoffset:0px}to{stroke-dashoffset:calc(var(--ou,1) * -20px)}}@keyframes o-flowr{from{stroke-dashoffset:0px}to{stroke-dashoffset:calc(var(--ou,1) * 20px)}}
+@keyframes o-flow{from{stroke-dashoffset:0}to{stroke-dashoffset:-20}}@keyframes o-flowr{from{stroke-dashoffset:0}to{stroke-dashoffset:20}}
 @keyframes o-c{0%,100%{opacity:.15}40%{opacity:1}60%{opacity:.4}}@keyframes o-bolt{0%,100%{opacity:0}8%{opacity:1}14%{opacity:.2}20%{opacity:1}40%{opacity:0}}
 @keyframes o-glow{0%,100%{opacity:.15}50%{opacity:.5}}@keyframes o-shake{0%,100%{transform:translate(0,0)}25%{transform:translate(1.2px,-1px)}75%{transform:translate(-1px,1px)}}
 @keyframes o-seep{0%,100%{opacity:.6}50%{opacity:1}}@keyframes o-crumb{0%{transform:translate(0,0);opacity:1}100%{transform:translate(var(--dx),20px);opacity:0}}
@@ -847,9 +847,10 @@ label.mini{display:flex;flex-direction:column;gap:.1rem;font-size:.62rem;color:v
 @keyframes o-tilt{0%,100%{transform:rotate(calc(var(--t) - 2deg))}50%{transform:rotate(calc(var(--t) + 2deg))}}
 @keyframes o-shock{0%{transform:scale(.6);opacity:.9}100%{transform:scale(2.2);opacity:0}}@keyframes o-core{0%{transform:scale(.3)}70%{transform:scale(1.15)}100%{transform:scale(1)}}
 @keyframes o-shackle{0%,20%{transform:translateY(0) rotate(0)}45%,100%{transform:translateY(-6px) rotate(-30deg)}}@keyframes o-wave{0%,100%{transform:translateX(0)}50%{transform:translateX(-6px)}}
-@keyframes o-path{from{stroke-dashoffset:0px}to{stroke-dashoffset:calc(var(--ou,1) * -30px)}}@keyframes o-unlock{0%,70%{opacity:1}100%{opacity:0}}
+@keyframes o-path{from{stroke-dashoffset:0}to{stroke-dashoffset:-30}}@keyframes o-unlock{0%,70%{opacity:1}100%{opacity:0}}
 #org-svg .o-out{animation:o-out 1.8s ease-out infinite}#org-svg .o-in{animation:o-in 1.8s ease-in infinite}
-#org-svg .o-flow{stroke-dasharray:calc(var(--ou,1) * 6px) calc(var(--ou,1) * 14px);animation:o-flow 1s linear infinite}#org-svg .o-flowr{stroke-dasharray:calc(var(--ou,1) * 6px) calc(var(--ou,1) * 14px);animation:o-flowr 1s linear infinite}
+#org-svg .o-flow{stroke-dasharray:6 14;animation:o-flow 1s linear infinite}#org-svg .o-flowr{stroke-dasharray:6 14;animation:o-flowr 1s linear infinite}
+#org-svg .o-short{stroke-dasharray:none!important;animation:none!important;opacity:.75}
 #org-svg .o-c1{animation:o-c 1.4s infinite}#org-svg .o-c2{animation:o-c .9s infinite}#org-svg .o-bolt{animation:o-bolt 1.6s infinite}#org-svg .o-glowp{animation:o-glow 1.1s infinite}
 #org-svg .o-shake{animation:o-shake .25s infinite}#org-svg .o-seep{animation:o-seep 2.4s ease-in-out infinite}#org-svg .o-crumb{animation:o-crumb 1.6s ease-in infinite}
 #org-svg .o-rot{transform-box:fill-box;transform-origin:center;animation:o-rot 9s linear infinite}#org-svg .o-tw{transform-box:fill-box;transform-origin:center;animation:o-tw 1.8s ease-in-out infinite}
@@ -858,10 +859,10 @@ label.mini{display:flex;flex-direction:column;gap:.1rem;font-size:.62rem;color:v
 #org-svg .o-tilt{transform-box:fill-box;transform-origin:50% 0%;animation:o-tilt 3s ease-in-out infinite}
 #org-svg .o-shock{transform-box:fill-box;transform-origin:center;animation:o-shock 1.6s ease-out 1 forwards}#org-svg .o-core-in{transform-box:fill-box;transform-origin:center;animation:o-core .8s ease-out 1}
 #org-svg .o-shackle{transform-box:fill-box;transform-origin:100% 100%;animation:o-shackle 1.4s ease-out 1 forwards}#org-svg .o-unlock{animation:o-unlock 8s ease-in 1 forwards}
-#org-svg .o-wave{animation:o-wave 3s ease-in-out infinite}#org-svg .o-path{stroke-dasharray:calc(var(--ou,1) * 8px) calc(var(--ou,1) * 7px);animation:o-path 1s linear infinite}
+#org-svg .o-wave{animation:o-wave 3s ease-in-out infinite}#org-svg .o-path{stroke-dasharray:8 7;animation:o-path 1s linear infinite}
 #org-svg .o-ring{cursor:help}#org-svg .o-ring:hover{stroke:#fff3b0;stroke-width:3.5}
 .ostage.still *,.still *{animation:none!important}
-@media (prefers-reduced-motion:reduce){#org-svg *{animation:none!important}}
+@media (prefers-reduced-motion:reduce){.ostage:not(.omotion-on) #org-svg *{animation:none!important}}
 
 body.o-wide .wrap{max-width:min(1500px,100%)}
 .ocol{min-width:0}
@@ -907,6 +908,9 @@ body.o-wide .wrap{max-width:min(1500px,100%)}
 @keyframes olockpop{0%{transform:scale(1)}20%{transform:scale(1.9);filter:brightness(.55) drop-shadow(0 1px 3px rgba(0,0,0,.35))}100%{transform:scale(1)}}
 #org-svg .o-lockmark.lm-frame.flash path{animation:olockframe .9s ease-out}
 @keyframes olockframe{0%{stroke:#2a2620;stroke-opacity:1}30%{stroke:#2a2620;stroke-opacity:1}100%{}}
+
+.oreduce{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;font-size:.8rem;padding:.4rem .6rem;margin:.3rem 0;border:1px solid #d9b86a;background:#fbf3df;border-radius:6px}
+.oreduce.on{border-color:var(--rule);background:transparent;color:var(--sub)}
 </style>
 </head>
 <body>
@@ -928,7 +932,7 @@ body.o-wide .wrap{max-width:min(1500px,100%)}
 <div id="sheet-root"></div>
 <script>
 /* ───────── 大計:データ ───────── */
-const APP_VERSION = "2026-11-07 r34";
+const APP_VERSION = "2026-11-07 r35";
 const SHO_APP = "https://nisenonamae.github.io/sho/";
 const GRADES = ["最重要", "重要", "通常", "軽易"];
 const COUNCIL = { 最重要: "最高評議会", 重要: "常任評議会" };
@@ -3488,11 +3492,11 @@ function oDrawLinks(o, geo, st, out){
     if (l.kind === "support") { const grp = sup[l.b]; let d;
       if (grp.length >= 2) { const cx = grp.reduce((a, x) => a + geo[x.a].cx, 0) / grp.length, cy = grp.reduce((a, x) => a + geo[x.a].cy, 0) / grp.length, [tx, ty] = oEdge(B, gb, cx, cy), jx = tx + (cx - tx) * 0.35, jy = ty + (cy - ty) * 0.35;
         d = `M${ax} ${ay}Q${(ax + jx) / 2} ${(ay + jy) / 2 + 10} ${jx} ${jy}`;
-        if (grp[0] === l) out.push(`<path class="o-flow" d="M${jx} ${jy}L${tx} ${ty}" stroke="${oColor(o, A, 0)}" stroke-width="${3 + grp.length * 2.2}" fill="none" stroke-linecap="round" pointer-events="none"/>`); }
+        if (grp[0] === l) out.push(`<path class="o-flow" vector-effect="non-scaling-stroke" d="M${jx} ${jy}L${tx} ${ty}" stroke="${oColor(o, A, 0)}" stroke-width="${3 + grp.length * 2.2}" fill="none" stroke-linecap="round" pointer-events="none"/>`); }
       else d = `M${ax} ${ay}Q${mx + (by - ay) * 0.08} ${my - (bx - ax) * 0.08} ${bx} ${by}`;
-      out.push(`<path class="o-flow" d="${d}" stroke="${sel ? "#f2b84b" : oColor(o, A, 0)}" stroke-width="${2 + lv * 1.2}" fill="none" stroke-linecap="round" pointer-events="none"/>` + hit(d)); }
+      out.push(`<path class="o-flow" vector-effect="non-scaling-stroke" d="${d}" stroke="${sel ? "#f2b84b" : oColor(o, A, 0)}" stroke-width="${2 + lv * 1.2}" fill="none" stroke-linecap="round" pointer-events="none"/>` + hit(d)); }
     else if (l.kind === "mutual") { const nx = -(by - ay), ny = bx - ax, nl = Math.hypot(nx, ny) || 1, ox = nx / nl * 5, oy = ny / nl * 5;
-      out.push(`<path class="o-flow" d="M${ax + ox} ${ay + oy}L${bx + ox} ${by + oy}" stroke="${sel ? "#f2b84b" : oColor(o, A, 0)}" stroke-width="${2 + lv}" fill="none" pointer-events="none"/><path class="o-flowr" d="M${ax - ox} ${ay - oy}L${bx - ox} ${by - oy}" stroke="${sel ? "#f2b84b" : oColor(o, B, 0)}" stroke-width="${2 + lv}" fill="none" pointer-events="none"/>` + hit(`M${ax} ${ay}L${bx} ${by}`)); }
+      out.push(`<path class="o-flow" vector-effect="non-scaling-stroke" d="M${ax + ox} ${ay + oy}L${bx + ox} ${by + oy}" stroke="${sel ? "#f2b84b" : oColor(o, A, 0)}" stroke-width="${2 + lv}" fill="none" pointer-events="none"/><path class="o-flowr" vector-effect="non-scaling-stroke" d="M${ax - ox} ${ay - oy}L${bx - ox} ${by - oy}" stroke="${sel ? "#f2b84b" : oColor(o, B, 0)}" stroke-width="${2 + lv}" fill="none" pointer-events="none"/>` + hit(`M${ax} ${ay}L${bx} ${by}`)); }
     else if (l.kind === "prereq") { const len = Math.hypot(bx - ax, by - ay), ang = Math.atan2(by - ay, bx - ax) * 180 / Math.PI, done = oDone(o, l.a), path = ORG.path && ORG.path.has(l.id);
       out.push(`<g transform="translate(${ax},${ay}) rotate(${ang})" pointer-events="none" opacity="${done ? 0.35 : 1}"><rect x="0" y="-4" width="${len}" height="8" fill="url(#ochain)"/></g>` + (path ? `<path class="o-path" d="M${ax} ${ay}L${bx} ${by}" stroke="#f2b84b" stroke-width="6" fill="none" stroke-linecap="round" pointer-events="none"/>` : "") + (sel ? `<path d="M${ax} ${ay}L${bx} ${by}" stroke="#f2b84b" stroke-width="3" fill="none" pointer-events="none"/>` : "") + hit(`M${ax} ${ay}L${bx} ${by}`)); }
     else if (l.kind === "compete") { const ang = Math.atan2(by - ay, bx - ax), px = -Math.sin(ang), py = Math.cos(ang), h = 26 + lv * 10;
@@ -3556,7 +3560,7 @@ function viewOrg(){
       <span class="oseg seg" style="margin-left:auto">${SIZE_MODES.map(([k, l]) => `<button data-osize="${k}" aria-pressed="${o.sizeMode === k}">${l}</button>`).join("")}</span></div>
     <div class="ocrumb"><button class="linkx" data-oroot>${esc(o.name)}</button>${crumbs.map(c => ` › <button class="linkx" data-oenter="${c.id}">${esc(c.name || "(名前なし)")}</button>`).join("")}
       <span class="note">${ORG.tool === "link" ? (ORG.linkFrom ? "つなぐ先の円を押す" : "つなぐ元の円を押す") : ORG.tool === "pen" ? "図の上をなぞって書く(線を押すと消せる)" : ORG.tool === "band" ? "束ねる円を順に押し、「帯にする」" : "円を押すと選ぶ。2回押すと中に入る。何もない所をつかむと動かせ、ホイール・2本指で拡大"}</span></div>
-    <div class="owrap"><div class="ostage${oShow(o, "motion") ? "" : " still"}"><svg id="org-svg" viewBox="${cam.x} ${cam.y} ${cam.w} ${cam.h}" preserveAspectRatio="xMidYMid meet" style="--ou:${(cam.w / (ORG.px || 900)).toFixed(5)}"><rect x="-4000" y="-4000" width="9000" height="9000" fill="#fbfaf6" data-obg/>${sc.svg}<g id="o-pending"></g></svg>
+    ${oReduceNote()}<div class="owrap"><div class="ostage${oShow(o, "motion") ? "" : " still"}${oMotionForced() ? " omotion-on" : ""}"><svg id="org-svg" viewBox="${cam.x} ${cam.y} ${cam.w} ${cam.h}" preserveAspectRatio="xMidYMid meet" style="--ou:${(cam.w / (ORG.px || 900)).toFixed(5)}"><rect x="-4000" y="-4000" width="9000" height="9000" fill="#fbfaf6" data-obg/>${sc.svg}<g id="o-pending"></g></svg>
       ${oEdgeArrows(o, sc, cam)}${(zoomed && ORG.mini !== false) || ORG.mini === "keep" ? oMini(o, cam) : `<button class="omini-btn" data-ominitog title="小さな全体図">▭</button>`}
       <div class="ozoom"><button data-ozoom="in" title="寄る">＋</button><button data-ozoom="out" title="引く">−</button><button data-ozoom="all" title="全体を見る">全体</button></div></div><div class="ocol">${oSide(o, when)}</div></div>
     ${ORG.cmp ? oCompare(o) : ""}`;
@@ -3738,7 +3742,16 @@ function oHit(o, sx, sy, exclude){ const els = document.elementsFromPoint(sx, sy
 // その円と、中にある円すべての絵
 function oGroupEls(o, id){ const ids = [id].concat(o.nodes.filter(x => oIsDesc(o, id, x.id)).map(x => x.id));
   return ids.map(i => document.querySelector(`#org-svg [data-onode="${i}"]`)).filter(Boolean); }
-function oOU(svg){ if (!svg || !ORG.cam) return; const r = svg.getBoundingClientRect(), px = r.width || ORG.px || 900; svg.style.setProperty("--ou", (Math.max(ORG.cam.w / px, ORG.cam.h / (r.height || px * OH / OW))).toFixed(5)); }
+// 端末の「動きを減らす」設定。この端末で「それでも動かす」を選んだかは、端末に覚える(同期しない)
+const oReduce = () => { try { return matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) { return false; } };
+const oMotionForced = () => { try { return localStorage.getItem("taikei-org-motion") === "on"; } catch (e) { return false; } };
+function oReduceNote(){ if (!oReduce()) return "";
+  return oMotionForced() ? `<div class="oreduce on">この端末は「動きを減らす」設定ですが、組織図は動かしています <button class="linkx" data-omotion="off">止める</button></div>`
+    : `<div class="oreduce">この端末は「動きを減らす」設定のため、組織図の動き(つながりの流れなど)を止めています <button class="btn sm" data-omotion="on">それでも動かす</button></div>`; }
+// 画面上でとても短いつながりは、点の流れをやめて細い実線に(点が1〜2個だけの切れた線にならないように)
+function oShortFlows(svg){ if (!svg || !ORG.cam) return; const r = svg.getBoundingClientRect(), k = Math.max(ORG.cam.w / (r.width || 1), ORG.cam.h / (r.height || 1));
+  svg.querySelectorAll(".o-flow,.o-flowr").forEach(el => { let L = 0; try { L = el.getTotalLength() / k; } catch (e) {} el.classList.toggle("o-short", L < 40); }); }
+function oOU(svg){ if (!svg || !ORG.cam) return; clearTimeout(ORG.shortT); ORG.shortT = setTimeout(() => oShortFlows(svg), 120); const r = svg.getBoundingClientRect(), px = r.width || ORG.px || 900; svg.style.setProperty("--ou", (Math.max(ORG.cam.w / px, ORG.cam.h / (r.height || px * OH / OW))).toFixed(5)); }
 // 固定の印:いつも出す。画面の上で同じ小ささ(拡大・縮小しても大きくならない)。つかむと一瞬はっきりする
 function oLockMark(o, n, g, rx, ry, d, col){
   const style = o.lockMark || "錠", px = (ORG.cam ? ORG.cam.w : OW) / (ORG.px || 900), u = px;   // u = 画面の1ピクセル
@@ -3874,11 +3887,12 @@ function oTweenSize(o, to){ const from = o.sizeMode; if (from === to) return; o.
   const step = t => { const k = clamp((t - t0) / 450, 0, 1); ORG.tween = { from, to, t: k < 1 ? 0.5 - Math.cos(k * Math.PI) / 2 : 1 }; render(); if (k < 1) requestAnimationFrame(step); else { ORG.tween = null; oTouch(o); persist(); render(); } };
   requestAnimationFrame(step); }
 document.addEventListener("click", e => {
-  const b = e.target.closest("[data-onew],[data-osel],[data-orename],[data-oadd],[data-oarr],[data-oundo],[data-oroot],[data-oenter],[data-odel],[data-oset],[data-ocolor],[data-otool],[data-olink],[data-olset],[data-olswap],[data-oldel],[data-oband],[data-obandmake],[data-obcol],[data-obdel],[data-open],[data-osize],[data-oshot],[data-ocmp],[data-ocmpx],[data-oshotdel],[data-odone],[data-opath],[data-ominitog],[data-odelorg],[data-owrapall],[data-owrap],[data-ofill],[data-ostroke],[data-otypesave],[data-otypedel],[data-otyperen],[data-oscale],[data-otab],[data-ozoom],[data-olod],[data-olockmk],[data-omanclr],[data-ofxcol],[data-ofxreset],[data-olockt]"); if (!b) return;
+  const b = e.target.closest("[data-onew],[data-osel],[data-orename],[data-oadd],[data-oarr],[data-oundo],[data-oroot],[data-oenter],[data-odel],[data-oset],[data-ocolor],[data-otool],[data-olink],[data-olset],[data-olswap],[data-oldel],[data-oband],[data-obandmake],[data-obcol],[data-obdel],[data-open],[data-osize],[data-oshot],[data-ocmp],[data-ocmpx],[data-oshotdel],[data-odone],[data-opath],[data-ominitog],[data-odelorg],[data-owrapall],[data-owrap],[data-ofill],[data-ostroke],[data-otypesave],[data-otypedel],[data-otyperen],[data-oscale],[data-otab],[data-ozoom],[data-olod],[data-olockmk],[data-omotion],[data-omanclr],[data-ofxcol],[data-ofxreset],[data-olockt]"); if (!b) return;
   const o = curOrg();
   if (b.matches("[data-onew]")) { if (orgs.length) return; oNew("全体"); oCommit(); return; }
   if (!o) return; oFix(o);
   if (b.matches("[data-ominitog]")) { ORG.mini = b.closest(".omini") ? false : "keep"; render(); return; }
+  if (b.matches("[data-omotion]")) { try { localStorage.setItem("taikei-org-motion", b.dataset.omotion); } catch (e) {} render(); return; }
   if (b.matches("[data-olockmk]")) { o.lockMark = b.dataset.olockmk; oTouch(o); oCommit(); return; }
   if (b.matches("[data-olod]")) { o.lodStyle = b.dataset.olod; oTouch(o); oCommit(); return; }
   if (b.matches("[data-ozoom]")) { const z = b.dataset.ozoom, c = oCam(); if (z === "all") { oFlyTo(o, null); return; }
