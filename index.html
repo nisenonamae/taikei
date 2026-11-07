@@ -841,7 +841,7 @@ label.mini{display:flex;flex-direction:column;gap:.1rem;font-size:.62rem;color:v
 @keyframes o-c{0%,100%{opacity:.15}40%{opacity:1}60%{opacity:.4}}@keyframes o-bolt{0%,100%{opacity:0}8%{opacity:1}14%{opacity:.2}20%{opacity:1}40%{opacity:0}}
 @keyframes o-glow{0%,100%{opacity:.15}50%{opacity:.5}}@keyframes o-shake{0%,100%{transform:translate(0,0)}25%{transform:translate(1.2px,-1px)}75%{transform:translate(-1px,1px)}}
 @keyframes o-seep{0%,100%{opacity:.6}50%{opacity:1}}@keyframes o-crumb{0%{transform:translate(0,0);opacity:1}100%{transform:translate(var(--dx),20px);opacity:0}}
-@keyframes o-rot{to{transform:rotate(360deg)}}@keyframes o-tw{0%,100%{opacity:0;transform:scale(.5)}50%{opacity:1;transform:scale(1)}}
+@keyframes o-rot{to{transform:rotate(360deg)}}@keyframes o-tw{0%,100%{opacity:.15}50%{opacity:1}}
 @keyframes o-drift{0%{transform:translateX(0)}100%{transform:translateX(-24px)}}@keyframes o-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
 @keyframes o-peek{0%,100%{opacity:0}45%,55%{opacity:.6}}@keyframes o-zz{0%{transform:translate(0,0);opacity:0}30%{opacity:1}100%{transform:translate(8px,-14px);opacity:0}}
 @keyframes o-tilt{0%,100%{transform:rotate(calc(var(--t) - 2deg))}50%{transform:rotate(calc(var(--t) + 2deg))}}
@@ -853,7 +853,7 @@ label.mini{display:flex;flex-direction:column;gap:.1rem;font-size:.62rem;color:v
 #org-svg .o-short{stroke-dasharray:none!important;animation:none!important;opacity:.75}
 #org-svg .o-c1{animation:o-c 1.4s infinite}#org-svg .o-c2{animation:o-c .9s infinite}#org-svg .o-bolt{animation:o-bolt 1.6s infinite}#org-svg .o-glowp{animation:o-glow 1.1s infinite}
 #org-svg .o-shake{animation:o-shake .25s infinite}#org-svg .o-seep{animation:o-seep 2.4s ease-in-out infinite}#org-svg .o-crumb{animation:o-crumb 1.6s ease-in infinite}
-#org-svg .o-rot{transform-box:fill-box;transform-origin:center;animation:o-rot 9s linear infinite}#org-svg .o-tw{transform-box:fill-box;transform-origin:center;animation:o-tw 1.8s ease-in-out infinite}
+#org-svg .o-rot{transform-box:fill-box;transform-origin:center;animation:o-rot 9s linear infinite}#org-svg .o-tw{animation:o-tw 1.8s ease-in-out infinite}
 #org-svg .o-drift{animation:o-drift 6s linear infinite alternate}#org-svg .o-breathe{transform-box:fill-box;transform-origin:center;animation:o-breathe 5s ease-in-out infinite}
 #org-svg .o-peek{animation:o-peek 4.8s ease-in-out infinite}#org-svg .o-zz{animation:o-zz 2.4s ease-out infinite}
 #org-svg .o-tilt{transform-box:fill-box;transform-origin:50% 0%;animation:o-tilt 3s ease-in-out infinite}
@@ -913,6 +913,17 @@ body.o-wide .wrap{max-width:min(1500px,100%)}
 .oreduce.on{border-color:var(--rule);background:transparent;color:var(--sub)}
 
 #org-svg .o-lockmark{cursor:pointer}
+
+#org-svg .o-outg,#org-svg .o-ing{transform-box:view-box}
+#org-svg .o-outg{animation:o-outg 1.8s ease-out infinite}#org-svg .o-ing{animation:o-ing 1.8s ease-in infinite}
+@keyframes o-outg{0%{transform:scale(1);opacity:0}25%{opacity:1}100%{transform:scale(var(--k));opacity:0}}
+@keyframes o-ing{0%{transform:scale(var(--k));opacity:0}25%{opacity:1}100%{transform:scale(1);opacity:0}}
+/* 操作している間(画面を動かす・寄る・円を動かす)は、飾りの動きを一時停止。画面の外の円の動きは止める */
+.ostage.o-busy #org-svg *{animation:none!important}
+#org-svg .o-off,#org-svg .o-off *{animation:none!important}
+
+#org-svg{overflow:visible}
+.ostage{overflow:hidden}
 </style>
 </head>
 <body>
@@ -934,7 +945,7 @@ body.o-wide .wrap{max-width:min(1500px,100%)}
 <div id="sheet-root"></div>
 <script>
 /* ───────── 大計:データ ───────── */
-const APP_VERSION = "2026-11-07 r40";
+const APP_VERSION = "2026-11-07 r41";
 const SHO_APP = "https://nisenonamae.github.io/sho/";
 const GRADES = ["最重要", "重要", "通常", "軽易"];
 const COUNCIL = { 最重要: "最高評議会", 重要: "常任評議会" };
@@ -3466,8 +3477,10 @@ function oDrawNodes(o, geo, out, defs, opt){
 const oStar = (x, y, r) => `M${x} ${y - r}L${x + r * 0.3} ${y - r * 0.3}L${x + r} ${y}L${x + r * 0.3} ${y + r * 0.3}L${x} ${y + r}L${x - r * 0.3} ${y + r * 0.3}L${x - r} ${y}L${x - r * 0.3} ${y - r * 0.3}Z`;
 function oArrows(cx, cy, rx, ry, col, out, lv, nd){ nd = nd || {}; const n = Math.round(oFx(nd, "arN", [0, 10, 14, 18][lv || 2])), dur = [0, 2.4, 1.8, 1.2][lv || 2] / oFx(nd, "arSpeed", 1), sz = oFx(nd, "arSize", 1), parts = [];
   for (let k = 0; k < n; k++) { const a = k / n * Math.PI * 2, x = cx + Math.cos(a) * (rx + 12 * sz), y = cy + Math.sin(a) * (ry + 12 * sz), d = 16 * oFx(nd, "arDist", 1), deg = a * 180 / Math.PI + (out ? 0 : 180);
-    parts.push(`<g class="${out ? "o-out" : "o-in"}" style="--dx:${(Math.cos(a) * d).toFixed(1)}px;--dy:${(Math.sin(a) * d).toFixed(1)}px;animation-duration:${dur}s;animation-delay:${(k % 2) * dur / 2}s"><path d="M-5 -6L3 0L-5 6" transform="translate(${x.toFixed(1)},${y.toFixed(1)}) rotate(${deg.toFixed(1)}) scale(${sz})" fill="none" stroke="${col}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></g>`); }
-  return `<g pointer-events="none">${parts.join("")}</g>`; }
+    (parts[k % 2] = parts[k % 2] || []).push(`<path d="M-5 -6L3 0L-5 6" transform="translate(${x.toFixed(1)},${y.toFixed(1)}) rotate(${deg.toFixed(1)}) scale(${sz})" fill="none" stroke="${col}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`); }
+  // 1本ずつではなく、まとまりごとに動かす(円のまわりの矢印は、まとまりを中心から広げる/縮めると同じ動きになる)
+  const r0 = (rx + ry) / 2 + 12 * sz, kk = ((r0 + 16 * oFx(nd, "arDist", 1)) / r0).toFixed(3);
+  return `<g pointer-events="none">${parts.map((ps, i) => `<g class="${out ? "o-outg" : "o-ing"}" style="--k:${kk};transform-origin:${cx.toFixed(1)}px ${cy.toFixed(1)}px;animation-duration:${dur}s;animation-delay:${(i * dur / 2).toFixed(2)}s">${ps.join("")}</g>`).join("")}</g>`; }
 function oSiteIcon(x, y, s){ return `<g pointer-events="none" transform="translate(${x},${y})"><path d="M${-s * 0.75} ${s * 0.55}H${s * 0.75}" stroke="#8a7a5c" stroke-width="2"/><path d="M${-s * 0.5} ${s * 0.55}V${-s * 0.25}L0 ${-s * 0.65}L${s * 0.5} ${-s * 0.25}V${s * 0.55}" fill="none" stroke="#8a7a5c" stroke-width="2"/></g>`; }
 function oCloud(n, g, rx){ const x = g.cx + rx + 18, y = g.cy, s = Math.max(0.55, Math.min(1.2, g.R / 60)) * oFx(n, "clSize", 1), opts = (n.cloud.opts || []).slice(0, 3);
   return `<g pointer-events="none"><path d="M${g.cx + rx} ${y}H${x}" stroke="#9aa3b5" stroke-width="2.5" stroke-dasharray="5 4"/>
@@ -3574,7 +3587,7 @@ function viewOrg(){
       <span class="oseg seg" style="margin-left:auto">${SIZE_MODES.map(([k, l]) => `<button data-osize="${k}" aria-pressed="${o.sizeMode === k}">${l}</button>`).join("")}</span></div>
     <div class="ocrumb"><button class="linkx" data-oroot>${esc(o.name)}</button>${crumbs.map(c => ` › <button class="linkx" data-oenter="${c.id}">${esc(c.name || "(名前なし)")}</button>`).join("")}
       <span class="note">${ORG.tool === "link" ? (ORG.linkFrom ? "つなぐ先の円を押す" : "つなぐ元の円を押す") : ORG.tool === "pen" ? "図の上をなぞって書く(線を押すと消せる)" : ORG.tool === "band" ? "束ねる円を順に押し、「帯にする」" : "円を押すと選ぶ。2回押すと中に入る。何もない所をつかむと動かせ、ホイール・2本指で拡大"}</span></div>
-    ${oReduceNote()}<div class="owrap"><div class="ostage${oShow(o, "motion") ? "" : " still"}${oMotionForced() ? " omotion-on" : ""}"><svg id="org-svg" viewBox="${cam.x} ${cam.y} ${cam.w} ${cam.h}" preserveAspectRatio="xMidYMid meet" style="--ou:${(cam.w / (ORG.px || 900)).toFixed(5)}"><rect x="-4000" y="-4000" width="9000" height="9000" fill="#fbfaf6" data-obg/>${sc.svg}<g id="o-pending"></g></svg>
+    ${oReduceNote()}<div class="owrap"><div class="ostage${oShow(o, "motion") ? "" : " still"}${oMotionForced() ? " omotion-on" : ""}"><svg id="org-svg" viewBox="${cam.x} ${cam.y} ${cam.w} ${cam.h}" preserveAspectRatio="xMidYMid meet"><rect x="-4000" y="-4000" width="9000" height="9000" fill="#fbfaf6" data-obg/>${sc.svg}<g id="o-pending"></g></svg>
       ${oEdgeArrows(o, sc, cam)}${(zoomed && ORG.mini !== false) || ORG.mini === "keep" ? oMini(o, cam) : `<button class="omini-btn" data-ominitog title="小さな全体図">▭</button>`}
       <div class="ozoom"><button data-ozoom="in" title="寄る">＋</button><button data-ozoom="out" title="引く">−</button><button data-ozoom="all" title="全体を見る">全体</button></div></div><div class="ocol">${oSide(o, when)}</div></div>
     ${ORG.cmp ? oCompare(o) : ""}`;
@@ -3774,6 +3787,14 @@ function oLiveLinks(ids, f){ const S = ORG.scene, o = curOrg(), el = document.ge
   ids.forEach(id => { if (geo[id]) geo[id] = mv(geo[id]); if (full[id]) full[id] = mv(full[id]); });
   const lk = []; oDrawLinks(o, geo, S.st, lk, { fullGeo: full, lod: S.lod }); el.innerHTML = lk.join(""); }
 const oGroupIds = (o, id) => [id].concat(o.nodes.filter(x => oIsDesc(o, id, x.id)).map(x => x.id));
+// 操作している間は飾りの動きを止め、終わって少ししたら戻す
+function oBusy(){ const st = document.querySelector(".ostage"); if (!st) return; st.classList.add("o-busy"); clearTimeout(ORG.busyT);
+  ORG.busyT = setTimeout(() => { const s2 = document.querySelector(".ostage"); if (s2) s2.classList.remove("o-busy"); oCull(); }, ORG.wt ? 520 : 260); }
+// 画面の外にある円(とその矢印・波・星)の動きを止める。見る範囲の位置と円の位置の計算だけで決める(重い計算はしない)
+function oCullSoon(){ oBusy(); }
+function oCull(){ const S = ORG.scene, c = ORG.cam, sv = $("org-svg"); if (!S || !c || !sv) return; const m = Math.max(c.w, c.h) * 0.15;
+  sv.querySelectorAll("[data-onode]").forEach(el => { const g = S.geo[el.dataset.onode]; if (!g) return; const R = g.R * 1.6;
+    const off = g.cx + R < c.x - m || g.cx - R > c.x + c.w + m || g.cy + R < c.y - m || g.cy - R > c.y + c.h + m; if (el.classList.contains("o-off") !== off) el.classList.toggle("o-off", off); }); }
 // 端末の「動きを減らす」設定。この端末で「それでも動かす」を選んだかは、端末に覚える(同期しない)
 const oReduce = () => { try { return matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) { return false; } };
 const oMotionForced = () => { try { return localStorage.getItem("taikei-org-motion") === "on"; } catch (e) { return false; } };
@@ -3783,7 +3804,7 @@ function oReduceNote(){ if (!oReduce()) return "";
 // 画面上でとても短いつながりは、点の流れをやめて細い実線に(点が1〜2個だけの切れた線にならないように)
 function oShortFlows(svg){ if (!svg || !ORG.cam) return; const r = svg.getBoundingClientRect(), k = Math.max(ORG.cam.w / (r.width || 1), ORG.cam.h / (r.height || 1));
   svg.querySelectorAll(".o-flow,.o-flowr").forEach(el => { let L = 0; try { L = el.getTotalLength() / k; } catch (e) {} el.classList.toggle("o-short", L < 40); }); }
-function oOU(svg){ if (!svg || !ORG.cam) return; const r = svg.getBoundingClientRect(), px = r.width || ORG.px || 900; svg.style.setProperty("--ou", (Math.max(ORG.cam.w / px, ORG.cam.h / (r.height || px * OH / OW))).toFixed(5)); }
+function oOU(svg){ oCullSoon(); }   // 見る範囲が変わったら、少しあとで画面の外の動きを止め直す(重い計算はしない)
 // 固定の印:いつも出す。画面の上で同じ小ささ(拡大・縮小しても大きくならない)。つかむと一瞬はっきりする
 function oLockMark(o, n, g, rx, ry, d, col){
   const style = o.lockMark || "錠", px = (ORG.cam ? ORG.cam.w : OW) / (ORG.px || 900), u = px;   // u = 画面の1ピクセル
@@ -3826,7 +3847,22 @@ function oWhere(o){ const geo = oGeo(o, null), c = oCam(), cx = c.x + c.w / 2, c
   Object.keys(geo).forEach(id => { const n = oNode(o, id), g = geo[id]; if (!n || n.done) return; const [rx, ry] = oRad(n, g.R);
     if (Math.hypot((cx - g.cx) / rx, (cy - g.cy) / ry) <= 1 && rx * 2 > c.w * 0.45 && (!best || g.dep > best.dep)) best = { id, dep: g.dep }; });
   return best ? best.id : null; }
-function oSetCam(c){ const k = clamp(c.w, 0.5, 1e7); const h = k * OH / OW; ORG.cam = { x: c.x + (c.w - k) / 2 * (c.keep ? 0 : 0), y: c.y, w: k, h }; if (c.cx != null) { ORG.cam.x = c.cx - k / 2; ORG.cam.y = c.cy - h / 2; } const svg = $("org-svg"); if (svg) svg.setAttribute("viewBox", `${ORG.cam.x} ${ORG.cam.y} ${ORG.cam.w} ${ORG.cam.h}`), oOU(svg); }
+function oSetCam(c){ const k = clamp(c.w, 0.5, 1e7); const h = k * OH / OW; ORG.cam = { x: c.x + (c.w - k) / 2 * (c.keep ? 0 : 0), y: c.y, w: k, h }; if (c.cx != null) { ORG.cam.x = c.cx - k / 2; ORG.cam.y = c.cy - h / 2; } const svg = $("org-svg"); if (svg) oShowCam(svg); }
+// ── 寄る・動かす操作の途中は、図を描き直さず「1枚の絵」として拡大・移動する(文字も円も描き直さないので軽い)
+// 手が止まったら oGestEnd で本当の見る範囲にして描き直す
+function oGestBegin(){ const svg = $("org-svg"); if (!svg || ORG.gview) return; const r = svg.getBoundingClientRect(), vb = svg.viewBox.baseVal, c0 = { x: vb.x, y: vb.y, w: vb.width, h: vb.height };
+  const k0 = Math.min(r.width / c0.w, r.height / c0.h); ORG.gview = { c0, k0, ox: (r.width - c0.w * k0) / 2, oy: (r.height - c0.h * k0) / 2, left: r.left, top: r.top };
+  svg.style.transformOrigin = "0 0"; svg.style.willChange = "transform"; const st = document.querySelector(".ostage"); if (st) st.classList.add("o-gest"); }
+function oShowCam(svg){ const G = ORG.gview, c = ORG.cam;
+  if (!G) { svg.setAttribute("viewBox", `${c.x} ${c.y} ${c.w} ${c.h}`); oOU(svg); return; }
+  const k = G.k0 * G.c0.w / c.w, sc = k / G.k0, tx = G.ox - sc * G.ox + (G.c0.x - c.x) * k, ty = G.oy - sc * G.oy + (G.c0.y - c.y) * k;
+  svg.style.transform = `translate(${tx.toFixed(2)}px, ${ty.toFixed(2)}px) scale(${sc.toFixed(5)})`; oBusy(); oMiniFrame(); }
+// 操作の途中の、指の位置 → 図の中の位置(絵として動かしている間も正しく)
+function oPtNow(e){ const G = ORG.gview, c = ORG.cam; if (!G || !c) return oPt(e); const k = G.k0 * G.c0.w / c.w;
+  return { x: c.x + (e.clientX - G.left - G.ox) / k, y: c.y + (e.clientY - G.top - G.oy) / k }; }
+function oGestEnd(redraw){ const svg = $("org-svg"), G = ORG.gview; ORG.gview = null; const st = document.querySelector(".ostage"); if (st) st.classList.remove("o-gest");
+  if (svg && G) { svg.style.transform = ""; svg.style.willChange = ""; const c = ORG.cam; svg.setAttribute("viewBox", `${c.x} ${c.y} ${c.w} ${c.h}`); }
+  if (redraw !== false) render(); }
 const oPointers = new Map();
 document.addEventListener("pointerdown", e => {
   const mini = e.target.closest && e.target.closest("#o-mini");
@@ -3837,7 +3873,7 @@ document.addEventListener("pointerdown", e => {
     ORG.miniBoxSel = { x0: pt.x, y0: pt.y, x1: pt.x, y1: pt.y }; return; }
   const svg = e.target.closest && e.target.closest("#org-svg"); if (!svg) return;
   oPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-  if (oPointers.size === 2) { const [a, b] = [...oPointers.values()]; ORG.pinch = { d: Math.hypot(a.x - b.x, a.y - b.y), cam: Object.assign({}, oCam()) }; ORG.drag = null; ORG.pan = null; return; }
+  if (oPointers.size === 2) { const [a, b] = [...oPointers.values()]; ORG.pinch = { d: Math.hypot(a.x - b.x, a.y - b.y), cam: Object.assign({}, oCam()) }; ORG.drag = null; ORG.pan = null; oGestBegin(); return; }
   const o = curOrg(); if (!o) return;
   if (ORG.tool === "pen") { const p = oPt(e); ORG.pen = { pts: [[p.x, p.y]] }; svg.setPointerCapture && svg.setPointerCapture(e.pointerId); return; }
   const hd = e.target.closest("[data-oresize]");
@@ -3865,20 +3901,21 @@ document.addEventListener("pointermove", e => {
     if (!R.ids) R.ids = oGroupIds(curOrg(), R.id); oLiveLinks(R.ids, g => ({ cx: R.cx + (g.cx - R.cx) * k, cy: R.cy + (g.cy - R.cy) * k, R: g.R * k })); const lb = document.querySelector(".oside label b"); if (lb) lb.textContent = (R.s0 * k).toFixed(2) + "倍"; return; }
   if (ORG.pen) { const p = oPt(e); ORG.pen.pts.push([p.x, p.y]); const pg = $("o-pending"); if (pg) pg.innerHTML = `<path d="M${ORG.pen.pts.map(q => q[0].toFixed(1) + " " + q[1].toFixed(1)).join("L")}" stroke="#2a2620" stroke-width="2.2" fill="none" stroke-linecap="round"/>`; return; }
   if (ORG.pan) { const svg = $("org-svg"); if (!svg) return; const r = svg.getBoundingClientRect(), c = ORG.pan.cam, sx = c.w / r.width;
-    if (Math.hypot(e.clientX - ORG.pan.sx, e.clientY - ORG.pan.sy) > 4) ORG.pan.moved = true;
+    if (Math.hypot(e.clientX - ORG.pan.sx, e.clientY - ORG.pan.sy) > 4) { if (!ORG.pan.moved) oGestBegin(); ORG.pan.moved = true; }
+    if (!ORG.pan.moved) return;
     oSetCam({ w: c.w, cx: c.x + c.w / 2 - (e.clientX - ORG.pan.sx) * sx, cy: c.y + c.h / 2 - (e.clientY - ORG.pan.sy) * sx }); return; }
   const D = ORG.drag; if (!D) return;
   if (!D.moved && Math.hypot(e.clientX - D.cx, e.clientY - D.cy) < 5) return; D.moved = true;
   const p = oPt(e); if (!D.gs) { D.gs = oGroupEls(curOrg(), D.id); D.ids = oGroupIds(curOrg(), D.id); }
   D.gs.forEach(el => { el.setAttribute("transform", `translate(${p.x - D.x0} ${p.y - D.y0})`); el.style.opacity = ".85"; el.style.pointerEvents = "none"; });
-  const dx = p.x - D.x0, dy = p.y - D.y0; oLiveLinks(D.ids, g => ({ cx: g.cx + dx, cy: g.cy + dy }));
+  const dx = p.x - D.x0, dy = p.y - D.y0; oLiveLinks(D.ids, g => ({ cx: g.cx + dx, cy: g.cy + dy })); oBusy();
   document.querySelectorAll("#org-svg .odrop").forEach(x => x.classList.remove("odrop"));
   const o = curOrg(), t = oHit(o, e.clientX, e.clientY, D.id); D.target = t; if (t) { const tg = document.querySelector(`#org-svg [data-onode="${t}"]`); if (tg) tg.classList.add("odrop"); } });
 // 指がはなれずに取り消されたとき(通知が出た、など)は、残った指を消す
-document.addEventListener("pointercancel", e => { oPointers.delete(e.pointerId); if (oPointers.size < 2) ORG.pinch = null; ORG.drag = null; ORG.pan = null; ORG.pen = null; });
+document.addEventListener("pointercancel", e => { oPointers.delete(e.pointerId); if (oPointers.size < 2) ORG.pinch = null; ORG.drag = null; ORG.pan = null; ORG.pen = null; if (ORG.gview) oGestEnd(); });
 document.addEventListener("pointerup", e => {
   const wasPinch = !!ORG.pinch; oPointers.delete(e.pointerId); if (oPointers.size < 2) ORG.pinch = null;
-  if (wasPinch && !ORG.pinch) { render(); return; }
+  if (wasPinch && !ORG.pinch) { oGestEnd(); return; }
   if (ORG.miniDrag || ORG.miniCorner) { ORG.miniDrag = null; ORG.miniCorner = null; render(); return; }
   if (ORG.miniBoxSel) { const B = ORG.miniBoxSel, F = ORG.miniBox || { w: OW }; ORG.miniBoxSel = null; const bw = Math.abs(B.x1 - B.x0), bh = Math.abs(B.y1 - B.y0);
     if (Math.max(bw, bh) < F.w * 0.03) { const c = oCam(); oFly({ x: B.x0 - c.w / 2, y: B.y0 - c.h / 2, w: c.w, h: c.h }); return; }
@@ -3887,7 +3924,7 @@ document.addEventListener("pointerup", e => {
   if (ORG.resize) { const R = ORG.resize; ORG.resize = null; const n = oNode(o, R.id); if (!n || !R.k || Math.abs(R.k - 1) < 0.01) { render(); return; }
     oSnap(); n.scale = Math.max(0.001, Math.round(R.s0 * R.k * 1000) / 1000); delete n.size; oTouch(o, n); oCommit(); return; }
   if (ORG.pen) { const pts = ORG.pen.pts; ORG.pen = null; if (pts.length > 2) { oSnap(); o.pens.push({ id: "W" + uid(), root: ORG.root || null, d: "M" + pts.map(q => q[0].toFixed(1) + " " + q[1].toFixed(1)).join("L"), color: "#2a2620" }); oTouch(o); oCommit(); } else render(); return; }
-  if (ORG.pan) { const moved = ORG.pan.moved, tapId = ORG.pan.tapId; ORG.pan = null; if (moved) { render(); return; }
+  if (ORG.pan) { const moved = ORG.pan.moved, tapId = ORG.pan.tapId; ORG.pan = null; if (moved) { oGestEnd(); return; }
     if (tapId) { const n = oNode(o, tapId), now = Date.now(); if (!n) return;            // 固定した円を押しただけ:選ぶ・2回で中に入る
       if (ORG.lastTap && ORG.lastTap.id === n.id && now - ORG.lastTap.t < 380 && oKids(o, n.id).length) { ORG.lastTap = null; oFlyTo(o, n.id); return; }
       ORG.lastTap = { id: n.id, t: now }; ORG.sel = n.id; ORG.selLink = null; ORG.selBand = null; ORG.path = null; render(); return; }
@@ -3912,11 +3949,11 @@ document.addEventListener("click", e => { const g = e.target.closest && e.target
   if (ORG.tool === "band") { ORG.bandPick = ORG.bandPick || []; ORG.bandPick = ORG.bandPick.includes(id) ? ORG.bandPick.filter(x => x !== id) : ORG.bandPick.concat([id]); render(); return; } }, true);
 document.addEventListener("wheel", e => { const mini = e.target.closest && e.target.closest("#o-mini");
   if (mini) { e.preventDefault(); const c = oCam(), w = clamp(c.w * Math.exp(e.deltaY * 0.0015), 0.5, 1e7); ORG.cam = { x: c.x + c.w / 2 - w / 2, y: c.y + c.h / 2 - w * OH / OW / 2, w, h: w * OH / OW };
-    const sv = $("org-svg"); if (sv) sv.setAttribute("viewBox", `${ORG.cam.x} ${ORG.cam.y} ${ORG.cam.w} ${ORG.cam.h}`), oOU(sv); oMiniFrame(); clearTimeout(ORG.wt); ORG.wt = setTimeout(render, 220); return; }
+    const sv = $("org-svg"); if (sv) sv.setAttribute("viewBox", `${ORG.cam.x} ${ORG.cam.y} ${ORG.cam.w} ${ORG.cam.h}`), oOU(sv); oMiniFrame(); oBusy(); clearTimeout(ORG.wt); ORG.wt = setTimeout(() => { ORG.wt = null; render(); }, 420); return; }
   const svg = e.target.closest && e.target.closest("#org-svg"); if (!svg) return; e.preventDefault();
-  const p = oPt(e), c = oCam(), f = Math.exp(e.deltaY * 0.0015), w = clamp(c.w * f, 0.5, 1e7), k = w / c.w;
-  ORG.cam = { x: p.x - (p.x - c.x) * k, y: p.y - (p.y - c.y) * k, w, h: w * OH / OW }; svg.setAttribute("viewBox", `${ORG.cam.x} ${ORG.cam.y} ${ORG.cam.w} ${ORG.cam.h}`), oOU(svg);
-  clearTimeout(ORG.wt); ORG.wt = setTimeout(render, 220); }, { passive: false });
+  oGestBegin(); const p = oPtNow(e), c = oCam(), f = Math.exp(e.deltaY * 0.0015), w = clamp(c.w * f, 0.5, 1e7), k = w / c.w;
+  ORG.cam = { x: p.x - (p.x - c.x) * k, y: p.y - (p.y - c.y) * k, w, h: w * OH / OW }; oShowCam(svg);
+  clearTimeout(ORG.wt); ORG.wt = setTimeout(() => { ORG.wt = null; oGestEnd(); }, 300); }, { passive: false });
 function oPathTo(o, id){ const set = new Set(), seen = new Set(); const walk = x => { if (seen.has(x)) return; seen.add(x); o.links.filter(l => l.kind === "prereq" && l.b === x && !oDone(o, l.a)).forEach(l => { set.add(l.id); walk(l.a); }); }; walk(id); return set; }
 function oTweenSize(o, to){ const from = o.sizeMode; if (from === to) return; o.sizeMode = to; const t0 = performance.now();
   const step = t => { const k = clamp((t - t0) / 450, 0, 1); ORG.tween = { from, to, t: k < 1 ? 0.5 - Math.cos(k * Math.PI) / 2 : 1 }; render(); if (k < 1) requestAnimationFrame(step); else { ORG.tween = null; oTouch(o); persist(); render(); } };
@@ -4034,7 +4071,7 @@ function render(){
     const col = document.querySelector(".ocol"); if (col && keepUI.col != null) col.scrollTop = keepUI.col;
     if (Math.abs(window.scrollY - keepUI.y) > 2) window.scrollTo(0, keepUI.y);
   }
-  if (v === "org") { const sv = $("org-svg"); if (sv) { const w = sv.getBoundingClientRect().width; if (w && Math.abs(w - (ORG.px || 0)) > 40) { ORG.px = w; oOU($("org-svg")); setTimeout(render, 0); } } }
+  if (v === "org") { const sv = $("org-svg"); if (sv) { const w = sv.getBoundingClientRect().width; if (w && Math.abs(w - (ORG.px || 0)) > 40) { ORG.px = w; oCull(); setTimeout(render, 0); } } }
   $("count").innerHTML = `<span id="sync-dot" class="sdot s-${sync.state}" title="${esc(conf ? "GitHub:" + sync.state : "この端末だけに保存")}"></span>` + md(TODAY);
   $("goals").innerHTML = headGoals.map(g => { const p = P(g.p), m = p && p.milestones.find(x => x.id === g.m); if (!m) return ""; const d = days(TODAY, m.date);
     return `<button class="goal-c${d <= 30 ? " near" : ""}" data-goplan="${p.id}" data-ptab="図"><span class="gn">${esc(unbr(m.name))}</span><b>${d}<small>日</small></b><small>${esc(p.name)}</small></button>`; }).join("") + `<button class="goal-set" data-goalset>${headGoals.length ? "目標を選ぶ" : "+ どこからでも見える目標"}</button>`;
