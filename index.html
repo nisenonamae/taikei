@@ -963,7 +963,7 @@ body.o-wide .wrap{max-width:min(1500px,100%)}
 <div id="sheet-root"></div>
 <script>
 /* ───────── 大計:データ ───────── */
-const APP_VERSION = "2026-11-08 r44";
+const APP_VERSION = "2026-11-09 r46";
 const SHO_APP = "https://nisenonamae.github.io/sho/";
 const GRADES = ["最重要", "重要", "通常", "軽易"];
 const COUNCIL = { 最重要: "最高評議会", 重要: "常任評議会" };
@@ -1228,7 +1228,7 @@ function dropMilestone(p, m){
   if (typeof headGoals !== "undefined") headGoals = headGoals.filter(g => !(g.p === p.id && ids.has(g.m)));
   ids.forEach(i => { delete openMs[i]; });
 }
-function prevDate(p, m){ const xs = laneMs(p, laneOf(p, m)), i = xs.indexOf(m); return i > 0 ? xs[i - 1].date : p.start; }
+function prevDate(p, m){ const xs = laneMs(p, laneOf(p, m)).filter(x => x.date < m.date); return xs.length ? xs[xs.length - 1].date : p.start; }   // 期限が同じ節目は並行:同じ期間を持つ
 function nextLaneMs(p, l){ return l.closed ? undefined : laneMs(p, l).filter(m => !isDone(m))[0]; }
 const mainMs = p => p.milestones.filter(m => !m.parent).sort((a, b) => a.date < b.date ? -1 : 1);
 const subsOf = (p, id) => p.milestones.filter(m => m.parent === id).sort((a, b) => a.date < b.date ? -1 : 1);
@@ -1583,7 +1583,9 @@ function tabReq(p){
 /* 道のり:期間ごとに、節目(ペース・週ごとの実績・進捗・つながる計画)・細かい節目・タスク・記録 */
 function weekRows(m){
   // 節目の前の節目(または計画の始まり)から今週までの週を並べ、目標のペースと実績を比べる
-  const from = weekStart(m._from), to = weekStart(TODAY < m.date ? TODAY : m.date), rows = [];
+  const to = weekStart(TODAY < m.date ? TODAY : m.date), first = (m.weeks || []).map(x => x.w).sort()[0];
+  let from = weekStart(m._from); if (first && first < from) from = first; if (from > to) from = to;   // 期間の前に先取りした週も並べ、期間がまだでも今週の欄は出す
+  const rows = [];
   for (let w = from; w <= to; w = addD(w, 7)) { const x = (m.weeks || []).find(y => y.w === w); rows.push({ w, done: x ? x.done : null }); }
   return rows.slice(-8);
 }
@@ -2200,10 +2202,11 @@ function checkPanel(p){
 /* ───────── 週の記録(数字を入れるだけ) ───────── */
 function viewWeekRec(){
   const w = thisWeek(), we = addD(w, 6);
-  const rows = live().flatMap(p => lanesOf(p).flatMap(l => { const m = nextLaneMs(p, l); if (!m || !m.pace || !m.total) return []; return [{ p, l, m, cur: (m.weeks || []).find(x => x.w === w) }]; }));
+  const rows = live().flatMap(p => lanesOf(p).flatMap(l => { if (l.closed) return [];
+    return laneMs(p, l).filter(m => !isDone(m) && m.pace && m.total).map((m, i) => ({ p, l, m, ahead: i > 0, from: prevDate(p, m), cur: (m.weeks || []).find(x => x.w === w) })); }));
   const dueT = tests.filter(t => !P(t.plan) || !P(t.plan).status).filter(t => nextDue(t) <= we);
   return `<div class="phead"><div class="k">週の記録</div><div class="goal">${wk(w)}(${md(w)}〜${md(we)})</div><div class="note">やった量とテストを入れるだけ。見直しは「週の見直し」で、別にやる。</div></div>
-    <section class="sec"><h3>今週やった量</h3>${rows.map(({ p, l, m, cur }) => `<div class="wkrow"><div><b>${esc(p.name)}</b><small>${multiLane(p) ? laneCode(p, l) + " " + esc(l.name) + "・" : ""}節目「${m.plan ? esc(msName(m)) : tx(m.name, p)}」・ペース ${fmtN(m.pace.amount)}${esc(m.pace.unit)}</small>${defChip(m)}</div><input type="number" step="0.5" inputmode="decimal" data-wkv="${p.id}:${m.id}" value="${cur ? cur.done : ""}"><span class="note">${esc(m.unit || "")}</span></div>`).join("") || '<p class="note">ペースのある節目はない。</p>'}
+    <section class="sec"><h3>今週やった量</h3>${rows.map(({ p, l, m, cur, ahead, from }) => `<div class="wkrow"><div><b>${esc(p.name)}</b><small>${multiLane(p) ? laneCode(p, l) + " " + esc(l.name) + "・" : ""}節目「${m.plan ? esc(msName(m)) : tx(m.name, p)}」・ペース ${fmtN(m.pace.amount)}${esc(m.pace.unit)}${ahead && from > we ? `・<span style="color:var(--wave)">先取り(期間は${md(from)}から)</span>` : ""}</small>${defChip(m)}</div><input type="number" step="0.5" inputmode="decimal" data-wkv="${p.id}:${m.id}" value="${cur ? cur.done : ""}"><span class="note">${esc(m.unit || "")}</span></div>`).join("") || '<p class="note">ペースのある節目はない。</p>'}
       ${rows.length ? '<button class="btn sm" data-wkall>まとめて記録する</button>' : ""}</section>
     <section class="sec"><h3>今週の実力テスト<small>${dueT.length}つ</small></h3>${dueT.map(t => `<div class="wkrow"><div><b>${esc(t.name)}</b><small>${P(t.plan) ? esc(P(t.plan).name) : ""}・${days(TODAY, nextDue(t)) < 0 ? -days(TODAY, nextDue(t)) + "日遅れ" : md(nextDue(t)) + "まで"}</small></div><button class="btn ghost sm" data-testrec="${t.id}">実施して記録</button></div>`).join("") || '<p class="note">今週のテストはない。</p>'}</section>`;
 }
