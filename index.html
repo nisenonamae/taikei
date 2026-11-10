@@ -942,6 +942,9 @@ body.o-wide .wrap{max-width:min(1500px,100%)}
 .bkgrid{display:flex;flex-wrap:wrap;gap:3px}.bkc{width:26px;height:26px;border-radius:4px;border:1px solid var(--rule);background:var(--white);font-size:.58rem;color:var(--sub);padding:0;position:relative;overflow:hidden;cursor:pointer}
 .bkc.v1{background:linear-gradient(90deg,var(--wave-soft) 50%,var(--white) 50%);color:var(--ink);border-color:var(--wave)}.bkc.v2{background:var(--wave);border-color:var(--wave);color:#fff}
 .bkset{margin-top:.6rem}.bkset summary{font-size:.8rem;color:var(--sub);cursor:pointer}.bkset textarea,.bkset input,.bkset select{width:100%;padding:.3rem .45rem;border:1px solid var(--rule);border-radius:3px;background:var(--white);font:inherit;font-size:.82rem}
+
+.wkadd{margin:.3rem 0}.wklog{display:flex;flex-wrap:wrap;gap:.25rem .5rem;font-size:.74rem;color:var(--sub);align-items:center}.wklog .wkt{color:var(--ink);font-weight:600}.wklog .linkx{font-size:.72rem}
+.wkrow:has(.wklogrow){flex-wrap:wrap}.wkr2{display:flex;align-items:center;gap:.35rem;flex-shrink:0}.wkr2 input{width:5.8rem}.wkrow .wklogrow{flex:0 0 100%;max-width:100%;margin-top:-.15rem}.wkrow .wklogrow:empty{display:none}
 </style>
 </head>
 <body>
@@ -963,7 +966,7 @@ body.o-wide .wrap{max-width:min(1500px,100%)}
 <div id="sheet-root"></div>
 <script>
 /* ───────── 大計:データ ───────── */
-const APP_VERSION = "2026-11-10 r47";
+const APP_VERSION = "2026-11-10 r48";
 const SHO_APP = "https://nisenonamae.github.io/sho/";
 const GRADES = ["最重要", "重要", "通常", "軽易"];
 const COUNCIL = { 最重要: "最高評議会", 重要: "常任評議会" };
@@ -1250,6 +1253,23 @@ const bufLeft = p => p.buffer ? p.buffer.total - bufUsed(p) : 0;
 const weekStart = d => { const t = new Date(d + "T00:00:00Z"), wd = (t.getUTCDay() + 6) % 7; return addD(d, -wd); };
 const wk = w => md(w) + "の週";
 const fmtN = n => Math.round(n * 10) / 10;
+
+/* 今週やった量は「今やった分」を足していく。足すたびに時刻を残し、入力欄のそばに出す(同じ分を2回足さないように) */
+function wkEntry(m, w){ m.weeks = m.weeks || []; let x = m.weeks.find(y => y.w === w); if (!x) { x = { w, done: 0 }; m.weeks.push(x); } x.log = Array.isArray(x.log) ? x.log : []; return x; }
+const hmOf = t => new Date(t).toTimeString().slice(0, 5);
+function wkAdd(m, w, add){ const x = wkEntry(m, w), last = x.log[x.log.length - 1];
+  if (last && last.add === add && Date.now() - last.t < 30 * 60e3 && !confirm("さっき(" + hmOf(last.t) + ")「" + (m.name ? unbr(m.name) : "") + "」に +" + fmtN(add) + (m.unit || "") + " を足したばかり。もう一度足す?")) return false;
+  x.done = fmtN(x.done + add); x.log.push({ t: Date.now(), add }); return true; }
+function wkSet(m, w, total){ const x = wkEntry(m, w); x.log.push({ t: Date.now(), set: total, from: x.done }); x.done = total; }
+function wkUndoLast(m, w){ const x = (m.weeks || []).find(y => y.w === w); if (!x || !x.log || !x.log.length) return null; const e = x.log.pop(); if (e.add != null) x.done = fmtN(x.done - e.add); else if (e.set != null) x.done = e.from || 0; return e; }
+/* 足した記録:今日の分は時刻つき、それより前の日は日ごとにまとめる。いちばん新しいものは取り消せる */
+function wkLogHtml(pid, m, w){ const x = (m.weeks || []).find(y => y.w === w), lg = (x && x.log) || []; if (!lg.length) return x && x.done ? '<span class="note">(この週の合計だけ記録がある)</span>' : "";
+  const day = t => { const d = new Date(t); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); };
+  const today = lg.filter(e => day(e.t) === TODAY), before = lg.filter(e => day(e.t) !== TODAY), byDay = {};
+  before.forEach(e => { const k = day(e.t); byDay[k] = byDay[k] || []; byDay[k].push(e); });
+  const one = e => e.add != null ? "+" + fmtN(e.add) : "合計を" + fmtN(e.set) + "に";
+  const parts = Object.keys(byDay).sort().map(k => `<span>${md(k)} ${byDay[k].map(one).join(" ")}</span>`).concat(today.map(e => `<span class="wkt">今日 ${hmOf(e.t)} ${one(e)}</span>`));
+  return `<span class="wklog">${parts.join("・")}<button class="linkx" data-wkundo="${pid}|${m.id}|${w}" title="いちばん新しいものを取り消す">最後を取り消す</button></span>`; }
 /* 節目の進捗:つながった計画があればその進捗、目標の量があれば週の記録の合計から */
 function msProg(m){
   if (m.plan && P(m.plan)) return { pct: prog(P(m.plan)), label: "計画「" + P(m.plan).name + "」の進捗" };
@@ -1626,7 +1646,8 @@ function tabRoad(p){
       ${rows.length ? `<div class="bl">週ごとの実績</div><div class="wrows">${rows.map(r => { const t = m.pace ? m.pace.amount : 0, pc = r.done == null ? 0 : Math.min(100, r.done / Math.max(t, 0.0001) * 100);
           const j = r.w === tw && r.done != null && r.done < t ? null : weekJudge(p, r.done, t);
           return `<div class="wr${r.w === tw ? " cur" : ""}" data-wkedit="${m.id}|${r.w}" role="button" tabindex="0" title="押すと直せる"><span class="ww">${wk(r.w)}</span><span class="wb2"><i class="${j === "足りない" ? "short" : j === "吸収" ? "abs" : ""}" style="width:${pc}%"></i></span><span class="wv">${r.done == null ? (r.w === tw ? "記録前" : "記録なし") : fmtN(r.done) + "/" + fmtN(t)}${j === "吸収" ? '<small class="absl">週の予備で吸収</small>' : j === "足りない" ? `<small class="shl">あと${fmtN(t - r.done)}</small>` : ""}</span></div>`; }).join("")}</div>
-        <div class="row2" style="margin:.3rem 0"><label class="note" style="align-self:center">今週(${wk(tw)})やった量</label><input id="wk-in-${m.id}" type="number" step="0.5" inputmode="decimal" style="width:5.5rem;padding:.25rem .4rem;border:1px solid var(--rule);border-radius:3px;background:var(--white)" value="${((m.weeks || []).find(x => x.w === tw) || {}).done ?? ""}"><span class="note" style="align-self:center">${esc(m.unit || "")}</span><button class="btn sm" data-wkrec="${m.id}">記録する</button></div>` : ""}
+        <div class="wkadd"><div class="note">今週(${wk(tw)})ここまで <b class="wksum">${fmtN(((m.weeks || []).find(x => x.w === tw) || {}).done || 0)}${esc(m.unit || "")}</b></div>${wkLogHtml(p.id, m, tw)}
+          <div class="row2" style="margin:.3rem 0"><input id="wk-in-${m.id}" type="number" step="0.5" inputmode="decimal" placeholder="今やった分" style="width:6.5rem;padding:.25rem .4rem;border:1px solid var(--rule);border-radius:3px;background:var(--white)"><span class="note" style="align-self:center">${esc(m.unit || "")}</span><button class="btn sm" data-wkrec="${m.id}">足す</button><button class="linkx" data-wkfix="${m.id}" style="margin-left:auto">合計を直す</button></div></div>` : ""}
       ${hist.length > 1 ? `<div class="bl">進捗の推移</div><div class="hist">${hist.map(h => `<span title="${esc(wk(h.w) + " 累計 " + fmtN(h.cum))}"><i style="height:${h.pct || 0}%"></i></span>`).join("")}</div><div class="note">${wk(hist[0].w)} から ${hist.length}週・今 ${hist[hist.length - 1].pct}%</div>` : ""}
       <div class="bl">この節目でやること(週ごとの目安)</div>${(m.tasks || []).length ? `<ul style="list-style:none;padding:0">${m.tasks.map((t, i) => `<li style="display:flex;justify-content:space-between;gap:.4rem"><label><input type="checkbox" data-task="${m.id}:${i}"${(m.taskDone || {})[i] ? " checked" : ""}> ${tx(t, p)}</label><button class="linkx" data-taskdel="${m.id}:${i}" aria-label="消す">消す</button></li>`).join("")}</ul>` : '<p class="note" style="margin:.1rem 0">まだ書いていない</p>'}
       <div class="row2" style="margin:.2rem 0"><input id="task-in-${m.id}" placeholder="例:週3回、過去問を1教科" style="flex:1;padding:.25rem .4rem;border:1px solid var(--rule);border-radius:3px;background:var(--white)"><button class="btn ghost sm" data-taskadd="${m.id}">足す</button></div>
@@ -2206,8 +2227,8 @@ function viewWeekRec(){
     return laneMs(p, l).filter(m => !isDone(m) && m.pace && m.total).map((m, i) => ({ p, l, m, ahead: i > 0, from: prevDate(p, m), cur: (m.weeks || []).find(x => x.w === w) })); }));
   const dueT = tests.filter(t => !P(t.plan) || !P(t.plan).status).filter(t => nextDue(t) <= we);
   return `<div class="phead"><div class="k">週の記録</div><div class="goal">${wk(w)}(${md(w)}〜${md(we)})</div><div class="note">やった量とテストを入れるだけ。見直しは「週の見直し」で、別にやる。</div></div>
-    <section class="sec"><h3>今週やった量</h3>${rows.map(({ p, l, m, cur, ahead, from }) => `<div class="wkrow"><div><b>${esc(p.name)}</b><small>${multiLane(p) ? laneCode(p, l) + " " + esc(l.name) + "・" : ""}節目「${m.plan ? esc(msName(m)) : tx(m.name, p)}」・ペース ${fmtN(m.pace.amount)}${esc(m.pace.unit)}${ahead && from > we ? `・<span style="color:var(--wave)">先取り(期間は${md(from)}から)</span>` : ""}</small>${defChip(m)}</div><input type="number" step="0.5" inputmode="decimal" data-wkv="${p.id}:${m.id}" value="${cur ? cur.done : ""}"><span class="note">${esc(m.unit || "")}</span></div>`).join("") || '<p class="note">ペースのある節目はない。</p>'}
-      ${rows.length ? '<button class="btn sm" data-wkall>まとめて記録する</button>' : ""}</section>
+    <section class="sec"><h3>今週やった量</h3>${rows.map(({ p, l, m, cur, ahead, from }) => `<div class="wkrow"><div><b>${esc(p.name)}</b><small>${multiLane(p) ? laneCode(p, l) + " " + esc(l.name) + "・" : ""}節目「${m.plan ? esc(msName(m)) : tx(m.name, p)}」・ペース ${fmtN(m.pace.amount)}${esc(m.pace.unit)}${ahead && from > we ? `・<span style="color:var(--wave)">先取り(期間は${md(from)}から)</span>` : ""}</small>${defChip(m)}</div><span class="wkr2"><span class="note">ここまで <b>${fmtN(cur ? cur.done : 0)}</b></span><input type="number" step="0.5" inputmode="decimal" data-wkv="${p.id}:${m.id}" placeholder="やった分"><span class="note">${esc(m.unit || "")}</span></span><div class="wklogrow">${wkLogHtml(p.id, m, w)}</div></div>`).join("") || '<p class="note">ペースのある節目はない。</p>'}
+      ${rows.length ? '<button class="btn sm" data-wkall>まとめて足す</button><p class="note">入れるのは「今やった分」。今週の合計に足される。足した時刻は各行の下に出るので、もう足したかはそこで分かる。</p>' : ""}</section>
     <section class="sec"><h3>今週の実力テスト<small>${dueT.length}つ</small></h3>${dueT.map(t => `<div class="wkrow"><div><b>${esc(t.name)}</b><small>${P(t.plan) ? esc(P(t.plan).name) : ""}・${days(TODAY, nextDue(t)) < 0 ? -days(TODAY, nextDue(t)) + "日遅れ" : md(nextDue(t)) + "まで"}</small></div><button class="btn ghost sm" data-testrec="${t.id}">実施して記録</button></div>`).join("") || '<p class="note">今週のテストはない。</p>'}</section>`;
 }
 
@@ -4410,8 +4431,11 @@ document.addEventListener("click", e => {
     takeUndo();
     if (editTarget) { const t = editTarget, n0 = t.changes.length; saveEdit(t); fixOutside(t); saveDraftObj(p, t); editTarget = null; closeSheet(); render(); toast("下書きを直した(" + (t.changes.length - n0) + "か所)。反映するまで今の計画はそのまま"); return; }
     const dr = drafting(p), n = saveEdit(p); fixOutside(p); closeSheet(); render(); if (dr) { toast("直した(作成中なので、歩みには残さない)"); return; } toast(n ? "直した。変えた " + n + "か所を歩みに残した" : "変わったところはなかった"); return; }
-  if (d.wkrec) { const m = p.milestones.find(x => x.id === d.wkrec), v = $("wk-in-" + m.id).value.trim(), w = weekStart(TODAY); if (v === "") return;
-    m.weeks = (m.weeks || []).filter(x => x.w !== w); m.weeks.push({ w, done: +v }); render(); se("rec"); const pr = msProg(m); toast(wk(w) + "に " + v + (m.unit || "") + " を記録した(進捗 " + pr.pct + "%)"); return; }
+  if (d.wkrec) { const m = p.milestones.find(x => x.id === d.wkrec), v = $("wk-in-" + m.id).value.trim(), w = weekStart(TODAY); if (v === "" || !isFinite(+v) || +v === 0) return;
+    if (!wkAdd(m, w, +v)) return; render(); se("rec"); const pr = msProg(m), x = m.weeks.find(y => y.w === w); toast("+" + fmtN(+v) + (m.unit || "") + " を足した(今週 " + fmtN(x.done) + (m.unit || "") + "・進捗 " + pr.pct + "%)"); return; }
+  if (d.wkfix) { const m = p.milestones.find(x => x.id === d.wkfix), w = weekStart(TODAY), cur = ((m.weeks || []).find(x => x.w === w) || {}).done || 0, v = prompt("今週の合計(" + (m.unit || "") + ")を直す", fmtN(cur)); if (v == null || v.trim() === "" || !isFinite(+v)) return;
+    wkSet(m, w, +v); render(); toast("今週の合計を " + fmtN(+v) + (m.unit || "") + " にした"); return; }
+  if (d.wkundo) { const [pid, mid, w] = d.wkundo.split("|"), q = P(pid), m = q && q.milestones.find(x => x.id === mid); if (!m) return; const e = wkUndoLast(m, w); if (e) { render(); toast(e.add != null ? "+" + fmtN(e.add) + " を取り消した" : "合計の直しを取り消した"); } return; }
   // 節目の中に計画を入れる
   if (d.msplan) { const m = p.milestones.find(x => x.id === d.msplan), cand = plans.filter(x => !x.status && x.id !== p.id && !ancestors(p).some(a => a.q.id === x.id) && !parentOf(x));
     const gi = Math.min(3, GRADES.indexOf(p.grade) + 1);
@@ -4542,8 +4566,8 @@ document.addEventListener("click", e => {
   if (d.taskdel) { const [mid, i] = d.taskdel.split(":"), m = p.milestones.find(x => x.id === mid); m.tasks.splice(+i, 1); if (m.taskDone) { const nd = {}; Object.keys(m.taskDone).forEach(k => { if (+k < +i) nd[k] = m.taskDone[k]; else if (+k > +i) nd[+k - 1] = m.taskDone[k]; }); m.taskDone = nd; } render(); return; }
   if (b.hasAttribute("data-fielddel")) { const f = fields.find(x => x.id === fieldId); if (!confirm("分野「" + f.name + "」を消す?")) return; takeUndo(); fields = fields.filter(x => x !== f); plans.forEach(q => q.fields = (q.fields || []).filter(l => l.f !== f.id)); fieldId = ""; fieldPath = []; render(); toast("消した"); return; }
   // 週の締め
-  if (b.hasAttribute("data-wkall")) { const w = weekStart(TODAY); let n = 0; document.querySelectorAll("[data-wkv]").forEach(el => { if (el.value.trim() === "") return; const [pid, mid] = el.dataset.wkv.split(":"), m = P(pid).milestones.find(x => x.id === mid);
-      m.weeks = (m.weeks || []).filter(x => x.w !== w); m.weeks.push({ w, done: +el.value }); n++; }); render(); if (n) se("rec"); toast(n + "つの計画に今週の実績を記録した"); return; }
+  if (b.hasAttribute("data-wkall")) { const w = weekStart(TODAY); let n = 0; document.querySelectorAll("[data-wkv]").forEach(el => { const v = el.value.trim(); if (v === "" || !isFinite(+v) || +v === 0) return; const [pid, mid] = el.dataset.wkv.split(":"), m = P(pid).milestones.find(x => x.id === mid);
+      if (wkAdd(m, w, +v)) n++; }); render(); if (n) se("rec"); toast(n ? n + "つの節目に今やった分を足した" : "足したものはない"); return; }
   if (b.hasAttribute("data-wkclose")) { const w = weekStart(TODAY), note = $("wk-note").value.trim(); weekClosed[w] = { note }; reviews = reviews.filter(r => r.w !== w); reviews.push({ w, date: TODAY, note, acts: [] }); render(); window.scrollTo(0, 0); se("week"); toast("この週を締めた。お疲れさま"); return; }
   // 負荷
   if (b.hasAttribute("data-capsave")) { capacity.base = +$("cap-b").value || capacity.base; render(); toast("使える時間を変えた"); return; }
