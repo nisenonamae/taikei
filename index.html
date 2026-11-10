@@ -963,7 +963,7 @@ body.o-wide .wrap{max-width:min(1500px,100%)}
 <div id="sheet-root"></div>
 <script>
 /* ───────── 大計:データ ───────── */
-const APP_VERSION = "2026-11-09 r46";
+const APP_VERSION = "2026-11-10 r47";
 const SHO_APP = "https://nisenonamae.github.io/sho/";
 const GRADES = ["最重要", "重要", "通常", "軽易"];
 const COUNCIL = { 最重要: "最高評議会", 重要: "常任評議会" };
@@ -3044,7 +3044,7 @@ function bkPace(b){ const s = bkStat(b), h = b.hist || {}, keys = Object.keys(h)
   const ref = addD(TODAY, -7), before = keys.filter(d => d <= ref); let base, span;
   if (before.length) { base = h[before[before.length - 1]]; span = 7; } else { base = 0; span = Math.max(1, days(keys[0], TODAY) + 1); }
   const perDay = Math.max(0, (s.p - base) / span), rest = s.n - s.p; return { s, perDay, eta: perDay > 0 && rest > 0 ? addD(TODAY, Math.ceil(rest / perDay)) : null, rest }; }
-function bkTouch(b){ b.hist = b.hist || {}; b.hist[TODAY] = bkStat(b).p; const ks = Object.keys(b.hist).sort(); if (ks.length > 120) ks.slice(0, ks.length - 120).forEach(k => delete b.hist[k]); }
+function bkTouch(b){ b.last = Date.now(); b.hist = b.hist || {}; b.hist[TODAY] = bkStat(b).p; const ks = Object.keys(b.hist).sort(); if (ks.length > 120) ks.slice(0, ks.length - 120).forEach(k => delete b.hist[k]); }
 /* 作り:1行に1種類。「例題: 1 数と式 1-25 / 2 集合と論証 26-40」 */
 function bkParse(text){ const kinds = []; String(text || "").split("\n").map(x => x.trim()).filter(Boolean).forEach(line => { const m = /^([^:：]+)[:：](.*)$/.exec(line); if (!m) return;
     const chs = m[2].split(/[\/／]/).map(x => x.trim()).filter(Boolean).map(seg => { const r = /^(.*?)\s*(\d+)\s*[-〜~ー–]\s*(\d+)\s*$/.exec(seg); if (!r) { const one = /^(.*?)\s*(\d+)\s*$/.exec(seg); return one ? { name: one[1].trim(), a: 1, b: +one[2] } : null; } return { name: r[1].trim(), a: +r[2], b: +r[3] }; }).filter(c => c && c.b >= c.a);
@@ -3056,15 +3056,19 @@ function nodeOpts(f, sel){ ensureIds(f.root); const out = [`<option value=""${!s
 function bkRing(p){ const r = 9, L = 2 * Math.PI * r; return `<svg class="bkring" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="${r}" fill="none" stroke="var(--rule)" stroke-width="3"/><circle cx="12" cy="12" r="${r}" fill="none" stroke="var(--wave)" stroke-width="3" stroke-dasharray="${L * p / 100} ${L}" transform="rotate(-90 12 12)"/><text x="12" y="15" text-anchor="middle" font-size="7.5" fill="currentColor">${p}</text></svg>`; }
 /* マンダラのマスに出す:そのマスにつないだ教材の作成率 */
 function bkForNode(f, id){ const bs = (f.books || []).filter(b => b.node && b.node === id); if (!bs.length) return null; let n = 0, p = 0; bs.forEach(b => { const s = bkStat(b); n += s.n; p += s.p; }); return n ? Math.round(p / n * 100) : 0; }
-function booksHtml(f){ const bs = f.books || [];
+function bkFix(b){ if (!b || typeof b !== "object") return false; b.st = b.st && typeof b.st === "object" ? b.st : {}; b.hist = b.hist && typeof b.hist === "object" ? b.hist : {};
+  b.kinds = Array.isArray(b.kinds) ? b.kinds.filter(k => k && typeof k === "object") : []; b.kinds.forEach(k => { if (!k.id) k.id = "K" + uid(); k.name = k.name || "問題"; k.chs = Array.isArray(k.chs) ? k.chs.filter(c => c && isFinite(+c.a) && isFinite(+c.b)).map(c => Object.assign(c, { a: +c.a, b: +c.b })) : []; }); return true; }
+function bkLast(b){ if (b.last) { const d = new Date(b.last), ds = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"), dd = days(ds, TODAY); return md(ds) + " " + d.toTimeString().slice(0, 5) + (dd === 0 ? "(今日)" : "(" + dd + "日前)"); }
+  const ks = Object.keys(b.hist || {}).sort(); if (!ks.length) return ""; const dd = days(ks[ks.length - 1], TODAY); return md(ks[ks.length - 1]) + (dd === 0 ? "(今日)" : "(" + dd + "日前)"); }
+function booksHtml(f){ const bs = (f.books || []).filter(bkFix);
   const list = bs.map(b => { const { s, perDay, eta, rest } = bkPace(b), nd = b.node && nodeAt(f.root, pathOf(f.root, b.node) || []);
-    return `<div class="bkcard${bookOpen === b.id ? " on" : ""}"><div class="bkhead"><button class="linkx bkname" data-bkopen="${b.id}">${esc(b.name)}</button>${nd && b.node ? `<span class="note">マス:${esc(nd.text)}</span>` : ""}</div>
+    return `<div class="bkcard${bookOpen === b.id ? " on" : ""}"><div class="bkhead"><button class="linkx bkname" data-bkopen="${b.id}">${esc(b.name)}</button>${nd && b.node ? `<span class="note">マス:${esc(nd.text)}</span>` : ""}<span class="note bklast">${bkLast(b) ? "最後に書いた:" + bkLast(b) : "まだ書いていない"}</span></div>
       <div class="bknums"><span><b>${s.rate}%</b><small>作成率</small></span><span><b>${s.left}</b><small>残り(問)</small></span><span><b>${eta ? md(eta) : rest <= 0 && s.n ? "済" : "—"}</b><small>${eta ? "終わる見込み" : rest <= 0 && s.n ? "全部作った" : "ペースがまだない"}</small></span><span><b>${perDay ? (perDay * 7).toFixed(perDay * 7 < 10 ? 1 : 0) : 0}</b><small>週のペース(問)</small></span></div>
       ${(b.kinds || []).map(k => { const ks = bkKindStat(b, k), r = ks.n ? Math.round(ks.p / ks.n * 100) : 0; return `<div class="bkbar"><span>${esc(k.name)}</span><i><b style="width:${r}%"></b></i><span>${ks.done}/${ks.n}</span></div>`; }).join("")}
       ${bookOpen === b.id ? bookDetail(f, b) : ""}</div>`; }).join("");
   return `<section class="sec"><h3>教材<small>カードをどこまで作ったか</small></h3>${list || '<p class="note">まだ教材がない。参考書ごとに、問題の種類(例題・練習など)と番号を決めて、カードを作り終えたものに印を付けていく。</p>'}
     <div class="fbar"><button class="btn sm" data-bknew>+ 教材を足す</button></div></section>`; }
-function bookDetail(f, b){ const kinds = b.kinds || []; if (!kinds.some(k => k.id === bookKind)) bookKind = (kinds[0] || {}).id || ""; const k = kinds.find(x => x.id === bookKind), st = (b.st || {})[bookKind] || {};
+function bookDetail(f, b){ bkFix(b); const kinds = b.kinds || []; if (!kinds.some(k => k.id === bookKind)) bookKind = (kinds[0] || {}).id || ""; const k = kinds.find(x => x.id === bookKind), st = (b.st || {})[bookKind] || {};
   const tabs = `<span class="seg" role="group" aria-label="種類">${kinds.map(x => `<button data-bkkind="${x.id}" aria-pressed="${x.id === bookKind}">${esc(x.name)}</button>`).join("")}</span>`;
   const grids = k ? k.chs.map(c => { let p = 0, cells = ""; for (let i = c.a; i <= c.b; i++) { const v = st[i] || 0; p += v === 2 ? 1 : v === 1 ? 0.5 : 0; cells += `<button class="bkc v${v}" data-bkc="${i}" aria-label="${i} ${["未作成", "途中", "作成済み"][v]}">${i}</button>`; }
       const t = c.b - c.a + 1; return `<div class="bkch"><div class="bkcn"><span>${esc(c.name || "")}</span><span>${Math.round(p / t * 100)}%</span></div><div class="bkgrid">${cells}</div></div>`; }).join("") : "";
